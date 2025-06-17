@@ -34,7 +34,7 @@ pub type User {
 }
 
 /// Decode a string to a PartialUser
-pub fn from_json_string(encoded: String) -> Result(User, error.DiscordError) {
+pub fn string_to_data(encoded: String) -> Result(User, error.DiscordError) {
   case string.contains(encoded, "401: Unauthorized") {
     True -> {
       Error(error.Unauthorized("Error, 401, Unauthorized :c, is token correct?"))
@@ -42,7 +42,7 @@ pub fn from_json_string(encoded: String) -> Result(User, error.DiscordError) {
     False -> {
       let decoder = from_json_decoder()
 
-      json.parse(from: encoded, using: decoder)
+      json.parse(from: encoded, using: from_json_decoder())
       |> result.map_error(error.JsonDecodeError)
     }
   }

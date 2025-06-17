@@ -10,7 +10,6 @@ import gleam/bool
 import gleam/erlang/process
 import gleam/float
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
@@ -18,7 +17,7 @@ import logging
 
 pub fn main(token: String, client_id: String, guild_id: String) {
   logging.configure()
-  logging.set_level(logging.Debug)
+  logging.set_level(logging.Info)
 
   let bot = discord_gleam.bot(token, client_id, intents.default())
 
@@ -92,11 +91,92 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
       )
     }
 
-    event_handler.MessagePacket(message) -> {
-      logging.log(logging.Info, "Got message: " <> message.d.content)
+    event_handler.ChannelCreatePacket(channel) -> {
+      case channel.d.guild_id {
+        // only create if channel in guild
+        // aka not on DM channel create
+        Some(_) -> {
+          logging.log(
+            logging.Info,
+            "Channel created: "
+              <> case channel.d.name {
+              Some(name) -> name
+              None -> "No name"
+            }
+              <> " (ID: "
+              <> channel.d.id
+              <> ")",
+          )
 
+          discord_gleam.send_message(
+            bot,
+            channel.d.id,
+            "Channel created: "
+              <> case channel.d.name {
+              Some(name) -> name
+              None -> "No name"
+            }
+              <> "\nID: "
+              <> channel.d.id
+              <> "\nParent ID: "
+              <> case channel.d.parent_id {
+              Some(id) -> id
+              None -> "None"
+            },
+            [],
+          )
+
+          Nil
+        }
+
+        None -> {
+          logging.log(logging.Info, "DM channel created: " <> channel.d.id)
+
+          discord_gleam.send_message(
+            bot,
+            channel.d.id,
+            "DM channel created: " <> channel.d.id,
+            [],
+          )
+
+          Nil
+        }
+      }
+    }
+
+    event_handler.ChannelDeletePacket(channel) -> {
+      logging.log(
+        logging.Info,
+        "Channel deleted: "
+          <> case channel.d.name {
+          Some(name) -> name
+          None -> "No name"
+        }
+          <> " (ID: "
+          <> channel.d.id
+          <> ")",
+      )
+    }
+
+    event_handler.ChannelUpdatePacket(channel) -> {
+      logging.log(
+        logging.Info,
+        "Channel updated: "
+          <> case channel.d.name {
+          Some(name) -> name
+          None -> "No name"
+        }
+          <> " (ID: "
+          <> channel.d.id
+          <> ")",
+      )
+    }
+
+    event_handler.MessagePacket(message) -> {
       case message.d.author.id != bot.client_id {
         True -> {
+          logging.log(logging.Info, "Got message: " <> message.d.content)
+
           case message.d.content {
             "!ping" -> {
               let _ =
@@ -144,7 +224,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
                       [],
                     )
 
-                  io.debug(err)
+                  echo err
 
                   Nil
                 }
@@ -157,7 +237,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
               let res =
                 discord_gleam.create_dm_channel(bot, message.d.author.id)
 
-              let _ = io.debug(res)
+              echo res
 
               case res {
                 Ok(channel) -> {
@@ -187,7 +267,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
                       [],
                     )
 
-                  io.debug(err)
+                  echo err
 
                   Nil
                 }
@@ -225,7 +305,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
                       [],
                     )
 
-                  io.debug(err)
+                  echo err
 
                   Nil
                 }
@@ -398,7 +478,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
       Nil
     }
 
-    event_handler.InteractionCreate(interaction) -> {
+    event_handler.InteractionCreatePacket(interaction) -> {
       logging.log(logging.Info, "Interaction: " <> interaction.d.data.name)
 
       case interaction.d.data.name {

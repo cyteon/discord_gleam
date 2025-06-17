@@ -1,5 +1,8 @@
 import bravo/uset
 import discord_gleam/types/bot
+import discord_gleam/ws/packets/channel_create
+import discord_gleam/ws/packets/channel_delete
+import discord_gleam/ws/packets/channel_update
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/interaction_create
 import discord_gleam/ws/packets/message
@@ -24,7 +27,13 @@ pub type Packet {
   /// `MESSAGE_DELETE` event
   MessageDeletePacket(message_delete.MessageDeletePacket)
   /// `INTERACTION_CREATE` event
-  InteractionCreate(interaction_create.InteractionCreate)
+  InteractionCreatePacket(interaction_create.InteractionCreatePacket)
+  /// `CHANNEL_CREATE` event
+  ChannelCreatePacket(channel_create.ChannelCreatePacket)
+  /// `CHANNEL_DELETE` event
+  ChannelDeletePacket(channel_delete.ChannelDeletePacket)
+  /// `CHANNEL_UPDATE` event
+  ChannelUpdatePacket(channel_update.ChannelUpdatePacket)
 
   /// When we receive a packet that we don't know how to handle
   UnknownPacket(generic.GenericPacket)
@@ -113,7 +122,19 @@ fn decode_packet(msg: String) -> Packet {
       |> result.unwrap(UnknownPacket(generic_packet))
     "INTERACTION_CREATE" ->
       interaction_create.string_to_data(msg)
-      |> result.map(InteractionCreate)
+      |> result.map(InteractionCreatePacket)
+      |> result.unwrap(UnknownPacket(generic_packet))
+    "CHANNEL_CREATE" ->
+      channel_create.string_to_data(msg)
+      |> result.map(ChannelCreatePacket)
+      |> result.unwrap(UnknownPacket(generic_packet))
+    "CHANNEL_DELETE" ->
+      channel_delete.string_to_data(msg)
+      |> result.map(ChannelDeletePacket)
+      |> result.unwrap(UnknownPacket(generic_packet))
+    "CHANNEL_UPDATE" ->
+      channel_update.string_to_data(msg)
+      |> result.map(ChannelUpdatePacket)
       |> result.unwrap(UnknownPacket(generic_packet))
     _ -> UnknownPacket(generic_packet)
   }

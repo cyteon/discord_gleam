@@ -38,8 +38,8 @@ pub type InteractionCreateData {
   )
 }
 
-pub type InteractionCreate {
-  InteractionCreate(t: String, s: Int, op: Int, d: InteractionCreateData)
+pub type InteractionCreatePacket {
+  InteractionCreatePacket(t: String, s: Int, op: Int, d: InteractionCreateData)
 }
 
 pub type OptionValue {
@@ -70,7 +70,9 @@ fn options_decoder() -> decode.Decoder(InteractionOption) {
   decode.success(InteractionOption(name:, type_:, value:, options:))
 }
 
-pub fn string_to_data(encoded: String) -> Result(InteractionCreate, String) {
+pub fn string_to_data(
+  encoded: String,
+) -> Result(InteractionCreatePacket, String) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
@@ -108,7 +110,7 @@ pub fn string_to_data(encoded: String) -> Result(InteractionCreate, String) {
         channel_id:,
       ))
     })
-    decode.success(InteractionCreate(t:, s:, op:, d:))
+    decode.success(InteractionCreatePacket(t:, s:, op:, d:))
   }
 
   json.parse(from: encoded, using: decoder)

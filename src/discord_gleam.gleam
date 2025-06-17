@@ -284,7 +284,7 @@ pub fn register_guild_commands(
 
 /// Make a basic text reply to an interaction.
 pub fn interaction_reply_message(
-  interaction: interaction_create.InteractionCreate,
+  interaction: interaction_create.InteractionCreatePacket,
   message: String,
   ephemeral: Bool,
 ) -> Result(Nil, error.DiscordError) {

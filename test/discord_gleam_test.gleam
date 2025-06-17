@@ -1,5 +1,4 @@
 import example_bot
-import gleam/io
 import gleam/result
 import glenvy/dotenv
 import glenvy/env
@@ -18,7 +17,7 @@ pub fn main() {
   {
     Ok(_) -> Nil
     Error(msg) -> {
-      io.debug(msg)
+      echo msg
       Nil
     }
   }

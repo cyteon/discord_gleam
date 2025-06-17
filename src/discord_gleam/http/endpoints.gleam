@@ -25,7 +25,7 @@ pub fn me(token: String) -> Result(user.User, error.DiscordError) {
     Ok(resp) -> {
       case response.get_header(resp, "content-type") {
         Ok("application/json") -> {
-          user.from_json_string(resp.body)
+          user.string_to_data(resp.body)
         }
         _ ->
           Error(
@@ -113,7 +113,7 @@ pub fn create_dm_channel(
         200 -> {
           logging.log(logging.Debug, "DM channel created")
 
-          let channel: Result(channel.Channel, json.DecodeError) =
+          let channel: Result(channel.Channel, error.DiscordError) =
             channel.string_to_data(resp.body)
 
           case channel {
@@ -124,7 +124,7 @@ pub fn create_dm_channel(
             Error(err) -> {
               logging.log(logging.Error, "Failed to decode DM channel")
 
-              Error(error.JsonDecodeError(err))
+              Error(err)
             }
           }
         }
@@ -572,7 +572,7 @@ pub fn register_guild_command(
 
 /// Send a basic text reply to an interaction
 pub fn interaction_send_text(
-  interaction: interaction_create.InteractionCreate,
+  interaction: interaction_create.InteractionCreatePacket,
   message: String,
   ephemeral: Bool,
 ) -> Result(Nil, error.DiscordError) {
