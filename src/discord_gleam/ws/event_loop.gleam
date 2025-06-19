@@ -34,11 +34,11 @@ pub fn main(
   host: String,
   reconnect: Bool,
   session_id: String,
-  state_uset: uset.USet(#(String, String)),
+  state_uset: uset.USet(String, String),
 ) -> Nil {
   logging.log(logging.Debug, "Requesting gateway")
 
-  uset.insert(state_uset, [#("sequence", "0")])
+  let assert Ok(_) = uset.insert(state_uset, "sequence", "0")
 
   let host = string.replace(host, "wss://", "")
 
@@ -68,7 +68,7 @@ pub fn main(
         logging.log(logging.Debug, "Builder init")
         #(initial_state, option.None)
       },
-      loop: fn(msg, state, conn) {
+      loop: fn(state, msg, conn) {
         case msg {
           stratus.Text(msg) -> {
             logging.log(logging.Debug, "Gateway text msg: " <> msg)

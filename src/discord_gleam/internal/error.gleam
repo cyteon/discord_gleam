@@ -1,4 +1,4 @@
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/hackney
 import gleam/json
 import gleam/otp/actor
@@ -7,8 +7,8 @@ pub type DiscordError {
   UnknownAccount
   EmptyOptionWhenRequired
   JsonDecodeError(json.DecodeError)
-  InvalidDynamicList(List(dynamic.DecodeError))
-  InvalidFormat(dynamic.DecodeError)
+  InvalidDynamicList(List(decode.DecodeError))
+  InvalidFormat(decode.DecodeError)
   WebsocketError(Nil)
   /// When a request to the API fails
   HttpError(hackney.Error)
