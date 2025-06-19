@@ -259,9 +259,12 @@ pub fn wipe_guild_commands(
 pub fn register_global_commands(
   bot: bot.Bot,
   commands: List(slash_command.SlashCommand),
-) {
-  list.each(commands, fn(command) {
-    endpoints.register_global_command(bot.token, bot.client_id, command)
+) -> Result(Nil, #(slash_command.SlashCommand, error.DiscordError)) {
+  list.try_each(commands, fn(command) {
+    case endpoints.register_global_command(bot.token, bot.client_id, command) {
+      Ok(_) -> Ok(Nil)
+      Error(err) -> Error(#(command, err))
+    }
   })
 }
 
@@ -271,14 +274,19 @@ pub fn register_guild_commands(
   bot: bot.Bot,
   guild_id: String,
   commands: List(slash_command.SlashCommand),
-) {
-  list.each(commands, fn(command) {
-    endpoints.register_guild_command(
-      bot.token,
-      bot.client_id,
-      guild_id,
-      command,
-    )
+) -> Result(Nil, #(slash_command.SlashCommand, error.DiscordError)) {
+  list.try_each(commands, fn(command) {
+    case
+      endpoints.register_guild_command(
+        bot.token,
+        bot.client_id,
+        guild_id,
+        command,
+      )
+    {
+      Ok(_) -> Ok(Nil)
+      Error(err) -> Error(#(command, err))
+    }
   })
 }
 
