@@ -17,7 +17,6 @@ import gleam/int
 import gleam/json
 import gleam/option
 import gleam/order
-import gleam/otp/actor
 import gleam/string
 import logging
 import repeatedly
@@ -34,11 +33,11 @@ pub fn main(
   host: String,
   reconnect: Bool,
   session_id: String,
-  state_uset: uset.USet(#(String, String)),
+  state_uset: uset.USet(String, String),
 ) -> Nil {
   logging.log(logging.Debug, "Requesting gateway")
 
-  uset.insert(state_uset, [#("sequence", "0")])
+  let assert Ok(_) = uset.insert(state_uset, "sequence", "0")
 
   let host = string.replace(host, "wss://", "")
 
@@ -68,7 +67,7 @@ pub fn main(
         logging.log(logging.Debug, "Builder init")
         #(initial_state, option.None)
       },
-      loop: fn(msg, state, conn) {
+      loop: fn(state, msg, conn) {
         case msg {
           stratus.Text(msg) -> {
             logging.log(logging.Debug, "Gateway text msg: " <> msg)
@@ -82,7 +81,7 @@ pub fn main(
                       bot.intents,
                       session_id,
                       case uset.lookup(state_uset, "sequence") {
-                        Ok(s) -> s.1
+                        Ok(s) -> s
                         Error(_) -> "0"
                       },
                     )
@@ -95,38 +94,33 @@ pub fn main(
 
                 let heartbeat = hello.string_to_data(msg)
 
-                process.start(
-                  fn() {
-                    repeatedly.call(heartbeat, Nil, fn(_state, _count_) {
-                      let s = case uset.lookup(state_uset, "sequence") {
-                        Ok(s) ->
-                          case int.parse(s.1) {
-                            Ok(i) -> i
-                            Error(_) -> 0
-                          }
-                        Error(_) -> 0
-                      }
+                process.spawn(fn() {
+                  repeatedly.call(heartbeat, Nil, fn(_state, _count_) {
+                    let s = case uset.lookup(state_uset, "sequence") {
+                      Ok(s) ->
+                        case int.parse(s) {
+                          Ok(i) -> i
+                          Error(_) -> 0
+                        }
+                      Error(_) -> 0
+                    }
 
-                      let packet =
-                        json.object([
-                          #("op", json.int(1)),
-                          #("d", json.string("null")),
-                          #("s", json.int(s)),
-                        ])
-                        |> json.to_string()
+                    let packet =
+                      json.object([
+                        #("op", json.int(1)),
+                        #("d", json.string("null")),
+                        #("s", json.int(s)),
+                      ])
+                      |> json.to_string()
 
-                      logging.log(
-                        logging.Debug,
-                        "Sending heartbeat: " <> packet,
-                      )
+                    logging.log(logging.Debug, "Sending heartbeat: " <> packet)
 
-                      stratus.send_text_message(conn, packet)
-                    })
-                  },
-                  False,
-                )
+                    let assert Ok(_) = stratus.send_text_message(conn, packet)
+                    Nil
+                  })
+                })
 
-                actor.continue(new_state)
+                stratus.continue(new_state)
               }
               True -> {
                 let generic_packet = generic.string_to_data(msg)
@@ -135,9 +129,12 @@ pub fn main(
                   0 -> Nil
 
                   _ -> {
-                    uset.insert(state_uset, [
-                      #("sequence", int.to_string(generic_packet.s)),
-                    ])
+                    let assert Ok(_) =
+                      uset.insert(
+                        state_uset,
+                        "sequence",
+                        int.to_string(generic_packet.s),
+                      )
 
                     Nil
                   }
@@ -156,12 +153,12 @@ pub fn main(
                       bot,
                       event_handlers,
                       case uset.lookup(state_uset, "resume_gateway_url") {
-                        Ok(url) -> url.1
+                        Ok(url) -> url
                         Error(_) -> "gateway.discord.gg"
                       },
                       reconnect,
                       case uset.lookup(state_uset, "session_id") {
-                        Ok(s) -> s.1
+                        Ok(s) -> s
                         Error(_) -> ""
                       },
                       state_uset,
@@ -176,19 +173,19 @@ pub fn main(
 
                 event_handler.handle_event(bot, msg, event_handlers, state_uset)
 
-                actor.continue(new_state)
+                stratus.continue(new_state)
               }
             }
           }
 
           stratus.User(msg) -> {
             logging.log(logging.Debug, "Gateway user msg: " <> msg)
-            actor.continue(state)
+            stratus.continue(state)
           }
 
           stratus.Binary(_) -> {
             logging.log(logging.Debug, "Binary message")
-            actor.continue(state)
+            stratus.continue(state)
           }
         }
       },
@@ -209,12 +206,12 @@ pub fn main(
             bot,
             event_handlers,
             case uset.lookup(state_uset, "resume_gateway_url") {
-              Ok(url) -> url.1
+              Ok(url) -> url
               Error(_) -> "gateway.discord.gg"
             },
             reconnect,
             case uset.lookup(state_uset, "session_id") {
-              Ok(s) -> s.1
+              Ok(s) -> s
               Error(_) -> ""
             },
             state_uset,
@@ -233,14 +230,15 @@ pub fn main(
       Nil
     })
 
-  let assert Ok(subj) = stratus.initialize(builder)
+  let assert Ok(actor) = stratus.initialize(builder)
+  let subj = actor.data
+  let assert Ok(pid) = process.subject_owner(subj)
 
-  process.new_selector()
-  |> process.selecting_process_down(
-    process.monitor_process(process.subject_owner(subj)),
-    function.identity,
-  )
-  |> process.select_forever
+  let monitor = process.monitor(pid)
+  let selector = process.new_selector()
+  let selector =
+    process.select_specific_monitor(selector, monitor, function.identity)
+  let _ = process.selector_receive_forever(selector)
 
   logging.log(logging.Error, "websocket go bye bye")
 

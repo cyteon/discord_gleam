@@ -43,13 +43,13 @@ pub type Packet {
 fn internal_handler(
   bot: bot.Bot,
   packet: Packet,
-  state_uset: uset.USet(#(String, String)),
+  state_uset: uset.USet(String, String),
 ) -> Nil {
   case packet {
     MessagePacket(msg) -> {
       case bot.cache.messages {
         option.Some(cache) -> {
-          uset.insert(cache, [#(msg.d.id, msg.d)])
+          let assert Ok(_) = uset.insert(cache, msg.d.id, msg.d)
 
           Nil
         }
@@ -64,7 +64,7 @@ fn internal_handler(
     MessageUpdatePacket(msg) -> {
       case bot.cache.messages {
         option.Some(cache) -> {
-          uset.insert(cache, [#(msg.d.id, msg.d)])
+          let assert Ok(_) = uset.insert(cache, msg.d.id, msg.d)
 
           Nil
         }
@@ -76,10 +76,14 @@ fn internal_handler(
     }
 
     ReadyPacket(ready) -> {
-      uset.insert(state_uset, [#("session_id", ready.d.session_id)])
-      uset.insert(state_uset, [
-        #("resume_gateway_url", ready.d.resume_gateway_url),
-      ])
+      let assert Ok(_) =
+        uset.insert(state_uset, "session_id", ready.d.session_id)
+      let assert Ok(_) =
+        uset.insert(
+          state_uset,
+          "resume_gateway_url",
+          ready.d.resume_gateway_url,
+        )
 
       Nil
     }
@@ -93,7 +97,7 @@ pub fn handle_event(
   bot: bot.Bot,
   msg: String,
   handlers: List(EventHandler),
-  state_uset: uset.USet(#(String, String)),
+  state_uset: uset.USet(String, String),
 ) -> Nil {
   let packet = decode_packet(msg)
   internal_handler(bot, packet, state_uset)

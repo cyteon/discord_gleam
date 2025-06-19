@@ -16,5 +16,5 @@ pub type Bot {
 
 /// The cache currently only stores messages, which can be used to for example get deleted messages
 pub type Cache {
-  Cache(messages: option.Option(uset.USet(#(Snowflake, MessagePacketData))))
+  Cache(messages: option.Option(uset.USet(Snowflake, MessagePacketData)))
 }
