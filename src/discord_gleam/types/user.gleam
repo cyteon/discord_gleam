@@ -40,8 +40,6 @@ pub fn string_to_data(encoded: String) -> Result(User, error.DiscordError) {
       Error(error.Unauthorized("Error, 401, Unauthorized :c, is token correct?"))
     }
     False -> {
-      let decoder = from_json_decoder()
-
       json.parse(from: encoded, using: from_json_decoder())
       |> result.map_error(error.JsonDecodeError)
     }

@@ -14,8 +14,6 @@ import gleam/dynamic
 import gleam/hackney
 import gleam/http
 import gleam/http/response
-import gleam/io
-import gleam/json
 import logging
 
 /// Get the current user
@@ -367,7 +365,7 @@ pub fn edit_message(
         }
         _ -> {
           logging.log(logging.Error, "Failed to edit message")
-          io.debug(resp.body)
+          echo resp.body
 
           Error(error.GenericHttpError(
             status_code: resp.status,
@@ -379,7 +377,7 @@ pub fn edit_message(
 
     Error(err) -> {
       logging.log(logging.Error, "Failed to edit message: ")
-      io.debug(err)
+      echo err
 
       Error(error.HttpError(err))
     }

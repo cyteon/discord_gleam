@@ -108,23 +108,24 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
               <> ")",
           )
 
-          discord_gleam.send_message(
-            bot,
-            channel.d.id,
-            "Channel created: "
-              <> case channel.d.name {
-              Some(name) -> name
-              None -> "No name"
-            }
-              <> "\nID: "
-              <> channel.d.id
-              <> "\nParent ID: "
-              <> case channel.d.parent_id {
-              Some(id) -> id
-              None -> "None"
-            },
-            [],
-          )
+          let _ =
+            discord_gleam.send_message(
+              bot,
+              channel.d.id,
+              "Channel created: "
+                <> case channel.d.name {
+                Some(name) -> name
+                None -> "No name"
+              }
+                <> "\nID: "
+                <> channel.d.id
+                <> "\nParent ID: "
+                <> case channel.d.parent_id {
+                Some(id) -> id
+                None -> "None"
+              },
+              [],
+            )
 
           Nil
         }
@@ -132,12 +133,13 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
         None -> {
           logging.log(logging.Info, "DM channel created: " <> channel.d.id)
 
-          discord_gleam.send_message(
-            bot,
-            channel.d.id,
-            "DM channel created: " <> channel.d.id,
-            [],
-          )
+          let _ =
+            discord_gleam.send_message(
+              bot,
+              channel.d.id,
+              "DM channel created: " <> channel.d.id,
+              [],
+            )
 
           Nil
         }
@@ -237,7 +239,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
               let res =
                 discord_gleam.create_dm_channel(bot, message.d.author.id)
 
-              echo res
+              let _ = echo res
 
               case res {
                 Ok(channel) -> {
@@ -483,7 +485,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
 
       case interaction.d.data.name {
         "test" -> {
-          case interaction.d.data.options {
+          let _ = case interaction.d.data.options {
             Some(options) -> {
               let value = case list.first(options) {
                 Ok(option) ->
@@ -521,7 +523,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
         }
 
         "test2" -> {
-          case interaction.d.data.options {
+          let _ = case interaction.d.data.options {
             Some(options) -> {
               let value = case list.last(options) {
                 Ok(option) ->

@@ -1,9 +1,6 @@
-import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/channel
 import gleam/dynamic/decode
-import gleam/io
 import gleam/json
-import gleam/option.{type Option, None, Some}
 import gleam/result
 
 // Packet sent by Discord when a message is sent
@@ -22,7 +19,7 @@ pub fn string_to_data(encoded: String) -> Result(ChannelCreatePacket, String) {
 
   json.parse(from: encoded, using: decoder)
   |> result.map_error(fn(err) {
-    io.debug(err)
+    echo err
     "Failed to decode ChannelCreate packet"
   })
 }
