@@ -10,7 +10,6 @@ import discord_gleam/types/reply
 import discord_gleam/types/slash_command
 import discord_gleam/types/user
 import discord_gleam/ws/packets/interaction_create
-import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/hackney
 import gleam/http

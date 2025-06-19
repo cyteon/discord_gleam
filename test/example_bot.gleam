@@ -62,10 +62,11 @@ pub fn main(token: String, client_id: String, guild_id: String) {
     )
 
   let _ = discord_gleam.wipe_global_commands(bot)
-  discord_gleam.register_global_commands(bot, [test_cmd])
+  let assert Ok(_) = discord_gleam.register_global_commands(bot, [test_cmd])
 
   let _ = discord_gleam.wipe_guild_commands(bot, guild_id)
-  discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
+  let assert Ok(_) =
+    discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
 
   discord_gleam.run(bot, [handler])
 }
@@ -463,10 +464,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
 
           case msg {
             Ok(msg) -> {
-              logging.log(
-                logging.Info,
-                "Message content: " <> { msg.1 }.content,
-              )
+              logging.log(logging.Info, "Message content: " <> msg.content)
             }
             Error(_) -> {
               logging.log(logging.Info, "Deleted message not found")

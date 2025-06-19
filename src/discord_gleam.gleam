@@ -38,10 +38,12 @@ pub fn bot(
     token: token,
     client_id: client_id,
     intents: intents,
-    cache: bot.Cache(messages: case uset.new("MessagesCache", 1, bravo.Public) {
-      Ok(cache) -> option.Some(cache)
-      Error(_) -> option.None
-    }),
+    cache: bot.Cache(
+      messages: case uset.new(name: "MessagesCache", access: bravo.Public) {
+        Ok(cache) -> option.Some(cache)
+        Error(_) -> option.None
+      },
+    ),
   )
 }
 
@@ -74,7 +76,7 @@ pub fn run(
   bot: bot.Bot,
   event_handlers: List(event_handler.EventHandler),
 ) -> Nil {
-  let assert Ok(state_uset) = uset.new("State", 1, bravo.Public)
+  let assert Ok(state_uset) = uset.new(name: "State", access: bravo.Public)
 
   event_loop.main(
     bot,

@@ -17,7 +17,6 @@ import gleam/int
 import gleam/json
 import gleam/option
 import gleam/order
-import gleam/otp/actor
 import gleam/string
 import logging
 import repeatedly
@@ -121,7 +120,7 @@ pub fn main(
                   })
                 })
 
-                actor.continue(new_state)
+                stratus.continue(new_state)
               }
               True -> {
                 let generic_packet = generic.string_to_data(msg)
@@ -174,19 +173,19 @@ pub fn main(
 
                 event_handler.handle_event(bot, msg, event_handlers, state_uset)
 
-                actor.continue(new_state)
+                stratus.continue(new_state)
               }
             }
           }
 
           stratus.User(msg) -> {
             logging.log(logging.Debug, "Gateway user msg: " <> msg)
-            actor.continue(state)
+            stratus.continue(state)
           }
 
           stratus.Binary(_) -> {
             logging.log(logging.Debug, "Binary message")
-            actor.continue(state)
+            stratus.continue(state)
           }
         }
       },
@@ -235,10 +234,11 @@ pub fn main(
   let subj = actor.data
   let assert Ok(pid) = process.subject_owner(subj)
 
-  todo
-  // process.new_selector()
-  // |> process.selecting_process_down(process.monitor(pid), function.identity)
-  // |> process.select_forever
+  let monitor = process.monitor(pid)
+  let selector = process.new_selector()
+  let selector =
+    process.select_specific_monitor(selector, monitor, function.identity)
+  let _ = process.selector_receive_forever(selector)
 
   logging.log(logging.Error, "websocket go bye bye")
 
