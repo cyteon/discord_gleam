@@ -82,7 +82,7 @@ pub fn main(
                       bot.intents,
                       session_id,
                       case uset.lookup(state_uset, "sequence") {
-                        Ok(s) -> s.1
+                        Ok(s) -> s
                         Error(_) -> "0"
                       },
                     )
@@ -95,36 +95,31 @@ pub fn main(
 
                 let heartbeat = hello.string_to_data(msg)
 
-                process.start(
-                  fn() {
-                    repeatedly.call(heartbeat, Nil, fn(_state, _count_) {
-                      let s = case uset.lookup(state_uset, "sequence") {
-                        Ok(s) ->
-                          case int.parse(s.1) {
-                            Ok(i) -> i
-                            Error(_) -> 0
-                          }
-                        Error(_) -> 0
-                      }
+                process.spawn(fn() {
+                  repeatedly.call(heartbeat, Nil, fn(_state, _count_) {
+                    let s = case uset.lookup(state_uset, "sequence") {
+                      Ok(s) ->
+                        case int.parse(s) {
+                          Ok(i) -> i
+                          Error(_) -> 0
+                        }
+                      Error(_) -> 0
+                    }
 
-                      let packet =
-                        json.object([
-                          #("op", json.int(1)),
-                          #("d", json.string("null")),
-                          #("s", json.int(s)),
-                        ])
-                        |> json.to_string()
+                    let packet =
+                      json.object([
+                        #("op", json.int(1)),
+                        #("d", json.string("null")),
+                        #("s", json.int(s)),
+                      ])
+                      |> json.to_string()
 
-                      logging.log(
-                        logging.Debug,
-                        "Sending heartbeat: " <> packet,
-                      )
+                    logging.log(logging.Debug, "Sending heartbeat: " <> packet)
 
-                      stratus.send_text_message(conn, packet)
-                    })
-                  },
-                  False,
-                )
+                    let assert Ok(_) = stratus.send_text_message(conn, packet)
+                    Nil
+                  })
+                })
 
                 actor.continue(new_state)
               }
@@ -135,9 +130,12 @@ pub fn main(
                   0 -> Nil
 
                   _ -> {
-                    uset.insert(state_uset, [
-                      #("sequence", int.to_string(generic_packet.s)),
-                    ])
+                    let assert Ok(_) =
+                      uset.insert(
+                        state_uset,
+                        "sequence",
+                        int.to_string(generic_packet.s),
+                      )
 
                     Nil
                   }
@@ -156,12 +154,12 @@ pub fn main(
                       bot,
                       event_handlers,
                       case uset.lookup(state_uset, "resume_gateway_url") {
-                        Ok(url) -> url.1
+                        Ok(url) -> url
                         Error(_) -> "gateway.discord.gg"
                       },
                       reconnect,
                       case uset.lookup(state_uset, "session_id") {
-                        Ok(s) -> s.1
+                        Ok(s) -> s
                         Error(_) -> ""
                       },
                       state_uset,
@@ -209,12 +207,12 @@ pub fn main(
             bot,
             event_handlers,
             case uset.lookup(state_uset, "resume_gateway_url") {
-              Ok(url) -> url.1
+              Ok(url) -> url
               Error(_) -> "gateway.discord.gg"
             },
             reconnect,
             case uset.lookup(state_uset, "session_id") {
-              Ok(s) -> s.1
+              Ok(s) -> s
               Error(_) -> ""
             },
             state_uset,
@@ -233,14 +231,14 @@ pub fn main(
       Nil
     })
 
-  let assert Ok(subj) = stratus.initialize(builder)
+  let assert Ok(actor) = stratus.initialize(builder)
+  let subj = actor.data
+  let assert Ok(pid) = process.subject_owner(subj)
 
-  process.new_selector()
-  |> process.selecting_process_down(
-    process.monitor_process(process.subject_owner(subj)),
-    function.identity,
-  )
-  |> process.select_forever
+  todo
+  // process.new_selector()
+  // |> process.selecting_process_down(process.monitor(pid), function.identity)
+  // |> process.select_forever
 
   logging.log(logging.Error, "websocket go bye bye")
 
