@@ -365,7 +365,6 @@ pub fn edit_message(
         }
         _ -> {
           logging.log(logging.Error, "Failed to edit message")
-          echo resp.body
 
           Error(error.GenericHttpError(
             status_code: resp.status,
@@ -377,7 +376,6 @@ pub fn edit_message(
 
     Error(err) -> {
       logging.log(logging.Error, "Failed to edit message: ")
-      echo err
 
       Error(error.HttpError(err))
     }
