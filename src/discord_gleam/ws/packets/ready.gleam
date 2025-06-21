@@ -17,7 +17,7 @@ pub type ReadyPacket {
   ReadyPacket(t: String, s: Int, op: Int, d: ReadyData)
 }
 
-pub fn string_to_data(encoded: String) -> Result(ReadyPacket, String) {
+pub fn string_to_data(encoded: String) -> Result(ReadyPacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
@@ -41,5 +41,4 @@ pub fn string_to_data(encoded: String) -> Result(ReadyPacket, String) {
   }
 
   json.parse(from: encoded, using: decoder)
-  |> result.map_error(fn(_) { "Failed to decode Ready packet" })
 }

@@ -8,7 +8,7 @@ pub type ChannelDeletePacket {
   ChannelDeletePacket(t: String, s: Int, op: Int, d: channel.Channel)
 }
 
-pub fn string_to_data(encoded: String) -> Result(ChannelDeletePacket, String) {
+pub fn string_to_data(encoded: String) -> Result(ChannelDeletePacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
@@ -18,8 +18,4 @@ pub fn string_to_data(encoded: String) -> Result(ChannelDeletePacket, String) {
   }
 
   json.parse(from: encoded, using: decoder)
-  |> result.map_error(fn(err) {
-    echo err
-    "Failed to decode ChannelDelete packet"
-  })
 }

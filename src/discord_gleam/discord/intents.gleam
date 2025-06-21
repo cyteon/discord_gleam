@@ -6,6 +6,7 @@ pub type Intents {
     message_content: Bool,
     direct_messages: Bool,
     guilds: Bool,
+    guild_moderation: Bool,
   )
 }
 
@@ -37,6 +38,12 @@ pub fn intents_to_bitfield(intents: Intents) -> Int {
     False -> bitfield
   }
 
+  let bitfield = case intents.guild_moderation {
+    True -> bitfield + 4
+    // 1 << 2
+    False -> bitfield
+  }
+
   bitfield
 }
 
@@ -47,6 +54,7 @@ pub fn default() -> Intents {
     message_content: True,
     direct_messages: True,
     guilds: True,
+    guild_moderation: False,
   )
 }
 
@@ -57,6 +65,7 @@ pub fn all() -> Intents {
     message_content: True,
     direct_messages: True,
     guilds: True,
+    guild_moderation: True,
   )
 }
 
@@ -67,5 +76,6 @@ pub fn none() -> Intents {
     message_content: False,
     direct_messages: False,
     guilds: False,
+    guild_moderation: False,
   )
 }

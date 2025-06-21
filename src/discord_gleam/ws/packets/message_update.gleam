@@ -11,7 +11,7 @@ pub type MessageUpdatePacket {
   MessageUpdatePacket(t: String, s: Int, op: Int, d: message.MessagePacketData)
 }
 
-pub fn string_to_data(encoded: String) -> Result(MessageUpdatePacket, String) {
+pub fn string_to_data(encoded: String) -> Result(MessageUpdatePacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
@@ -39,5 +39,4 @@ pub fn string_to_data(encoded: String) -> Result(MessageUpdatePacket, String) {
   }
 
   json.parse(from: encoded, using: decoder)
-  |> result.map_error(fn(_) { "Failed to decode MessageUpdate packet" })
 }

@@ -4,14 +4,18 @@ import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
 import discord_gleam/ws/packets/channel_update
 import discord_gleam/ws/packets/generic
+import discord_gleam/ws/packets/guild_ban_add
+import discord_gleam/ws/packets/guild_ban_remove
 import discord_gleam/ws/packets/interaction_create
 import discord_gleam/ws/packets/message
 import discord_gleam/ws/packets/message_delete
 import discord_gleam/ws/packets/message_update
 import discord_gleam/ws/packets/ready
+import discord_gleam/internal/error
 import gleam/list
 import gleam/option
 import gleam/result
+import logging
 
 pub type EventHandler =
   fn(bot.Bot, Packet) -> Nil
@@ -34,6 +38,10 @@ pub type Packet {
   ChannelDeletePacket(channel_delete.ChannelDeletePacket)
   /// `CHANNEL_UPDATE` event
   ChannelUpdatePacket(channel_update.ChannelUpdatePacket)
+  /// `GUILD_BAN_ADD` event
+  GuildBanAddPacket(guild_ban_add.GuildBanAddPacket)
+  /// `GUILD_BAN_REMOVE` event
+  GuildBanRemovePacket(guild_ban_remove.GuildBanRemovePacket)
 
   /// When we receive a packet that we don't know how to handle
   UnknownPacket(generic.GenericPacket)
@@ -103,39 +111,138 @@ pub fn handle_event(
 
 fn decode_packet(msg: String) -> Packet {
   let generic_packet = generic.string_to_data(msg)
+
   case generic_packet.t {
-    "MESSAGE_CREATE" ->
-      message.string_to_data(msg)
-      |> result.map(MessagePacket)
-      |> result.unwrap(UnknownPacket(generic_packet))
-    "MESSAGE_UPDATE" ->
-      message_update.string_to_data(msg)
-      |> result.map(MessageUpdatePacket)
-      |> result.unwrap(UnknownPacket(generic_packet))
     "READY" ->
-      ready.string_to_data(msg)
-      |> result.map(ReadyPacket)
-      |> result.unwrap(UnknownPacket(generic_packet))
+      case ready.string_to_data(msg) {
+        Ok(data) -> ReadyPacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode READY packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "MESSAGE_CREATE" ->
+      case message.string_to_data(msg) {
+        Ok(data) -> MessagePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode MESSAGE_CREATE packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+    
+    "MESSAGE_UPDATE" ->
+      case message_update.string_to_data(msg) {
+        Ok(data) -> MessageUpdatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode MESSAGE_UPDATE packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+    
     "MESSAGE_DELETE" ->
-      message_delete.string_to_data(msg)
-      |> result.map(MessageDeletePacket)
-      |> result.unwrap(UnknownPacket(generic_packet))
+      case message_delete.string_to_data(msg) {
+        Ok(data) -> MessageDeletePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode MESSAGE_DELETE packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+    
     "INTERACTION_CREATE" ->
-      interaction_create.string_to_data(msg)
-      |> result.map(InteractionCreatePacket)
-      |> result.unwrap(UnknownPacket(generic_packet))
+      case interaction_create.string_to_data(msg) {
+        Ok(data) -> InteractionCreatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode INTERACTION_CREATE packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+    
     "CHANNEL_CREATE" ->
-      channel_create.string_to_data(msg)
-      |> result.map(ChannelCreatePacket)
-      |> result.unwrap(UnknownPacket(generic_packet))
+      case channel_create.string_to_data(msg) {
+        Ok(data) -> ChannelCreatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode CHANNEL_CREATE packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+    
     "CHANNEL_DELETE" ->
-      channel_delete.string_to_data(msg)
-      |> result.map(ChannelDeletePacket)
-      |> result.unwrap(UnknownPacket(generic_packet))
+      case channel_delete.string_to_data(msg) {
+        Ok(data) -> ChannelDeletePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode CHANNEL_DELETE packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+    
     "CHANNEL_UPDATE" ->
-      channel_update.string_to_data(msg)
-      |> result.map(ChannelUpdatePacket)
-      |> result.unwrap(UnknownPacket(generic_packet))
+      case channel_update.string_to_data(msg) {
+        Ok(data) -> ChannelUpdatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode CHANNEL_UPDATE packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+    
+    "GUILD_BAN_ADD" ->
+      case guild_ban_add.string_to_data(msg) {
+        Ok(data) -> GuildBanAddPacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_BAN_ADD packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+    
+    "GUILD_BAN_REMOVE" ->
+      case guild_ban_remove.string_to_data(msg) {
+        Ok(data) -> GuildBanRemovePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_BAN_REMOVE packet: " <> error.json_decode_error_to_string(err)
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+    
     _ -> UnknownPacket(generic_packet)
   }
 }

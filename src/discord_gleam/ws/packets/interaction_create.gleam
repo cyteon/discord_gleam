@@ -72,7 +72,7 @@ fn options_decoder() -> decode.Decoder(InteractionOption) {
 
 pub fn string_to_data(
   encoded: String,
-) -> Result(InteractionCreatePacket, String) {
+) -> Result(InteractionCreatePacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
@@ -114,5 +114,4 @@ pub fn string_to_data(
   }
 
   json.parse(from: encoded, using: decoder)
-  |> result.map_error(fn(_) { "Failed to decode InteractionCreate packet" })
 }

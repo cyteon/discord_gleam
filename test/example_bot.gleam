@@ -19,7 +19,7 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   logging.configure()
   logging.set_level(logging.Info)
 
-  let bot = discord_gleam.bot(token, client_id, intents.default())
+  let bot = discord_gleam.bot(token, client_id, intents.all())
 
   let test_cmd =
     slash_command.SlashCommand(
@@ -88,6 +88,28 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Message edited, new content: " <> message_update.d.content,
+      )
+    }
+
+    event_handler.GuildBanAddPacket(ban) -> {
+      logging.log(
+        logging.Info,
+        "User banned: "
+          <> ban.d.user.username
+          <> " (ID: "
+          <> ban.d.user.id
+          <> ")",
+      )
+    }
+
+    event_handler.GuildBanRemovePacket(ban) -> {
+      logging.log(
+        logging.Info,
+        "User unbanned: "
+          <> ban.d.user.username
+          <> " (ID: "
+          <> ban.d.user.id
+          <> ")",
       )
     }
 
