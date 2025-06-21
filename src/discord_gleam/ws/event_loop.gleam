@@ -9,6 +9,7 @@ import discord_gleam/types/bot
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/hello
 import discord_gleam/ws/packets/identify
+import discord_gleam/internal/error
 import gleam/erlang/process
 import gleam/function
 import gleam/http
@@ -65,7 +66,7 @@ pub fn main(
     stratus.websocket(
       request: req,
       init: fn() {
-        logging.log(logging.Debug, "Builder init")
+        logging.log(logging.Debug, "Initializing builder")
         #(initial_state, option.None)
       },
       loop: fn(msg, state, conn) {
@@ -89,45 +90,65 @@ pub fn main(
 
                   False -> identify.create_packet(bot.token, bot.intents)
                 }
+
                 let _ = stratus.send_text_message(conn, identify)
 
                 let new_state = State(has_received_hello: True, s: 0)
 
-                let heartbeat = hello.string_to_data(msg)
-
-                process.start(
-                  fn() {
-                    repeatedly.call(heartbeat, Nil, fn(_state, _count_) {
-                      let s = case uset.lookup(state_uset, "sequence") {
-                        Ok(s) ->
-                          case int.parse(s.1) {
-                            Ok(i) -> i
+                case hello.string_to_data(msg) {
+                  Ok(data) -> {
+                    process.start(
+                      fn() {
+                        repeatedly.call(data.d.heartbeat_interval, Nil, fn(_state, _count_) {
+                          let s = case uset.lookup(state_uset, "sequence") {
+                            Ok(s) ->
+                              case int.parse(s.1) {
+                                Ok(i) -> i
+                                Error(_) -> 0
+                              }
                             Error(_) -> 0
                           }
-                        Error(_) -> 0
-                      }
 
-                      let packet =
-                        json.object([
-                          #("op", json.int(1)),
-                          #("d", json.string("null")),
-                          #("s", json.int(s)),
-                        ])
-                        |> json.to_string()
+                          let packet =
+                            json.object([
+                              #("op", json.int(1)),
+                              #("d", case s {
+                                0 -> json.null()
+                                _ -> json.int(s)
+                              }),
+                            ])
+                            |> json.to_string()
 
-                      logging.log(
-                        logging.Debug,
-                        "Sending heartbeat: " <> packet,
-                      )
+                          logging.log(
+                            logging.Debug,
+                            "Sending heartbeat: " <> packet,
+                          )
 
-                      stratus.send_text_message(conn, packet)
-                    })
-                  },
-                  False,
-                )
+                          stratus.send_text_message(conn, packet)
+                        })
+                      },
+                      False,
+                    )
+
+                    Nil
+                  }
+
+                  Error(err) -> {
+                    logging.log(
+                      logging.Critical,
+                      "Failed to decode hello packet: "
+                        <> error.json_decode_error_to_string(err),
+                    )
+
+                    let _ = stratus.close(conn)
+
+                    logging.log(logging.Critical, "Closing websocket due to fatal error")
+                  }
+                }
 
                 actor.continue(new_state)
               }
+
               True -> {
                 let generic_packet = generic.string_to_data(msg)
 

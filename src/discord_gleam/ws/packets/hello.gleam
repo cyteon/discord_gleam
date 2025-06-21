@@ -10,7 +10,7 @@ pub type HelloPacket {
   HelloPacket(op: Int, d: HelloPacketData)
 }
 
-pub fn string_to_data(encoded: String) -> Int {
+pub fn string_to_data(encoded: String) -> Result(HelloPacket, json.DecodeError) {
   let decoder = {
     use op <- decode.field("op", decode.int)
     use d <- decode.field("d", {
@@ -20,10 +20,5 @@ pub fn string_to_data(encoded: String) -> Int {
     decode.success(HelloPacket(op:, d:))
   }
 
-  let data = json.parse(from: encoded, using: decoder)
-
-  case data {
-    Ok(decoded) -> decoded.d.heartbeat_interval
-    Error(_) -> 0
-  }
+  json.parse(from: encoded, using: decoder)
 }

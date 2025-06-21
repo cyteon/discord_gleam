@@ -14,6 +14,7 @@ import gleam/dynamic
 import gleam/hackney
 import gleam/http
 import gleam/http/response
+import gleam/json
 import logging
 
 /// Get the current user
@@ -102,7 +103,9 @@ pub fn create_dm_channel(
       http.Post,
       "/users/@me/channels",
       token,
-      "{ \"recipient_id\": \"" <> user_id <> "\" }",
+      json.to_string(
+        json.object([#("recipient_id", json.string(user_id))]),
+      ),
     )
 
   case hackney.send(request) {
@@ -288,7 +291,7 @@ pub fn ban_member(
       }
     }
     Error(err) -> {
-      logging.log(logging.Error, "Failed to ban member: ")
+      logging.log(logging.Error, "Failed to ban member")
 
       Error(error.HttpError(err))
     }
@@ -375,7 +378,7 @@ pub fn edit_message(
     }
 
     Error(err) -> {
-      logging.log(logging.Error, "Failed to edit message: ")
+      logging.log(logging.Error, "Failed to edit message")
 
       Error(error.HttpError(err))
     }

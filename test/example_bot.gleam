@@ -17,7 +17,7 @@ import logging
 
 pub fn main(token: String, client_id: String, guild_id: String) {
   logging.configure()
-  logging.set_level(logging.Info)
+  logging.set_level(logging.Debug)
 
   let bot = discord_gleam.bot(token, client_id, intents.all())
 
