@@ -1,7 +1,6 @@
 import discord_gleam/types/channel
 import gleam/dynamic/decode
 import gleam/json
-import gleam/result
 
 // Packet sent by Discord when a message is sent
 pub type ChannelCreatePacket {

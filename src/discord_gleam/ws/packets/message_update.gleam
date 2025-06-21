@@ -4,7 +4,6 @@ import discord_gleam/ws/packets/message
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{None, Some}
-import gleam/result
 
 /// Packet sent by Discord when a message is updated
 pub type MessageUpdatePacket {

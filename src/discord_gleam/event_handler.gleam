@@ -14,7 +14,6 @@ import discord_gleam/ws/packets/message_update
 import discord_gleam/ws/packets/ready
 import gleam/list
 import gleam/option
-import gleam/result
 import logging
 
 pub type EventHandler =

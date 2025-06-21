@@ -3,7 +3,6 @@ import discord_gleam/types/user
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None, Some}
-import gleam/result
 
 /// Represents a message packet data structure, also used on message update
 pub type MessagePacketData {

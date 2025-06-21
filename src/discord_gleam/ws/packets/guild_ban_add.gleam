@@ -3,7 +3,6 @@ import discord_gleam/types/user
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option
-import gleam/result
 
 pub type GuildBanAddPacketData {
   GuildBanAddPacketData(

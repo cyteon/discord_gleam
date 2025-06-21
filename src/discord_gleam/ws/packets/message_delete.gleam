@@ -1,7 +1,6 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
 import gleam/dynamic/decode
 import gleam/json
-import gleam/result
 
 pub type MessageDeletePacketData {
   MessageDeletePacketData(
