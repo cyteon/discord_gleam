@@ -49,7 +49,7 @@ pub fn main(
     |> request.set_path("/?v=10&encoding=json")
     |> request.set_header(
       "User-Agent",
-      "DiscordBot (https://github.com/cyteon/discord_gleam, 1.1.0)",
+      "DiscordBot (https://github.com/cyteon/discord_gleam, 1.2.0)",
     )
     |> request.set_header("Host", "gateway.discord.gg")
     |> request.set_header("Connection", "Upgrade")
