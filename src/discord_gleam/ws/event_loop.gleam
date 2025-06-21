@@ -5,11 +5,11 @@ import birl
 import birl/duration
 import bravo/uset
 import discord_gleam/event_handler
+import discord_gleam/internal/error
 import discord_gleam/types/bot
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/hello
 import discord_gleam/ws/packets/identify
-import discord_gleam/internal/error
 import gleam/erlang/process
 import gleam/function
 import gleam/http
@@ -99,33 +99,37 @@ pub fn main(
                   Ok(data) -> {
                     process.start(
                       fn() {
-                        repeatedly.call(data.d.heartbeat_interval, Nil, fn(_state, _count_) {
-                          let s = case uset.lookup(state_uset, "sequence") {
-                            Ok(s) ->
-                              case int.parse(s.1) {
-                                Ok(i) -> i
-                                Error(_) -> 0
-                              }
-                            Error(_) -> 0
-                          }
+                        repeatedly.call(
+                          data.d.heartbeat_interval,
+                          Nil,
+                          fn(_state, _count_) {
+                            let s = case uset.lookup(state_uset, "sequence") {
+                              Ok(s) ->
+                                case int.parse(s.1) {
+                                  Ok(i) -> i
+                                  Error(_) -> 0
+                                }
+                              Error(_) -> 0
+                            }
 
-                          let packet =
-                            json.object([
-                              #("op", json.int(1)),
-                              #("d", case s {
-                                0 -> json.null()
-                                _ -> json.int(s)
-                              }),
-                            ])
-                            |> json.to_string()
+                            let packet =
+                              json.object([
+                                #("op", json.int(1)),
+                                #("d", case s {
+                                  0 -> json.null()
+                                  _ -> json.int(s)
+                                }),
+                              ])
+                              |> json.to_string()
 
-                          logging.log(
-                            logging.Debug,
-                            "Sending heartbeat: " <> packet,
-                          )
+                            logging.log(
+                              logging.Debug,
+                              "Sending heartbeat: " <> packet,
+                            )
 
-                          stratus.send_text_message(conn, packet)
-                        })
+                            stratus.send_text_message(conn, packet)
+                          },
+                        )
                       },
                       False,
                     )
@@ -142,7 +146,10 @@ pub fn main(
 
                     let _ = stratus.close(conn)
 
-                    logging.log(logging.Critical, "Closing websocket due to fatal error")
+                    logging.log(
+                      logging.Critical,
+                      "Closing websocket due to fatal error",
+                    )
                   }
                 }
 

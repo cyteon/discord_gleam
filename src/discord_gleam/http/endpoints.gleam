@@ -103,9 +103,7 @@ pub fn create_dm_channel(
       http.Post,
       "/users/@me/channels",
       token,
-      json.to_string(
-        json.object([#("recipient_id", json.string(user_id))]),
-      ),
+      json.to_string(json.object([#("recipient_id", json.string(user_id))])),
     )
 
   case hackney.send(request) {
