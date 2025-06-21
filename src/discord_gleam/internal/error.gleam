@@ -1,10 +1,10 @@
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/hackney
 import gleam/json
 import gleam/list
-import gleam/string
-import gleam/dynamic/decode
 import gleam/otp/actor
+import gleam/string
 
 pub type DiscordError {
   UnknownAccount
@@ -37,33 +37,31 @@ pub fn json_decode_error_to_string(error: json.DecodeError) -> String {
     }
 
     json.UnexpectedFormat(errs) -> {
-      "Unable to decode: " <> string.join(
-        list.map(errs, dynamic_decode_error_to_string),
-        with: ", ",
-      )
+      "Unable to decode: "
+      <> string.join(list.map(errs, dynamic_decode_error_to_string), with: ", ")
     }
 
     json.UnableToDecode(errs) -> {
-      "Unable to decode: " <> string.join(
-        list.map(errs, decode_error_to_string),
-        with: ", ",
-      )
+      "Unable to decode: "
+      <> string.join(list.map(errs, decode_error_to_string), with: ", ")
     }
   }
 }
 
 pub fn dynamic_decode_error_to_string(error: dynamic.DecodeError) -> String {
-  "Expected " <> error.expected <> ", but found " <>
-    error.found <> " at " <> string.join(
-      error.path,
-      with: ".",
-    )
+  "Expected "
+  <> error.expected
+  <> ", but found "
+  <> error.found
+  <> " at "
+  <> string.join(error.path, with: ".")
 }
 
 pub fn decode_error_to_string(error: decode.DecodeError) -> String {
-  "Expected " <> error.expected <> ", but found " <>
-    error.found <> " at " <> string.join(
-      error.path,
-      with: ".",
-    )
+  "Expected "
+  <> error.expected
+  <> ", but found "
+  <> error.found
+  <> " at "
+  <> string.join(error.path, with: ".")
 }

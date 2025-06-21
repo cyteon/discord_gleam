@@ -21,7 +21,9 @@ pub type MessagePacket {
   MessagePacket(t: String, s: Int, op: Int, d: MessagePacketData)
 }
 
-pub fn string_to_data(encoded: String) -> Result(MessagePacket, json.DecodeError) {
+pub fn string_to_data(
+  encoded: String,
+) -> Result(MessagePacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)

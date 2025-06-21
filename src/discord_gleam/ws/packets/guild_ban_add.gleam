@@ -2,8 +2,8 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/user
 import gleam/dynamic/decode
 import gleam/json
-import gleam/result
 import gleam/option
+import gleam/result
 
 pub type GuildBanAddPacketData {
   GuildBanAddPacketData(
@@ -18,7 +18,9 @@ pub type GuildBanAddPacket {
   GuildBanAddPacket(t: String, s: Int, op: Int, d: GuildBanAddPacketData)
 }
 
-pub fn string_to_data(encoded: String) -> Result(GuildBanAddPacket, json.DecodeError) {
+pub fn string_to_data(
+  encoded: String,
+) -> Result(GuildBanAddPacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)

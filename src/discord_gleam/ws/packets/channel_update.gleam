@@ -8,7 +8,9 @@ pub type ChannelUpdatePacket {
   ChannelUpdatePacket(t: String, s: Int, op: Int, d: channel.Channel)
 }
 
-pub fn string_to_data(encoded: String) -> Result(ChannelUpdatePacket, json.DecodeError) {
+pub fn string_to_data(
+  encoded: String,
+) -> Result(ChannelUpdatePacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)

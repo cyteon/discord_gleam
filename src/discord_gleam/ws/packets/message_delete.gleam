@@ -16,7 +16,9 @@ pub type MessageDeletePacket {
   MessageDeletePacket(t: String, s: Int, op: Int, d: MessageDeletePacketData)
 }
 
-pub fn string_to_data(encoded: String) -> Result(MessageDeletePacket, json.DecodeError) {
+pub fn string_to_data(
+  encoded: String,
+) -> Result(MessageDeletePacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
