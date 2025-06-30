@@ -140,11 +140,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
     }
 
     event_handler.GuildRoleDeletePacket(role) -> {
-      logging.log(
-        logging.Info,
-        "Role deleted: "
-          <> role.d.role_id
-      )
+      logging.log(logging.Info, "Role deleted: " <> role.d.role_id)
 
       Nil
     }
