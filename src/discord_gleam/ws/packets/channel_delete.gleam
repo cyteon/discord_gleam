@@ -2,7 +2,7 @@ import discord_gleam/types/channel
 import gleam/dynamic/decode
 import gleam/json
 
-// Packet sent by Discord when a message is sent
+/// Packet sent by Discord when a channel is deleted
 pub type ChannelDeletePacket {
   ChannelDeletePacket(t: String, s: Int, op: Int, d: channel.Channel)
 }

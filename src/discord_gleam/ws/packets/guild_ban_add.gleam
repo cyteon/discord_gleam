@@ -12,7 +12,7 @@ pub type GuildBanAddPacketData {
   )
 }
 
-/// Packet sent by Discord when a message is deleted
+/// Packet sent by Discord when a member is banned
 pub type GuildBanAddPacket {
   GuildBanAddPacket(t: String, s: Int, op: Int, d: GuildBanAddPacketData)
 }

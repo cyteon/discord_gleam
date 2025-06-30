@@ -7,7 +7,7 @@ pub type GuildBanRemovePacketData {
   GuildBanRemovePacketData(user: user.User, guild_id: Snowflake)
 }
 
-/// Packet sent by Discord when a message is deleted
+/// Packet sent by Discord when a member is unbanned
 pub type GuildBanRemovePacket {
   GuildBanRemovePacket(t: String, s: Int, op: Int, d: GuildBanRemovePacketData)
 }
