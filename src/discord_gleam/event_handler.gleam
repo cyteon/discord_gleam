@@ -7,6 +7,9 @@ import discord_gleam/ws/packets/channel_update
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/guild_ban_add
 import discord_gleam/ws/packets/guild_ban_remove
+import discord_gleam/ws/packets/guild_role_create
+import discord_gleam/ws/packets/guild_role_delete
+import discord_gleam/ws/packets/guild_role_update
 import discord_gleam/ws/packets/interaction_create
 import discord_gleam/ws/packets/message
 import discord_gleam/ws/packets/message_delete
@@ -21,26 +24,37 @@ pub type EventHandler =
 
 /// The supported packets
 pub type Packet {
+  /// `READY` event
+  ReadyPacket(ready.ReadyPacket)
+
+  /// `INTERACTION_CREATE` event
+  InteractionCreatePacket(interaction_create.InteractionCreatePacket)
+
+  /// `MESSAGE_DELETE` event
+  MessageDeletePacket(message_delete.MessageDeletePacket)
   /// `MESSAGE_CREATE` event
   MessagePacket(message.MessagePacket)
   /// `MESSAGE_UPDATE` event
   MessageUpdatePacket(message_update.MessageUpdatePacket)
-  /// `READY` event
-  ReadyPacket(ready.ReadyPacket)
-  /// `MESSAGE_DELETE` event
-  MessageDeletePacket(message_delete.MessageDeletePacket)
-  /// `INTERACTION_CREATE` event
-  InteractionCreatePacket(interaction_create.InteractionCreatePacket)
+
   /// `CHANNEL_CREATE` event
   ChannelCreatePacket(channel_create.ChannelCreatePacket)
   /// `CHANNEL_DELETE` event
   ChannelDeletePacket(channel_delete.ChannelDeletePacket)
   /// `CHANNEL_UPDATE` event
   ChannelUpdatePacket(channel_update.ChannelUpdatePacket)
+
   /// `GUILD_BAN_ADD` event
   GuildBanAddPacket(guild_ban_add.GuildBanAddPacket)
   /// `GUILD_BAN_REMOVE` event
   GuildBanRemovePacket(guild_ban_remove.GuildBanRemovePacket)
+
+  /// `GUILD_ROLE_CREATE` event
+  GuildRoleCreatePacket(guild_role_create.GuildRoleCreatePacket)
+  /// `GUILD_ROLE_UPDATE` event
+  GuildRoleUpdatePacket(guild_role_update.GuildRoleUpdatePacket)
+  /// `GUILD_ROLE_DELETE` event
+  GuildRoleDeletePacket(guild_role_delete.GuildRoleDeletePacket)
 
   /// When we receive a packet that we don't know how to handle
   UnknownPacket(generic.GenericPacket)
@@ -245,6 +259,48 @@ fn decode_packet(msg: String) -> Packet {
           logging.log(
             logging.Error,
             "Failed to decode GUILD_BAN_REMOVE packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "GUILD_ROLE_CREATE" ->
+      case guild_role_create.string_to_data(msg) {
+        Ok(data) -> GuildRoleCreatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_ROLE_CREATE packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "GUILD_ROLE_UPDATE" ->
+      case guild_role_update.string_to_data(msg) {
+        Ok(data) -> GuildRoleUpdatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_ROLE_UPDATE packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "GUILD_ROLE_DELETE" ->
+      case guild_role_delete.string_to_data(msg) {
+        Ok(data) -> GuildRoleDeletePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_ROLE_DELETE packet: "
               <> error.json_decode_error_to_string(err),
           )
 

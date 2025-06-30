@@ -17,7 +17,7 @@ import logging
 
 pub fn main(token: String, client_id: String, guild_id: String) {
   logging.configure()
-  logging.set_level(logging.Debug)
+  logging.set_level(logging.Info)
 
   let bot = discord_gleam.bot(token, client_id, intents.all())
 
@@ -111,6 +111,42 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
           <> ban.d.user.id
           <> ")",
       )
+    }
+
+    event_handler.GuildRoleCreatePacket(role) -> {
+      logging.log(
+        logging.Info,
+        "Role created: "
+          <> role.d.role.name
+          <> " (ID: "
+          <> role.d.role.id
+          <> ")",
+      )
+
+      Nil
+    }
+
+    event_handler.GuildRoleUpdatePacket(role) -> {
+      logging.log(
+        logging.Info,
+        "Role updated: "
+          <> role.d.role.name
+          <> " (ID: "
+          <> role.d.role.id
+          <> ")",
+      )
+
+      Nil
+    }
+
+    event_handler.GuildRoleDeletePacket(role) -> {
+      logging.log(
+        logging.Info,
+        "Role deleted: "
+          <> role.d.role_id
+      )
+
+      Nil
     }
 
     event_handler.ChannelCreatePacket(channel) -> {
