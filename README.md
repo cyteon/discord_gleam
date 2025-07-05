@@ -74,7 +74,7 @@ gleam test  # Run the tests
 - [x] READY
 - [x] INTERACTION_CREATE
 
-Intent: guild_messages (optional: message_content)
+Intent: guild_messages/direct_messages (optional: message_content)
 - [x] MESSAGE_CREATE
 - [x] MESSAGE_DELETE
 - [x] MESSAGE_UPDATE
@@ -141,28 +141,13 @@ Intent: guild_voice_states
 Intent: guild_presences
 - [ ] PRESENCE_UPDATE
 
-Intent: guild_message_reactions
+Intent: guild_message_reactions/direct_message_reactions
 - [ ] MESSAGE_REACTION_ADD
 - [ ] MESSAGE_REACTION_REMOVE
 - [ ] MESSAGE_REACTION_REMOVE_ALL
 - [ ] MESSAGE_REACTION_REMOVE_EMOJI
 
-Intent: guild_message_typing
-- [ ] TYPING_START
-
-Intent: direct_messages
-- [ ] MESSAGE_CREATE
-- [ ] MESSAGE_UPDATE
-- [ ] MESSAGE_DELETE
-- [ ] CHANNEL_PINS_UPDATE
-
-Intent: direct_message_reactions
-- [ ] MESSAGE_REACTION_ADD
-- [ ] MESSAGE_REACTION_REMOVE
-- [ ] MESSAGE_REACTION_REMOVE_ALL
-- [ ] MESSAGE_REACTION_REMOVE_EMOJI
-
-Intent: direct_message_typing
+Intent: guild_message_typing/direct_message_typing
 - [ ] TYPING_START
 
 Intent: guild_scheduled_events
