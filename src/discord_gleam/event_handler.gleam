@@ -13,6 +13,7 @@ import discord_gleam/ws/packets/guild_role_update
 import discord_gleam/ws/packets/interaction_create
 import discord_gleam/ws/packets/message
 import discord_gleam/ws/packets/message_delete
+import discord_gleam/ws/packets/message_delete_bulk
 import discord_gleam/ws/packets/message_update
 import discord_gleam/ws/packets/ready
 import gleam/list
@@ -36,6 +37,8 @@ pub type Packet {
   MessagePacket(message.MessagePacket)
   /// `MESSAGE_UPDATE` event
   MessageUpdatePacket(message_update.MessageUpdatePacket)
+  /// `MESSAGE_DELETE_BULK` event
+  MessageDeleteBulkPacket(message_delete_bulk.MessageDeleteBulkPacket)
 
   /// `CHANNEL_CREATE` event
   ChannelCreatePacket(channel_create.ChannelCreatePacket)
@@ -175,6 +178,20 @@ fn decode_packet(msg: String) -> Packet {
           logging.log(
             logging.Error,
             "Failed to decode MESSAGE_DELETE packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "MESSAGE_DELETE_BULK" ->
+      case message_delete_bulk.string_to_data(msg) {
+        Ok(data) -> MessageDeleteBulkPacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode MESSAGE_DELETE_BULK packet: "
               <> error.json_decode_error_to_string(err),
           )
 

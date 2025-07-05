@@ -78,7 +78,7 @@ Intent: guild_messages (optional: message_content)
 - [x] MESSAGE_CREATE
 - [x] MESSAGE_DELETE
 - [x] MESSAGE_UPDATE
-- [ ] MESSAGE_DELETE_BULK
+- [x] MESSAGE_DELETE_BULK
 
 Intent: guilds
 - [ ] GUILD_CREATE
