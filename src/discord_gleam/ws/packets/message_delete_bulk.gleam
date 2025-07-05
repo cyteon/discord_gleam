@@ -10,7 +10,7 @@ pub type MessageDeleteBulkPacketData {
   )
 }
 
-/// Packet sent by Discord when a message is deleted
+/// Packet sent by Discord when messages are bulk deleted
 pub type MessageDeleteBulkPacket {
   MessageDeleteBulkPacket(
     t: String,
