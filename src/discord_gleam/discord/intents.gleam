@@ -5,7 +5,7 @@ pub type Intents {
     guilds: Bool,
     guild_members: Bool,
     guild_moderation: Bool,
-    guild_expresions: Bool,
+    guild_expressions: Bool,
     guild_integrations: Bool,
     guild_webhooks: Bool,
     guild_invites: Bool,
@@ -48,7 +48,7 @@ pub fn intents_to_bitfield(intents: Intents) -> Int {
     False -> bitfield
   }
 
-  let bitfield = case intents.guild_expresions {
+  let bitfield = case intents.guild_expressions {
     // 1 << 3
     True -> bitfield + 8
     False -> bitfield
@@ -166,7 +166,7 @@ pub fn default() -> Intents {
     guilds: True,
     guild_members: False,
     guild_moderation: False,
-    guild_expresions: False,
+    guild_expressions: False,
     guild_integrations: False,
     guild_webhooks: False,
     guild_invites: False,
@@ -194,7 +194,7 @@ pub fn default_with_message_intents() -> Intents {
     guilds: True,
     guild_members: False,
     guild_moderation: False,
-    guild_expresions: False,
+    guild_expressions: False,
     guild_integrations: False,
     guild_webhooks: False,
     guild_invites: False,
@@ -221,7 +221,7 @@ pub fn all() -> Intents {
     guilds: True,
     guild_members: True,
     guild_moderation: True,
-    guild_expresions: True,
+    guild_expressions: True,
     guild_integrations: True,
     guild_webhooks: True,
     guild_invites: True,
@@ -242,14 +242,14 @@ pub fn all() -> Intents {
   )
 }
 
-/// Disable all the intents, use this if you want to receive no events. \
-/// Other than `interaction_create or ready, useful if you have a bot with slash commands only, that dosent need to listen to events.
+/// Disable all the intents, use this if you want to receive no events other than `interaction_create or ready. \ 
+/// Useful if you have a bot with slash commands only, that dosen't need to listen to events.
 pub fn none() -> Intents {
   Intents(
     guilds: False,
     guild_members: False,
     guild_moderation: False,
-    guild_expresions: False,
+    guild_expressions: False,
     guild_integrations: False,
     guild_webhooks: False,
     guild_invites: False,
