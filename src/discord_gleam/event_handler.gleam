@@ -15,6 +15,7 @@ import discord_gleam/ws/packets/message
 import discord_gleam/ws/packets/message_delete
 import discord_gleam/ws/packets/message_delete_bulk
 import discord_gleam/ws/packets/message_update
+import discord_gleam/ws/packets/guild_member_remove
 import discord_gleam/ws/packets/ready
 import gleam/list
 import gleam/option
@@ -58,6 +59,9 @@ pub type Packet {
   GuildRoleUpdatePacket(guild_role_update.GuildRoleUpdatePacket)
   /// `GUILD_ROLE_DELETE` event
   GuildRoleDeletePacket(guild_role_delete.GuildRoleDeletePacket)
+
+  /// GUILD_MEMBER_REMOVE event
+  GuildMemberRemovePacket(guild_member_remove.GuildMemberRemove)
 
   /// When we receive a packet that we don't know how to handle
   UnknownPacket(generic.GenericPacket)
@@ -321,6 +325,20 @@ fn decode_packet(msg: String) -> Packet {
               <> error.json_decode_error_to_string(err),
           )
 
+          UnknownPacket(generic_packet)
+        }
+      }
+    
+    "GUILD_MEMBER_REMOVE" ->
+      case guild_member_remove.string_to_data(msg) {
+        Ok(data) -> GuildMemberRemovePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_MEMBER_REMOVE packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+          
           UnknownPacket(generic_packet)
         }
       }
