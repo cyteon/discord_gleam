@@ -534,6 +534,14 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
       Nil
     }
 
+    event_handler.MessageDeleteBulkPacket(deleted_bulk) -> {
+      logging.log(
+        logging.Info,
+        "Bulk deleted messages: "
+          <> list.fold(deleted_bulk.d.ids, "", fn(acc, id) { acc <> id <> ", " }),
+      )
+    }
+
     event_handler.InteractionCreatePacket(interaction) -> {
       logging.log(logging.Info, "Interaction: " <> interaction.d.data.name)
 
