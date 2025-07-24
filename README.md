@@ -68,7 +68,7 @@ gleam test  # Run the tests
 | Intents               | ✅*     |
 
 ✅ - Done | 🔨 - In Progress | 📆 - Planned | ❌ - Not Planned
-* all intents are implemented, but not all are used yet
+\* all intents are implemented, but not all are used yet
 
 ## Supported events:
 
