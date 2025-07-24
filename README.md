@@ -65,9 +65,10 @@ gleam test  # Run the tests
 | Embeds                | ✅     |
 | Basic Slash commands  | ✅     |
 | Message Cache         | ✅     |
-| Intents               | 🔨     |
+| Intents               | ✅*     |
 
 ✅ - Done | 🔨 - In Progress | 📆 - Planned | ❌ - Not Planned
+* all intents are implemented, but not all are used yet
 
 ## Supported events:
 
