@@ -56,15 +56,15 @@ gleam test  # Run the tests
 
 ## Features:
 
-| Feature               | Status |
-| --------------------- | ------ |
-| Basic events          | ✅     |
-| Sending messages      | ✅     |
-| Ban/kick              | ✅     |
-| Deleting messages     | ✅     |
-| Embeds                | ✅     |
-| Basic Slash commands  | ✅     |
-| Message Cache         | ✅     |
+| Feature               | Status  |
+| --------------------- | ------  |
+| Basic events          | ✅      |
+| Sending messages      | ✅      |
+| Ban/kick              | ✅      |
+| Deleting messages     | ✅      |
+| Embeds                | ✅      |
+| Basic Slash commands  | ✅      |
+| Message Cache         | ✅      |
 | Intents               | ✅*     |
 
 ✅ - Done | 🔨 - In Progress | 📆 - Planned | ❌ - Not Planned \
