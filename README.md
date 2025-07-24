@@ -67,7 +67,7 @@ gleam test  # Run the tests
 | Message Cache         | ✅     |
 | Intents               | ✅*     |
 
-✅ - Done | 🔨 - In Progress | 📆 - Planned | ❌ - Not Planned
+✅ - Done | 🔨 - In Progress | 📆 - Planned | ❌ - Not Planned \
 \* all intents are implemented, but not all are used yet
 
 ## Supported events:
