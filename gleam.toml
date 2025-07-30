@@ -24,10 +24,10 @@ hackney = ">= 1.24.1 and < 2.0.0"
 gleam_otp = ">= 1.0.0 and < 2.0.0"
 birl = ">= 1.8.0 and < 2.0.0"
 logging = ">= 1.3.0 and < 2.0.0"
-stratus = { git = "https://github.com/dvic/stratus.git", ref = "bump-deps" }
+stratus = ">= 1.0.0"
 repeatedly = ">= 2.1.2 and < 3.0.0"
 bravo = { git = "https://github.com/dvic/bravo.git", ref = "update-dependencies" }
-glenvy = { git = "https://github.com/dvic/glenvy.git", ref = "bump-deps" }
+glenvy = ">= 2.0.1"
 
 [dev-dependencies]
 gleeunit = ">= 1.5.1 and < 2.0.0"
