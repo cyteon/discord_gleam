@@ -1,3 +1,5 @@
+import gleam/int
+
 /// See https://discord.com/developers/docs/events/gateway#gateway-intents \
 /// NOTE: While we have implemented all intents, we have not implemented all gateway events.
 pub type Intents {
@@ -26,137 +28,37 @@ pub type Intents {
   )
 }
 
+fn add_intent_bit(bitfield: Int, intent_enabled: Bool, bit_position: Int) -> Int {
+  case intent_enabled {
+    False -> bitfield
+    True -> int.bitwise_or(bitfield, int.bitwise_shift_left(1, bit_position))
+  }
+}
+
 /// Calculate a bitfield from a set of intents.
 pub fn intents_to_bitfield(intents: Intents) -> Int {
-  let bitfield = 0
-
-  let bitfield = case intents.guilds {
-    // 1 << 0
-    True -> bitfield + 1
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_members {
-    // 1 << 1
-    True -> bitfield + 2
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_moderation {
-    // 1 << 2
-    True -> bitfield + 4
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_expressions {
-    // 1 << 3
-    True -> bitfield + 8
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_integrations {
-    // 1 << 4
-    True -> bitfield + 16
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_webhooks {
-    // 1 << 5
-    True -> bitfield + 32
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_invites {
-    // 1 << 6
-    True -> bitfield + 64
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_voice_states {
-    // 1 << 7
-    True -> bitfield + 128
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_presences {
-    // 1 << 8
-    True -> bitfield + 256
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_messages {
-    // 1 << 9
-    True -> bitfield + 512
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_message_reactions {
-    // 1 << 10
-    True -> bitfield + 1024
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_message_typing {
-    // 1 << 11
-    True -> bitfield + 2048
-    False -> bitfield
-  }
-
-  let bitfield = case intents.direct_messages {
-    // 1 << 12
-    True -> bitfield + 4096
-    False -> bitfield
-  }
-
-  let bitfield = case intents.direct_message_reactions {
-    // 1 << 13
-    True -> bitfield + 8192
-    False -> bitfield
-  }
-
-  let bitfield = case intents.direct_message_typing {
-    // 1 << 14
-    True -> bitfield + 16_384
-    False -> bitfield
-  }
-
-  let bitfield = case intents.message_content {
-    // 1 << 15
-    True -> bitfield + 32_768
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_scheduled_events {
-    // 1 << 16
-    True -> bitfield + 65_536
-    False -> bitfield
-  }
-
-  let bitfield = case intents.auto_moderation_configuration {
-    // 1 << 20
-    True -> bitfield + 1_048_576
-    False -> bitfield
-  }
-
-  let bitfield = case intents.auto_moderation_execution {
-    // 1 << 21
-    True -> bitfield + 2_097_152
-    False -> bitfield
-  }
-
-  let bitfield = case intents.guild_message_polls {
-    // 1 << 24
-    True -> bitfield + 16_777_216
-    False -> bitfield
-  }
-
-  let bitfield = case intents.direct_message_polls {
-    // 1 << 25
-    True -> bitfield + 33_554_432
-    False -> bitfield
-  }
-
-  bitfield
+  0
+  |> add_intent_bit(intents.guilds, 0)
+  |> add_intent_bit(intents.guild_members, 1)
+  |> add_intent_bit(intents.guild_moderation, 2)
+  |> add_intent_bit(intents.guild_expressions, 3)
+  |> add_intent_bit(intents.guild_integrations, 4)
+  |> add_intent_bit(intents.guild_webhooks, 5)
+  |> add_intent_bit(intents.guild_invites, 6)
+  |> add_intent_bit(intents.guild_voice_states, 7)
+  |> add_intent_bit(intents.guild_presences, 8)
+  |> add_intent_bit(intents.guild_messages, 9)
+  |> add_intent_bit(intents.guild_message_reactions, 10)
+  |> add_intent_bit(intents.guild_message_typing, 11)
+  |> add_intent_bit(intents.direct_messages, 12)
+  |> add_intent_bit(intents.direct_message_reactions, 13)
+  |> add_intent_bit(intents.direct_message_typing, 14)
+  |> add_intent_bit(intents.message_content, 15)
+  |> add_intent_bit(intents.guild_scheduled_events, 16)
+  |> add_intent_bit(intents.auto_moderation_configuration, 20)
+  |> add_intent_bit(intents.auto_moderation_execution, 21)
+  |> add_intent_bit(intents.guild_message_polls, 24)
+  |> add_intent_bit(intents.direct_message_polls, 25)
 }
 
 /// Enable a set of default intents, which are usually used by most bots. \
