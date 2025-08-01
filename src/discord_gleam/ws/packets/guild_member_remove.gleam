@@ -4,10 +4,7 @@ import gleam/dynamic/decode
 import gleam/json
 
 pub type GuildMemberRemoveData {
-  GuildMemberRemoveData(
-    user: user.User,
-    guild_id: Snowflake,
-  )
+  GuildMemberRemoveData(user: user.User, guild_id: Snowflake)
 }
 
 /// Packet sent by Discord when a member is removed from a guild
@@ -25,10 +22,7 @@ pub fn string_to_data(
     use d <- decode.field("d", {
       use user <- decode.field("user", user.from_json_decoder())
       use guild_id <- decode.field("guild_id", snowflake.decoder())
-      decode.success(GuildMemberRemoveData(
-        user:,
-        guild_id:,
-      ))
+      decode.success(GuildMemberRemoveData(user:, guild_id:))
     })
     decode.success(GuildMemberRemove(t:, s:, op:, d:))
   }

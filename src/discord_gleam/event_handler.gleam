@@ -7,6 +7,7 @@ import discord_gleam/ws/packets/channel_update
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/guild_ban_add
 import discord_gleam/ws/packets/guild_ban_remove
+import discord_gleam/ws/packets/guild_member_remove
 import discord_gleam/ws/packets/guild_role_create
 import discord_gleam/ws/packets/guild_role_delete
 import discord_gleam/ws/packets/guild_role_update
@@ -15,7 +16,6 @@ import discord_gleam/ws/packets/message
 import discord_gleam/ws/packets/message_delete
 import discord_gleam/ws/packets/message_delete_bulk
 import discord_gleam/ws/packets/message_update
-import discord_gleam/ws/packets/guild_member_remove
 import discord_gleam/ws/packets/ready
 import gleam/list
 import gleam/option
@@ -328,7 +328,7 @@ fn decode_packet(msg: String) -> Packet {
           UnknownPacket(generic_packet)
         }
       }
-    
+
     "GUILD_MEMBER_REMOVE" ->
       case guild_member_remove.string_to_data(msg) {
         Ok(data) -> GuildMemberRemovePacket(data)
@@ -338,7 +338,7 @@ fn decode_packet(msg: String) -> Packet {
             "Failed to decode GUILD_MEMBER_REMOVE packet: "
               <> error.json_decode_error_to_string(err),
           )
-          
+
           UnknownPacket(generic_packet)
         }
       }
