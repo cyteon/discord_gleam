@@ -3,7 +3,7 @@
 
 packages = [
   { name = "birl", version = "1.8.0", build_tools = ["gleam"], requirements = ["gleam_regexp", "gleam_stdlib", "ranger"], otp_app = "birl", source = "hex", outer_checksum = "2AC7BA26F998E3DFADDB657148BD5DDFE966958AD4D6D6957DD0D22E5B56C400" },
-  { name = "bravo", version = "4.0.1", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_stdlib"], otp_app = "bravo", source = "hex", outer_checksum = "D450DCD5A896ADDE442A93A7D6B5B2785374579A35416819E29E024887C2A872" },
+  { name = "booklet", version = "1.0.2", build_tools = ["gleam"], requirements = [], otp_app = "booklet", source = "hex", outer_checksum = "279247A5FD6388B34058A6109E99D7E7C7A4CA3EC8A13912536A05E98BC2D275" },
   { name = "certifi", version = "2.14.0", build_tools = ["rebar3"], requirements = [], otp_app = "certifi", source = "hex", outer_checksum = "EA59D87EF89DA429B8E905264FDEC3419F84F2215BB3D81E07A18AAC919026C3" },
   { name = "filepath", version = "1.1.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "filepath", source = "hex", outer_checksum = "B06A9AF0BF10E51401D64B98E4B627F1D2E48C154967DA7AF4D0914780A6D40A" },
   { name = "gleam_crypto", version = "1.4.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_crypto", source = "hex", outer_checksum = "8AE56026B3E05EBB1F076778478A762E9EB62B31AEEB4285755452F397029D22" },
@@ -35,7 +35,7 @@ packages = [
 
 [requirements]
 birl = { version = ">= 1.7.1 and < 2.0.0" }
-bravo = { version = ">= 4.0.1 and < 5.0.0" }
+booklet = { version = ">= 1.0.2 and < 2.0.0" }
 gleam_erlang = { version = ">= 0.25.0 and < 1.0.0" }
 gleam_hackney = { version = ">= 1.2.0 and < 2.0.0" }
 gleam_http = { version = ">= 3.6.0 and < 4.0.0" }

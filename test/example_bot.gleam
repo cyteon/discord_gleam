@@ -1,4 +1,4 @@
-import bravo/uset
+import booklet
 import discord_gleam
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
@@ -7,6 +7,7 @@ import discord_gleam/types/message
 import discord_gleam/types/slash_command
 import discord_gleam/ws/packets/interaction_create
 import gleam/bool
+import gleam/dict
 import gleam/erlang/process
 import gleam/float
 import gleam/int
@@ -524,26 +525,17 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
     event_handler.MessageDeletePacket(deleted) -> {
       logging.log(logging.Info, "Deleted message: " <> deleted.d.id)
 
-      case bot.cache.messages {
-        option.Some(cache) -> {
-          let msg = uset.lookup(cache, deleted.d.id)
+      let msg = dict.get(booklet.get(bot.cache.messages), deleted.d.id)
 
-          case msg {
-            Ok(msg) -> {
-              logging.log(
-                logging.Info,
-                "Message content: " <> { msg.1 }.content,
-              )
-            }
-            Error(_) -> {
-              logging.log(logging.Info, "Deleted message not found")
-            }
-          }
-
-          Nil
+      case msg {
+        Ok(msg) -> {
+          logging.log(logging.Info, "Message content: " <> msg.content)
         }
-        option.None -> Nil
+        Error(_) -> {
+          logging.log(logging.Info, "Deleted message not found")
+        }
       }
+
       Nil
     }
 

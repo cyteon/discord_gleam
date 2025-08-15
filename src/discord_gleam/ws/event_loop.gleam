@@ -3,13 +3,14 @@
 
 import birl
 import birl/duration
-import bravo/uset
+import booklet
 import discord_gleam/event_handler
 import discord_gleam/internal/error
 import discord_gleam/types/bot
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/hello
 import discord_gleam/ws/packets/identify
+import gleam/dict
 import gleam/erlang/process
 import gleam/function
 import gleam/http
@@ -35,11 +36,11 @@ pub fn main(
   host: String,
   reconnect: Bool,
   session_id: String,
-  state_uset: uset.USet(#(String, String)),
+  state_ets: booklet.Booklet(dict.Dict(String, String)),
 ) -> Nil {
   logging.log(logging.Debug, "Requesting gateway")
 
-  uset.insert(state_uset, [#("sequence", "0")])
+  booklet.update(state_ets, fn(cache) { dict.insert(cache, "sequence", "0") })
 
   let host = string.replace(host, "wss://", "")
 
@@ -82,8 +83,8 @@ pub fn main(
                       bot.token,
                       bot.intents,
                       session_id,
-                      case uset.lookup(state_uset, "sequence") {
-                        Ok(s) -> s.1
+                      case dict.get(booklet.get(state_ets), "sequence") {
+                        Ok(s) -> s
                         Error(_) -> "0"
                       },
                     )
@@ -103,9 +104,11 @@ pub fn main(
                           data.d.heartbeat_interval,
                           Nil,
                           fn(_state, _count_) {
-                            let s = case uset.lookup(state_uset, "sequence") {
+                            let s = case
+                              dict.get(booklet.get(state_ets), "sequence")
+                            {
                               Ok(s) ->
-                                case int.parse(s.1) {
+                                case int.parse(s) {
                                   Ok(i) -> i
                                   Error(_) -> 0
                                 }
@@ -163,9 +166,16 @@ pub fn main(
                   0 -> Nil
 
                   _ -> {
-                    uset.insert(state_uset, [
-                      #("sequence", int.to_string(generic_packet.s)),
-                    ])
+                    booklet.update(state_ets, fn(cache) {
+                      dict.insert(
+                        cache,
+                        "sequence",
+                        case dict.get(booklet.get(state_ets), "sequence") {
+                          Ok(s) -> s
+                          Error(_) -> "0"
+                        },
+                      )
+                    })
 
                     Nil
                   }
@@ -183,16 +193,18 @@ pub fn main(
                     main(
                       bot,
                       event_handlers,
-                      case uset.lookup(state_uset, "resume_gateway_url") {
-                        Ok(url) -> url.1
+                      case
+                        dict.get(booklet.get(state_ets), "resume_gateway_url")
+                      {
+                        Ok(url) -> url
                         Error(_) -> "gateway.discord.gg"
                       },
                       reconnect,
-                      case uset.lookup(state_uset, "session_id") {
-                        Ok(s) -> s.1
+                      case dict.get(booklet.get(state_ets), "session_id") {
+                        Ok(s) -> s
                         Error(_) -> ""
                       },
-                      state_uset,
+                      state_ets,
                     )
                   }
 
@@ -202,7 +214,7 @@ pub fn main(
                 let new_state =
                   State(has_received_hello: True, s: generic_packet.s)
 
-                event_handler.handle_event(bot, msg, event_handlers, state_uset)
+                event_handler.handle_event(bot, msg, event_handlers, state_ets)
 
                 actor.continue(new_state)
               }
@@ -236,16 +248,16 @@ pub fn main(
           main(
             bot,
             event_handlers,
-            case uset.lookup(state_uset, "resume_gateway_url") {
-              Ok(url) -> url.1
+            case dict.get(booklet.get(state_ets), "resume_gateway_url") {
+              Ok(url) -> url
               Error(_) -> "gateway.discord.gg"
             },
             reconnect,
-            case uset.lookup(state_uset, "session_id") {
-              Ok(s) -> s.1
+            case dict.get(booklet.get(state_ets), "session_id") {
+              Ok(s) -> s
               Error(_) -> ""
             },
-            state_uset,
+            state_ets,
           )
         }
 

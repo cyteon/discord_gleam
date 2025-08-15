@@ -1,4 +1,4 @@
-import bravo/uset
+import booklet
 import discord_gleam/internal/error
 import discord_gleam/types/bot
 import discord_gleam/ws/packets/channel_create
@@ -17,8 +17,8 @@ import discord_gleam/ws/packets/message_delete
 import discord_gleam/ws/packets/message_delete_bulk
 import discord_gleam/ws/packets/message_update
 import discord_gleam/ws/packets/ready
+import gleam/dict
 import gleam/list
-import gleam/option
 import logging
 
 pub type EventHandler =
@@ -71,43 +71,33 @@ pub type Packet {
 fn internal_handler(
   bot: bot.Bot,
   packet: Packet,
-  state_uset: uset.USet(#(String, String)),
+  state_ets: booklet.Booklet(dict.Dict(String, String)),
 ) -> Nil {
   case packet {
     MessagePacket(msg) -> {
-      case bot.cache.messages {
-        option.Some(cache) -> {
-          uset.insert(cache, [#(msg.d.id, msg.d)])
+      booklet.update(bot.cache.messages, fn(cache) {
+        dict.insert(cache, msg.d.id, msg.d)
+      })
 
-          Nil
-        }
-
-        option.None -> {
-          Nil
-        }
-      }
       Nil
     }
 
     MessageUpdatePacket(msg) -> {
-      case bot.cache.messages {
-        option.Some(cache) -> {
-          uset.insert(cache, [#(msg.d.id, msg.d)])
+      booklet.update(bot.cache.messages, fn(cache) {
+        dict.insert(cache, msg.d.id, msg.d)
 
-          Nil
-        }
+        cache
+      })
 
-        option.None -> {
-          Nil
-        }
-      }
+      Nil
     }
 
     ReadyPacket(ready) -> {
-      uset.insert(state_uset, [#("session_id", ready.d.session_id)])
-      uset.insert(state_uset, [
-        #("resume_gateway_url", ready.d.resume_gateway_url),
-      ])
+      booklet.update(state_ets, fn(cache) {
+        let cache = dict.insert(cache, "session_id", ready.d.session_id)
+
+        dict.insert(cache, "resume_gateway_url", ready.d.resume_gateway_url)
+      })
 
       Nil
     }
@@ -121,10 +111,10 @@ pub fn handle_event(
   bot: bot.Bot,
   msg: String,
   handlers: List(EventHandler),
-  state_uset: uset.USet(#(String, String)),
+  state_ets: booklet.Booklet(dict.Dict(String, String)),
 ) -> Nil {
   let packet = decode_packet(msg)
-  internal_handler(bot, packet, state_uset)
+  internal_handler(bot, packet, state_ets)
 
   list.each(handlers, fn(handler) { handler(bot, packet) })
 }

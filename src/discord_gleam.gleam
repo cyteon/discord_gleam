@@ -2,8 +2,7 @@
 //// This module contains high-level functions to interact with the Discord API. \
 //// But you can always implement stuff yourself using the low-level functions from the rest of the library. \
 
-import bravo
-import bravo/uset
+import booklet
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
 import discord_gleam/http/endpoints
@@ -16,8 +15,8 @@ import discord_gleam/types/reply
 import discord_gleam/types/slash_command
 import discord_gleam/ws/event_loop
 import discord_gleam/ws/packets/interaction_create
+import gleam/dict
 import gleam/list
-import gleam/option
 
 /// Create a new bot instance.
 /// 
@@ -38,10 +37,7 @@ pub fn bot(
     token: token,
     client_id: client_id,
     intents: intents,
-    cache: bot.Cache(messages: case uset.new("MessagesCache", 1, bravo.Public) {
-      Ok(cache) -> option.Some(cache)
-      Error(_) -> option.None
-    }),
+    cache: bot.Cache(messages: booklet.new(dict.new())),
   )
 }
 
@@ -74,16 +70,9 @@ pub fn run(
   bot: bot.Bot,
   event_handlers: List(event_handler.EventHandler),
 ) -> Nil {
-  let assert Ok(state_uset) = uset.new("State", 1, bravo.Public)
+  let state = booklet.new(dict.new())
 
-  event_loop.main(
-    bot,
-    event_handlers,
-    "gateway.discord.gg",
-    False,
-    "",
-    state_uset,
-  )
+  event_loop.main(bot, event_handlers, "gateway.discord.gg", False, "", state)
 }
 
 /// Send a message to a channel.
