@@ -1,4 +1,3 @@
-import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/hackney
 import gleam/json
@@ -10,8 +9,8 @@ pub type DiscordError {
   UnknownAccount
   EmptyOptionWhenRequired
   JsonDecodeError(json.DecodeError)
-  InvalidDynamicList(List(dynamic.DecodeError))
-  InvalidFormat(dynamic.DecodeError)
+  InvalidDynamicList(List(decode.DecodeError))
+  InvalidFormat(decode.DecodeError)
   WebsocketError(Nil)
   /// When a request to the API fails
   HttpError(hackney.Error)
@@ -36,11 +35,6 @@ pub fn json_decode_error_to_string(error: json.DecodeError) -> String {
       "Unexpected sequence: " <> sequence
     }
 
-    json.UnexpectedFormat(errs) -> {
-      "Unable to decode: "
-      <> string.join(list.map(errs, dynamic_decode_error_to_string), with: ", ")
-    }
-
     json.UnableToDecode(errs) -> {
       "Unable to decode: "
       <> string.join(list.map(errs, decode_error_to_string), with: ", ")
@@ -48,7 +42,7 @@ pub fn json_decode_error_to_string(error: json.DecodeError) -> String {
   }
 }
 
-pub fn dynamic_decode_error_to_string(error: dynamic.DecodeError) -> String {
+pub fn dynamic_decode_error_to_string(error: decode.DecodeError) -> String {
   "Expected "
   <> error.expected
   <> ", but found "

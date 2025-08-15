@@ -19,7 +19,6 @@ import gleam/int
 import gleam/json
 import gleam/option
 import gleam/order
-import gleam/otp/actor
 import gleam/string
 import logging
 import repeatedly
@@ -70,7 +69,7 @@ pub fn main(
         logging.log(logging.Debug, "Initializing builder")
         #(initial_state, option.None)
       },
-      loop: fn(msg, state, conn) {
+      loop: fn(state, msg, conn) {
         case msg {
           stratus.Text(msg) -> {
             logging.log(logging.Debug, "Gateway text msg: " <> msg)
@@ -98,44 +97,43 @@ pub fn main(
 
                 case hello.string_to_data(msg) {
                   Ok(data) -> {
-                    process.start(
-                      fn() {
-                        repeatedly.call(
-                          data.d.heartbeat_interval,
-                          Nil,
-                          fn(_state, _count_) {
-                            let s = case
-                              dict.get(booklet.get(state_ets), "sequence")
-                            {
-                              Ok(s) ->
-                                case int.parse(s) {
-                                  Ok(i) -> i
-                                  Error(_) -> 0
-                                }
-                              Error(_) -> 0
-                            }
+                    process.spawn(fn() {
+                      repeatedly.call(
+                        data.d.heartbeat_interval,
+                        Nil,
+                        fn(_state, _count_) {
+                          let s = case
+                            dict.get(booklet.get(state_ets), "sequence")
+                          {
+                            Ok(s) ->
+                              case int.parse(s) {
+                                Ok(i) -> i
+                                Error(_) -> 0
+                              }
+                            Error(_) -> 0
+                          }
 
-                            let packet =
-                              json.object([
-                                #("op", json.int(1)),
-                                #("d", case s {
-                                  0 -> json.null()
-                                  _ -> json.int(s)
-                                }),
-                              ])
-                              |> json.to_string()
+                          let packet =
+                            json.object([
+                              #("op", json.int(1)),
+                              #("d", case s {
+                                0 -> json.null()
+                                _ -> json.int(s)
+                              }),
+                            ])
+                            |> json.to_string()
 
-                            logging.log(
-                              logging.Debug,
-                              "Sending heartbeat: " <> packet,
-                            )
+                          logging.log(
+                            logging.Debug,
+                            "Sending heartbeat: " <> packet,
+                          )
 
-                            stratus.send_text_message(conn, packet)
-                          },
-                        )
-                      },
-                      False,
-                    )
+                          let _ = stratus.send_text_message(conn, packet)
+
+                          Nil
+                        },
+                      )
+                    })
 
                     Nil
                   }
@@ -156,7 +154,7 @@ pub fn main(
                   }
                 }
 
-                actor.continue(new_state)
+                stratus.continue(new_state)
               }
 
               True -> {
@@ -216,19 +214,19 @@ pub fn main(
 
                 event_handler.handle_event(bot, msg, event_handlers, state_ets)
 
-                actor.continue(new_state)
+                stratus.continue(new_state)
               }
             }
           }
 
           stratus.User(msg) -> {
             logging.log(logging.Debug, "Gateway user msg: " <> msg)
-            actor.continue(state)
+            stratus.continue(state)
           }
 
           stratus.Binary(_) -> {
             logging.log(logging.Debug, "Binary message")
-            actor.continue(state)
+            stratus.continue(state)
           }
         }
       },
@@ -273,14 +271,14 @@ pub fn main(
       Nil
     })
 
-  let assert Ok(subj) = stratus.initialize(builder)
+  let assert Ok(actor) = stratus.initialize(builder)
+  let assert Ok(pid) = process.subject_owner(actor.data)
 
-  process.new_selector()
-  |> process.selecting_process_down(
-    process.monitor_process(process.subject_owner(subj)),
-    function.identity,
-  )
-  |> process.select_forever
+  let monitor = process.monitor(pid)
+  let selector = process.new_selector()
+  let selector =
+    process.select_specific_monitor(selector, monitor, function.identity)
+  let _ = process.selector_receive_forever(selector)
 
   logging.log(logging.Error, "websocket go bye bye")
 

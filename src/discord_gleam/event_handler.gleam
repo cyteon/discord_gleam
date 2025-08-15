@@ -85,8 +85,6 @@ fn internal_handler(
     MessageUpdatePacket(msg) -> {
       booklet.update(bot.cache.messages, fn(cache) {
         dict.insert(cache, msg.d.id, msg.d)
-
-        cache
       })
 
       Nil
