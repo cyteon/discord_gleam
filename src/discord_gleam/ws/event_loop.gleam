@@ -262,7 +262,7 @@ pub fn main(
         _ -> {
           logging.log(
             logging.Error,
-            "Disconnected after too short time, not reconnecting",
+            "Disconnected too quickly, not reconnecting",
           )
           Nil
         }
@@ -280,7 +280,34 @@ pub fn main(
     process.select_specific_monitor(selector, monitor, function.identity)
   let _ = process.selector_receive_forever(selector)
 
-  logging.log(logging.Error, "websocket go bye bye")
+  case dict.get(booklet.get(state_ets), "sequence") {
+    Ok(s) -> {
+      case s == "0" {
+        True -> {
+          logging.log(logging.Warning, "A common cause of this can be an intent issue or invalid token")
+
+          case bot.intents.message_content {
+            True -> logging.log(logging.Warning, "You are using the message content intent, did you remember to enable the message content intent under the bot settings on the Discord developer portal?")
+            False -> Nil
+          }
+        }
+        False -> Nil
+      }
+      Nil
+    }
+
+    Error(_) -> {
+      logging.log(logging.Warning, "A common cause of this can be an intent issue or invalid token")
+
+      case bot.intents.message_content {
+        True -> logging.log(logging.Warning, "You are using the message content intent, did you remember to enable the message content intent under the bot settings on the Discord developer portal?")
+        False -> Nil
+      }
+      Nil
+    }
+  }
+
+  logging.log(logging.Error, "Event loop has exited, bye bye")
 
   process.sleep(1000)
 }
