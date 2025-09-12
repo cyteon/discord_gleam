@@ -284,10 +284,17 @@ pub fn main(
     Ok(s) -> {
       case s == "0" {
         True -> {
-          logging.log(logging.Warning, "A common cause of this can be an intent issue or invalid token")
+          logging.log(
+            logging.Warning,
+            "A common cause of this can be an intent issue or invalid token",
+          )
 
           case bot.intents.message_content {
-            True -> logging.log(logging.Warning, "You are using the message content intent, did you remember to enable the message content intent under the bot settings on the Discord developer portal?")
+            True ->
+              logging.log(
+                logging.Warning,
+                "You are using the message content intent, did you remember to enable the message content intent under the bot settings on the Discord developer portal?",
+              )
             False -> Nil
           }
         }
@@ -297,10 +304,17 @@ pub fn main(
     }
 
     Error(_) -> {
-      logging.log(logging.Warning, "A common cause of this can be an intent issue or invalid token")
+      logging.log(
+        logging.Warning,
+        "A common cause of this can be an intent issue or invalid token",
+      )
 
       case bot.intents.message_content {
-        True -> logging.log(logging.Warning, "You are using the message content intent, did you remember to enable the message content intent under the bot settings on the Discord developer portal?")
+        True ->
+          logging.log(
+            logging.Warning,
+            "You are using the message content intent, did you remember to enable the message content intent under the bot settings on the Discord developer portal?",
+          )
         False -> Nil
       }
       Nil
