@@ -58,171 +58,168 @@ pub fn main(
   let initial_state = State(has_received_hello: False, s: 0)
 
   let builder =
-    stratus.new(
-      request: req,
-      state: initial_state,
-    )
+    stratus.new(request: req, state: initial_state)
     |> stratus.on_message(fn(state, msg, conn) {
-        case msg {
-          stratus.Text(msg) -> {
-            logging.log(logging.Debug, "Gateway text msg: " <> msg)
+      case msg {
+        stratus.Text(msg) -> {
+          logging.log(logging.Debug, "Gateway text msg: " <> msg)
 
-            case state.has_received_hello {
-              False -> {
-                let identify = case reconnect {
-                  True ->
-                    identify.create_resume_packet(
-                      bot.token,
-                      bot.intents,
-                      session_id,
+          case state.has_received_hello {
+            False -> {
+              let identify = case reconnect {
+                True ->
+                  identify.create_resume_packet(
+                    bot.token,
+                    bot.intents,
+                    session_id,
+                    case dict.get(booklet.get(state_ets), "sequence") {
+                      Ok(s) -> s
+                      Error(_) -> "0"
+                    },
+                  )
+
+                False -> identify.create_packet(bot.token, bot.intents)
+              }
+
+              let _ = stratus.send_text_message(conn, identify)
+
+              let new_state = State(has_received_hello: True, s: 0)
+
+              case hello.string_to_data(msg) {
+                Ok(data) -> {
+                  process.spawn(fn() {
+                    repeatedly.call(
+                      data.d.heartbeat_interval,
+                      Nil,
+                      fn(_state, _count_) {
+                        let s = case
+                          dict.get(booklet.get(state_ets), "sequence")
+                        {
+                          Ok(s) ->
+                            case int.parse(s) {
+                              Ok(i) -> i
+                              Error(_) -> 0
+                            }
+                          Error(_) -> 0
+                        }
+
+                        let packet =
+                          json.object([
+                            #("op", json.int(1)),
+                            #("d", case s {
+                              0 -> json.null()
+                              _ -> json.int(s)
+                            }),
+                          ])
+                          |> json.to_string()
+
+                        logging.log(
+                          logging.Debug,
+                          "Sending heartbeat: " <> packet,
+                        )
+
+                        let _ = stratus.send_text_message(conn, packet)
+
+                        Nil
+                      },
+                    )
+                  })
+
+                  Nil
+                }
+
+                Error(err) -> {
+                  logging.log(
+                    logging.Critical,
+                    "Failed to decode hello packet: "
+                      <> error.json_decode_error_to_string(err),
+                  )
+
+                  let _ = stratus.close(conn, stratus.Normal(<<>>))
+
+                  logging.log(
+                    logging.Critical,
+                    "Closing websocket due to fatal error",
+                  )
+                }
+              }
+
+              stratus.continue(new_state)
+            }
+
+            True -> {
+              let generic_packet = generic.string_to_data(msg)
+
+              case generic_packet.s {
+                0 -> Nil
+
+                _ -> {
+                  booklet.update(state_ets, fn(cache) {
+                    dict.insert(
+                      cache,
+                      "sequence",
                       case dict.get(booklet.get(state_ets), "sequence") {
                         Ok(s) -> s
                         Error(_) -> "0"
                       },
                     )
+                  })
 
-                  False -> identify.create_packet(bot.token, bot.intents)
+                  Nil
                 }
-
-                let _ = stratus.send_text_message(conn, identify)
-
-                let new_state = State(has_received_hello: True, s: 0)
-
-                case hello.string_to_data(msg) {
-                  Ok(data) -> {
-                    process.spawn(fn() {
-                      repeatedly.call(
-                        data.d.heartbeat_interval,
-                        Nil,
-                        fn(_state, _count_) {
-                          let s = case
-                            dict.get(booklet.get(state_ets), "sequence")
-                          {
-                            Ok(s) ->
-                              case int.parse(s) {
-                                Ok(i) -> i
-                                Error(_) -> 0
-                              }
-                            Error(_) -> 0
-                          }
-
-                          let packet =
-                            json.object([
-                              #("op", json.int(1)),
-                              #("d", case s {
-                                0 -> json.null()
-                                _ -> json.int(s)
-                              }),
-                            ])
-                            |> json.to_string()
-
-                          logging.log(
-                            logging.Debug,
-                            "Sending heartbeat: " <> packet,
-                          )
-
-                          let _ = stratus.send_text_message(conn, packet)
-
-                          Nil
-                        },
-                      )
-                    })
-
-                    Nil
-                  }
-
-                  Error(err) -> {
-                    logging.log(
-                      logging.Critical,
-                      "Failed to decode hello packet: "
-                        <> error.json_decode_error_to_string(err),
-                    )
-
-                    let _ = stratus.close(conn, stratus.Normal(<<>>))
-
-                    logging.log(
-                      logging.Critical,
-                      "Closing websocket due to fatal error",
-                    )
-                  }
-                }
-
-                stratus.continue(new_state)
               }
 
-              True -> {
-                let generic_packet = generic.string_to_data(msg)
-
-                case generic_packet.s {
-                  0 -> Nil
-
-                  _ -> {
-                    booklet.update(state_ets, fn(cache) {
-                      dict.insert(
-                        cache,
-                        "sequence",
-                        case dict.get(booklet.get(state_ets), "sequence") {
-                          Ok(s) -> s
-                          Error(_) -> "0"
-                        },
-                      )
-                    })
-
-                    Nil
-                  }
-                }
-
-                case generic_packet.op {
-                  7 -> {
-                    logging.log(logging.Debug, "Received a reconnect request")
-                    case stratus.close_custom(conn, 4009, <<>>) {
-                      Ok(_) -> logging.log(logging.Debug, "Closed websocket")
-                      Error(_) ->
-                        logging.log(logging.Error, "Failed to close websocket")
-                    }
-
-                    main(
-                      bot,
-                      event_handlers,
-                      case
-                        dict.get(booklet.get(state_ets), "resume_gateway_url")
-                      {
-                        Ok(url) -> url
-                        Error(_) -> "gateway.discord.gg"
-                      },
-                      reconnect,
-                      case dict.get(booklet.get(state_ets), "session_id") {
-                        Ok(s) -> s
-                        Error(_) -> ""
-                      },
-                      state_ets,
-                    )
+              case generic_packet.op {
+                7 -> {
+                  logging.log(logging.Debug, "Received a reconnect request")
+                  case stratus.close_custom(conn, 4009, <<>>) {
+                    Ok(_) -> logging.log(logging.Debug, "Closed websocket")
+                    Error(_) ->
+                      logging.log(logging.Error, "Failed to close websocket")
                   }
 
-                  _ -> Nil
+                  main(
+                    bot,
+                    event_handlers,
+                    case
+                      dict.get(booklet.get(state_ets), "resume_gateway_url")
+                    {
+                      Ok(url) -> url
+                      Error(_) -> "gateway.discord.gg"
+                    },
+                    reconnect,
+                    case dict.get(booklet.get(state_ets), "session_id") {
+                      Ok(s) -> s
+                      Error(_) -> ""
+                    },
+                    state_ets,
+                  )
                 }
 
-                let new_state =
-                  State(has_received_hello: True, s: generic_packet.s)
-
-                event_handler.handle_event(bot, msg, event_handlers, state_ets)
-
-                stratus.continue(new_state)
+                _ -> Nil
               }
+
+              let new_state =
+                State(has_received_hello: True, s: generic_packet.s)
+
+              event_handler.handle_event(bot, msg, event_handlers, state_ets)
+
+              stratus.continue(new_state)
             }
           }
-
-          stratus.User(msg) -> {
-            logging.log(logging.Debug, "Gateway user msg: " <> msg)
-            stratus.continue(state)
-          }
-
-          stratus.Binary(_) -> {
-            logging.log(logging.Debug, "Binary message")
-            stratus.continue(state)
-          }
         }
-      })
+
+        stratus.User(msg) -> {
+          logging.log(logging.Debug, "Gateway user msg: " <> msg)
+          stratus.continue(state)
+        }
+
+        stratus.Binary(_) -> {
+          logging.log(logging.Debug, "Binary message")
+          stratus.continue(state)
+        }
+      }
+    })
     |> stratus.on_close(fn(_state, close_reason) {
       logging.log(logging.Debug, "The webhook was closed")
 
@@ -230,17 +227,11 @@ pub fn main(
         stratus.Custom(custom_close_reason) -> {
           case stratus.get_custom_code(custom_close_reason) {
             4000 -> {
-              logging.log(
-                logging.Error,
-                "Unknown error, not reconnecting",
-              )
+              logging.log(logging.Error, "Unknown error, not reconnecting")
             }
 
             4001 -> {
-              logging.log(
-                logging.Error,
-                "Unknown opcode, not reconnecting",
-              )
+              logging.log(logging.Error, "Unknown opcode, not reconnecting")
             }
 
             4002 -> {
@@ -251,10 +242,7 @@ pub fn main(
             }
 
             4003 -> {
-              logging.log(
-                logging.Error,
-                "Not authenticated, not reconnecting",
-              )
+              logging.log(logging.Error, "Not authenticated, not reconnecting")
             }
 
             4004 -> {
@@ -272,10 +260,7 @@ pub fn main(
             }
 
             4007 -> {
-              logging.log(
-                logging.Error,
-                "Invalid sequence, reconnecting",
-              )
+              logging.log(logging.Error, "Invalid sequence, reconnecting")
 
               main(
                 bot,
@@ -298,17 +283,12 @@ pub fn main(
             }
 
             4009 -> {
-              logging.log(
-                logging.Error,
-                "Session timed out, reconnecting",
-              )
+              logging.log(logging.Error, "Session timed out, reconnecting")
 
               main(
                 bot,
                 event_handlers,
-                case
-                  dict.get(booklet.get(state_ets), "resume_gateway_url")
-                {
+                case dict.get(booklet.get(state_ets), "resume_gateway_url") {
                   Ok(url) -> url
                   Error(_) -> "gateway.discord.gg"
                 },
@@ -322,17 +302,11 @@ pub fn main(
             }
 
             4010 -> {
-              logging.log(
-                logging.Error,
-                "Invalid shard, not reconnecting",
-              )
+              logging.log(logging.Error, "Invalid shard, not reconnecting")
             }
 
             4011 -> {
-              logging.log(
-                logging.Error,
-                "Sharding required, not reconnecting",
-              )
+              logging.log(logging.Error, "Sharding required, not reconnecting")
             }
 
             4012 -> {
@@ -357,10 +331,7 @@ pub fn main(
             }
 
             _ -> {
-              logging.log(
-                logging.Error,
-                "Unknown close code, not reconnecting",
-              )
+              logging.log(logging.Error, "Unknown close code, not reconnecting")
             }
           }
 
