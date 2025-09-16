@@ -1,8 +1,6 @@
 //// Event loop for handling the discord gateway websocket
 //// Dispatches events to registered event handlers
 
-import birl
-import birl/duration
 import booklet
 import discord_gleam/event_handler
 import discord_gleam/internal/error
@@ -17,8 +15,6 @@ import gleam/http
 import gleam/http/request
 import gleam/int
 import gleam/json
-import gleam/option
-import gleam/order
 import gleam/string
 import logging
 import repeatedly
@@ -60,16 +56,13 @@ pub fn main(
   logging.log(logging.Debug, "Creating builder")
 
   let initial_state = State(has_received_hello: False, s: 0)
-  let last_connect = birl.now()
 
   let builder =
-    stratus.websocket(
+    stratus.new(
       request: req,
-      init: fn() {
-        logging.log(logging.Debug, "Initializing builder")
-        #(initial_state, option.None)
-      },
-      loop: fn(state, msg, conn) {
+      state: initial_state,
+    )
+    |> stratus.on_message(fn(state, msg, conn) {
         case msg {
           stratus.Text(msg) -> {
             logging.log(logging.Debug, "Gateway text msg: " <> msg)
@@ -145,7 +138,7 @@ pub fn main(
                         <> error.json_decode_error_to_string(err),
                     )
 
-                    let _ = stratus.close(conn)
+                    let _ = stratus.close(conn, stratus.Normal(<<>>))
 
                     logging.log(
                       logging.Critical,
@@ -182,7 +175,7 @@ pub fn main(
                 case generic_packet.op {
                   7 -> {
                     logging.log(logging.Debug, "Received a reconnect request")
-                    case stratus.close(conn) {
+                    case stratus.close_custom(conn, 4009, <<>>) {
                       Ok(_) -> logging.log(logging.Debug, "Closed websocket")
                       Error(_) ->
                         logging.log(logging.Error, "Failed to close websocket")
@@ -229,49 +222,157 @@ pub fn main(
             stratus.continue(state)
           }
         }
-      },
-    )
-    |> stratus.on_close(fn(_) {
+      })
+    |> stratus.on_close(fn(_state, close_reason) {
       logging.log(logging.Debug, "The webhook was closed")
 
-      let diff = birl.difference(last_connect, birl.now())
+      case close_reason {
+        stratus.Custom(custom_close_reason) -> {
+          case stratus.get_custom_code(custom_close_reason) {
+            4000 -> {
+              logging.log(
+                logging.Error,
+                "Unknown error, not reconnecting",
+              )
+            }
 
-      case duration.compare(diff, duration.minutes(1)) {
-        order.Gt -> {
-          logging.log(
-            logging.Debug,
-            "Over 1 minute since connection, reconnecting",
-          )
+            4001 -> {
+              logging.log(
+                logging.Error,
+                "Unknown opcode, not reconnecting",
+              )
+            }
 
-          main(
-            bot,
-            event_handlers,
-            case dict.get(booklet.get(state_ets), "resume_gateway_url") {
-              Ok(url) -> url
-              Error(_) -> "gateway.discord.gg"
-            },
-            reconnect,
-            case dict.get(booklet.get(state_ets), "session_id") {
-              Ok(s) -> s
-              Error(_) -> ""
-            },
-            state_ets,
-          )
-        }
+            4002 -> {
+              logging.log(
+                logging.Error,
+                "Decode error, open a github issue, not reconnecting",
+              )
+            }
 
-        _ -> {
-          logging.log(
-            logging.Error,
-            "Disconnected too quickly, not reconnecting",
-          )
+            4003 -> {
+              logging.log(
+                logging.Error,
+                "Not authenticated, not reconnecting",
+              )
+            }
+
+            4004 -> {
+              logging.log(
+                logging.Error,
+                "Authentication failed, check your token, not reconnecting",
+              )
+            }
+
+            4005 -> {
+              logging.log(
+                logging.Error,
+                "Already authenticated, open a github issue, not reconnecting",
+              )
+            }
+
+            4007 -> {
+              logging.log(
+                logging.Error,
+                "Invalid sequence, reconnecting",
+              )
+
+              main(
+                bot,
+                event_handlers,
+                case dict.get(booklet.get(state_ets), "resume_gateway_url") {
+                  Ok(url) -> url
+                  Error(_) -> "gateway.discord.gg"
+                },
+                reconnect,
+                "",
+                state_ets,
+              )
+            }
+
+            4008 -> {
+              logging.log(
+                logging.Error,
+                "You have been ratelimited, not reconnecting",
+              )
+            }
+
+            4009 -> {
+              logging.log(
+                logging.Error,
+                "Session timed out, reconnecting",
+              )
+
+              main(
+                bot,
+                event_handlers,
+                case
+                  dict.get(booklet.get(state_ets), "resume_gateway_url")
+                {
+                  Ok(url) -> url
+                  Error(_) -> "gateway.discord.gg"
+                },
+                reconnect,
+                case dict.get(booklet.get(state_ets), "session_id") {
+                  Ok(s) -> s
+                  Error(_) -> ""
+                },
+                state_ets,
+              )
+            }
+
+            4010 -> {
+              logging.log(
+                logging.Error,
+                "Invalid shard, not reconnecting",
+              )
+            }
+
+            4011 -> {
+              logging.log(
+                logging.Error,
+                "Sharding required, not reconnecting",
+              )
+            }
+
+            4012 -> {
+              logging.log(
+                logging.Error,
+                "Invalid API version, open a github issue, not reconnecting",
+              )
+            }
+
+            4013 -> {
+              logging.log(
+                logging.Error,
+                "Invalid intents used, open a github issue as this should not happen, not reconnecting",
+              )
+            }
+
+            4014 -> {
+              logging.log(
+                logging.Error,
+                "Disallowed intents used, did you remember to enable any priveleged intents you used in the discord developer portal (https://discord.dev)? Not reconnecting",
+              )
+            }
+
+            _ -> {
+              logging.log(
+                logging.Error,
+                "Unknown close code, not reconnecting",
+              )
+            }
+          }
+
           Nil
         }
+        _ -> Nil
       }
 
       Nil
     })
 
-  let assert Ok(actor) = stratus.initialize(builder)
+  let assert Ok(actor) = stratus.start(builder)
   let assert Ok(pid) = process.subject_owner(actor.data)
 
   let monitor = process.monitor(pid)
@@ -279,47 +380,6 @@ pub fn main(
   let selector =
     process.select_specific_monitor(selector, monitor, function.identity)
   let _ = process.selector_receive_forever(selector)
-
-  case dict.get(booklet.get(state_ets), "sequence") {
-    Ok(s) -> {
-      case s == "0" {
-        True -> {
-          logging.log(
-            logging.Warning,
-            "A common cause of this can be an intent issue or invalid token",
-          )
-
-          case bot.intents.message_content {
-            True ->
-              logging.log(
-                logging.Warning,
-                "You are using the message content intent, did you remember to enable the message content intent under the bot settings on the Discord developer portal?",
-              )
-            False -> Nil
-          }
-        }
-        False -> Nil
-      }
-      Nil
-    }
-
-    Error(_) -> {
-      logging.log(
-        logging.Warning,
-        "A common cause of this can be an intent issue or invalid token",
-      )
-
-      case bot.intents.message_content {
-        True ->
-          logging.log(
-            logging.Warning,
-            "You are using the message content intent, did you remember to enable the message content intent under the bot settings on the Discord developer portal?",
-          )
-        False -> Nil
-      }
-      Nil
-    }
-  }
 
   logging.log(logging.Error, "Event loop has exited, bye bye")
 
