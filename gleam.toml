@@ -1,9 +1,9 @@
-name = "stratus"
+name = "discord_gleam_stratus"
 version = "1.0.2"
 
 description = "A Gleam WebSocket client"
 licences = ["Apache-2.0"]
-repository = { type = "github", user = "rawhat", repo = "stratus" }
+repository = { type = "github", user = "cyteon", repo = "discord_gleam", branch = "stratus" }
 
 [dependencies]
 gleam_stdlib = ">= 0.60.0 and < 1.0.0"
