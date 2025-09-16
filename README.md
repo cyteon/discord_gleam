@@ -48,6 +48,76 @@ fn event_handler(bot, packet: event_handler.Packet) {
 
 Further documentation can be found at <https://hexdocs.pm/discord_gleam>.
 
+## Custom Handlers
+
+discord_gleam now supports custom loop and close handlers, allowing you to override the default Discord WebSocket message processing and connection close behavior with your own custom logic.
+
+### Basic Usage
+
+```gleam
+import discord_gleam
+import discord_gleam/custom_handlers
+import discord_gleam/discord/intents
+import discord_gleam/ws/event_loop
+import gleam/option
+import stratus
+
+pub fn main() {
+  let bot = discord_gleam.bot("TOKEN", "CLIENT_ID", intents.default())
+  
+  let custom_handlers = custom_handlers.CustomHandlers(
+    loop: my_custom_loop,
+    close: my_custom_close
+  )
+  
+  discord_gleam.run_with_custom_handlers(
+    bot, 
+    [event_handler], 
+    option.Some(custom_handlers)
+  )
+}
+
+fn my_custom_loop(state: event_loop.State, msg: stratus.Message, conn: stratus.Connection) {
+  // Your custom message handling logic here
+  case msg {
+    stratus.Text(text) -> {
+      // Log all text messages
+      io.println("Received: " <> text)
+      stratus.continue(state)
+    }
+    _ -> stratus.continue(state)
+  }
+}
+
+fn my_custom_close(state: event_loop.State) {
+  // Your custom close handling logic here
+  io.println("Connection closed!")
+  Nil
+}
+```
+
+### Helper Functions
+
+The `custom_handlers` module provides helper functions for common use cases:
+
+- `default_continue_loop_handler()` - A simple pass-through loop handler
+- `default_noop_close_handler()` - A no-op close handler
+
+### Fallback to Default Behavior
+
+You can use `option.None` with `run_with_custom_handlers` to fall back to the default Discord protocol handling:
+
+```gleam
+discord_gleam.run_with_custom_handlers(bot, [event_handler], option.None)
+// This is equivalent to: discord_gleam.run(bot, [event_handler])
+```
+
+### Examples
+
+See the `examples/` directory for complete examples:
+- `examples/custom_handlers.gleam` - Basic custom handler example
+- `examples/enhanced_custom_handlers.gleam` - Advanced example with message monitoring
+
 ## Development
 
 ```sh
@@ -66,6 +136,7 @@ gleam test  # Run the tests
 | Basic Slash commands  | ✅      |
 | Message Cache         | ✅      |
 | Intents               | ✅*     |
+| Custom Handlers       | ✅      |
 
 ✅ - Done | 🔨 - In Progress | 📆 - Planned | ❌ - Not Planned \
 \* all intents are implemented, but not all are used yet
