@@ -3,6 +3,7 @@
 //// But you can always implement stuff yourself using the low-level functions from the rest of the library. \
 
 import booklet
+import discord_gleam/custom_handlers
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
 import discord_gleam/http/endpoints
@@ -17,6 +18,7 @@ import discord_gleam/ws/event_loop
 import discord_gleam/ws/packets/interaction_create
 import gleam/dict
 import gleam/list
+import gleam/option
 
 /// Create a new bot instance.
 /// 
@@ -73,6 +75,63 @@ pub fn run(
   let state = booklet.new(dict.new())
 
   event_loop.main(bot, event_handlers, "gateway.discord.gg", False, "", state)
+}
+
+/// Start the event loop with custom loop and close handlers.
+/// This allows users to override the default Discord WebSocket message handling
+/// and connection close behavior with their own custom functions.
+///
+/// Example:
+/// ```gleam
+/// import discord_gleam
+/// import discord_gleam/custom_handlers
+/// import discord_gleam/discord/intents
+/// import discord_gleam/event_handler
+/// import discord_gleam/ws/event_loop
+/// import gleam/option
+/// import stratus
+/// 
+/// fn main() {
+///   let bot = discord_gleam.bot("TOKEN", "CLIENT_ID", intents.default())
+///   
+///   let custom_handlers = custom_handlers.CustomHandlers(
+///     loop: my_custom_loop,
+///     close: my_custom_close
+///   )
+///   
+///   discord_gleam.run_with_custom_handlers(
+///     bot, 
+///     [event_handler], 
+///     option.Some(custom_handlers)
+///   )
+/// }
+/// 
+/// fn my_custom_loop(state: event_loop.State, msg: stratus.Message, conn: stratus.Connection) {
+///   // Your custom message handling logic here
+///   stratus.continue(state)
+/// }
+/// 
+/// fn my_custom_close(state: event_loop.State) {
+///   // Your custom close handling logic here
+///   Nil
+/// }
+/// ```
+pub fn run_with_custom_handlers(
+  bot: bot.Bot,
+  event_handlers: List(event_handler.EventHandler),
+  custom_handlers: option.Option(custom_handlers.CustomHandlers(event_loop.State)),
+) -> Nil {
+  let state = booklet.new(dict.new())
+
+  event_loop.main_with_custom_handlers(
+    bot,
+    event_handlers,
+    "gateway.discord.gg",
+    False,
+    "",
+    state,
+    custom_handlers,
+  )
 }
 
 /// Send a message to a channel.

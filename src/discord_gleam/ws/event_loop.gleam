@@ -4,6 +4,7 @@
 import birl
 import birl/duration
 import booklet
+import discord_gleam/custom_handlers
 import discord_gleam/event_handler
 import discord_gleam/internal/error
 import discord_gleam/types/bot
@@ -322,6 +323,97 @@ pub fn main(
   }
 
   logging.log(logging.Error, "Event loop has exited, bye bye")
+
+  process.sleep(1000)
+}
+
+/// Start the event loop with custom loop and close handlers.
+/// This allows users to override the default Discord protocol handling
+/// with their own custom behavior while still using the underlying infrastructure.
+pub fn main_with_custom_handlers(
+  bot: bot.Bot,
+  event_handlers: List(event_handler.EventHandler),
+  host: String,
+  reconnect: Bool,
+  session_id: String,
+  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  custom_handlers: option.Option(custom_handlers.CustomHandlers(State)),
+) -> Nil {
+  case custom_handlers {
+    option.Some(handlers) -> {
+      // Use completely custom handlers
+      main_with_full_custom_handlers(
+        bot,
+        event_handlers,
+        host,
+        reconnect,
+        session_id,
+        state_ets,
+        handlers,
+      )
+    }
+    option.None -> {
+      // Fall back to default behavior
+      main(bot, event_handlers, host, reconnect, session_id, state_ets)
+    }
+  }
+}
+
+/// Internal function that implements the event loop with fully custom handlers
+fn main_with_full_custom_handlers(
+  bot: bot.Bot,
+  event_handlers: List(event_handler.EventHandler),
+  host: String,
+  reconnect: Bool,
+  session_id: String,
+  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  custom_handlers: custom_handlers.CustomHandlers(State),
+) -> Nil {
+  logging.log(logging.Debug, "Requesting gateway with custom handlers")
+
+  booklet.update(state_ets, fn(cache) { dict.insert(cache, "sequence", "0") })
+
+  let host = string.replace(host, "wss://", "")
+
+  let req =
+    request.new()
+    |> request.set_host(host)
+    |> request.set_scheme(http.Https)
+    |> request.set_path("/?v=10&encoding=json")
+    |> request.set_header(
+      "User-Agent",
+      "DiscordBot (https://github.com/cyteon/discord_gleam, 1.4.0)",
+    )
+    |> request.set_header("Host", "gateway.discord.gg")
+    |> request.set_header("Connection", "Upgrade")
+    |> request.set_header("Upgrade", "websocket")
+    |> request.set_header("Sec-WebSocket-Version", "13")
+
+  logging.log(logging.Debug, "Creating builder with custom handlers")
+
+  let initial_state = State(has_received_hello: False, s: 0)
+
+  let builder =
+    stratus.websocket(
+      request: req,
+      init: fn() {
+        logging.log(logging.Debug, "Initializing builder with custom handlers")
+        #(initial_state, option.None)
+      },
+      loop: custom_handlers.loop,
+    )
+    |> stratus.on_close(custom_handlers.close)
+
+  let assert Ok(actor) = stratus.initialize(builder)
+  let assert Ok(pid) = process.subject_owner(actor.data)
+
+  let monitor = process.monitor(pid)
+  let selector = process.new_selector()
+  let selector =
+    process.select_specific_monitor(selector, monitor, function.identity)
+  let _ = process.selector_receive_forever(selector)
+
+  logging.log(logging.Error, "Event loop with custom handlers has exited, bye bye")
 
   process.sleep(1000)
 }
