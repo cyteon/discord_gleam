@@ -16,6 +16,7 @@ import discord_gleam/ws/packets/message
 import discord_gleam/ws/packets/message_delete
 import discord_gleam/ws/packets/message_delete_bulk
 import discord_gleam/ws/packets/message_update
+import discord_gleam/ws/packets/presence_update
 import discord_gleam/ws/packets/ready
 import gleam/dict
 import gleam/list
@@ -62,6 +63,9 @@ pub type Packet {
 
   /// GUILD_MEMBER_REMOVE event
   GuildMemberRemovePacket(guild_member_remove.GuildMemberRemove)
+
+  /// `PRESENCE_UPDATE` event
+  PresenceUpdatePacket(presence_update.PresenceUpdatePacket)
 
   /// When we receive a packet that we don't know how to handle
   UnknownPacket(generic.GenericPacket)
@@ -324,6 +328,20 @@ fn decode_packet(msg: String) -> Packet {
           logging.log(
             logging.Error,
             "Failed to decode GUILD_MEMBER_REMOVE packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "PRESENCE_UPDATE" ->
+      case presence_update.string_to_data(msg) {
+        Ok(data) -> PresenceUpdatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode PRESENCE_UPDATE packet: "
               <> error.json_decode_error_to_string(err),
           )
 

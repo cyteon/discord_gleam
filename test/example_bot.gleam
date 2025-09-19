@@ -72,6 +72,7 @@ pub fn main(token: String, client_id: String, guild_id: String) {
 }
 
 fn handler(bot: bot.Bot, packet: event_handler.Packet) {
+  echo packet
   case packet {
     event_handler.ReadyPacket(ready) -> {
       logging.log(
