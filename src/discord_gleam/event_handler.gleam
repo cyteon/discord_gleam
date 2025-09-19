@@ -64,6 +64,7 @@ pub type Packet {
   /// GUILD_MEMBER_REMOVE event
   GuildMemberRemovePacket(guild_member_remove.GuildMemberRemove)
 
+  // TODO: Add support for GUILD_MEMBERS_CHUNK, GUILD_MEMBER_ADD, GUILD_MEMBER_UPDATE
   /// `PRESENCE_UPDATE` event
   PresenceUpdatePacket(presence_update.PresenceUpdatePacket)
 

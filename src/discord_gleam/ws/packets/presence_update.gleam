@@ -4,6 +4,7 @@ import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None, Some}
 
+// TODO: Move to types/user.gleam?
 pub type PartialUser {
   PartialUser(id: Snowflake)
 }
