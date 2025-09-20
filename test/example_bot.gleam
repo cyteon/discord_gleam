@@ -74,7 +74,6 @@ pub fn main(token: String, client_id: String, guild_id: String) {
 }
 
 fn handler(bot: bot.Bot, packet: event_handler.Packet) {
-  echo packet
   case packet {
     event_handler.ReadyPacket(ready) -> {
       logging.log(
@@ -644,6 +643,17 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
 
         _ -> Nil
       }
+    }
+
+    event_handler.PresenceUpdatePacket(presence) -> {
+      logging.log(logging.Info, "Presence updated for: " <> presence.d.user.id)
+    }
+
+    event_handler.GuildMembersChunkPacket(chunk) -> {
+      logging.log(
+        logging.Info,
+        "Guild members chunk received: " <> chunk.d.guild_id,
+      )
     }
 
     _ -> Nil

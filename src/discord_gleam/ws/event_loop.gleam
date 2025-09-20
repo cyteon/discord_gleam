@@ -228,7 +228,7 @@ pub fn main(
         stratus.User(bot.SendPacket(packet)) -> {
           logging.log(logging.Debug, "User packet: " <> packet)
 
-          let _ = stratus.send_text_message(conn, packet) |> echo
+          let _ = stratus.send_text_message(conn, packet)
 
           stratus.continue(state)
         }
