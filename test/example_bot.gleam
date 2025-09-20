@@ -92,7 +92,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
         request_guild_members.request_guild_members(
           bot,
           guild_id: id,
-          option: request_guild_members.UserIds(["698940360323366992"]),
+          option: request_guild_members.Query("", option.None),
           presences: option.Some(True),
           nonce: option.Some("test_request"),
         )

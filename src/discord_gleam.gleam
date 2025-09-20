@@ -289,3 +289,4 @@ pub fn interaction_reply_message(
 ) -> Result(Nil, error.DiscordError) {
   endpoints.interaction_send_text(interaction, message, ephemeral)
 }
+// TODO: import function to request guild members to the root module
