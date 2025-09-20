@@ -3,8 +3,10 @@ import discord_gleam
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
 import discord_gleam/types/bot
+import discord_gleam/types/guild
 import discord_gleam/types/message
 import discord_gleam/types/slash_command
+import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/packets/interaction_create
 import gleam/bool
 import gleam/dict
@@ -82,6 +84,19 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
           <> "#"
           <> ready.d.user.discriminator,
       )
+
+      list.each(ready.d.guilds, fn(guild) {
+        let assert guild.UnavailableGuild(id, ..) = guild
+        logging.log(logging.Info, "Unavailable guild: " <> id)
+
+        request_guild_members.request_guild_members(
+          bot,
+          guild_id: id,
+          option: request_guild_members.UserIds(["698940360323366992"]),
+          presences: option.Some(True),
+          nonce: option.Some("test_request"),
+        )
+      })
 
       Nil
     }

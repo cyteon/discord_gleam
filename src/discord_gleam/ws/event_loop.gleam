@@ -15,6 +15,8 @@ import gleam/http
 import gleam/http/request
 import gleam/int
 import gleam/json
+import gleam/option
+import gleam/result
 import gleam/string
 import logging
 import repeatedly
@@ -57,8 +59,22 @@ pub fn main(
 
   let initial_state = State(has_received_hello: False, s: 0)
 
+  let name: process.Name(bot.UserMessage) = process.new_name("user_msg_subject")
+  let bot = bot.Bot(..bot, websocket_name: option.Some(name))
+
   let builder =
-    stratus.new(request: req, state: initial_state)
+    stratus.new_with_initialiser(request: req, init: fn() {
+      process.register(process.self(), name)
+      |> result.map(fn(_nil) {
+        let selector =
+          process.new_selector()
+          |> process.select(process.named_subject(name))
+
+        stratus.initialised(initial_state)
+        |> stratus.selecting(selector)
+      })
+      |> result.replace_error("Failed to initialise websocket client")
+    })
     |> stratus.on_message(fn(state, msg, conn) {
       case msg {
         stratus.Text(msg) -> {
@@ -209,8 +225,11 @@ pub fn main(
           }
         }
 
-        stratus.User(msg) -> {
-          logging.log(logging.Debug, "Gateway user msg: " <> msg)
+        stratus.User(bot.SendPacket(packet)) -> {
+          logging.log(logging.Debug, "User packet: " <> packet)
+
+          let _ = stratus.send_text_message(conn, packet) |> echo
+
           stratus.continue(state)
         }
 

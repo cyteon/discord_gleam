@@ -17,6 +17,7 @@ import discord_gleam/ws/event_loop
 import discord_gleam/ws/packets/interaction_create
 import gleam/dict
 import gleam/list
+import gleam/option
 
 /// Create a new bot instance.
 /// 
@@ -38,6 +39,7 @@ pub fn bot(
     client_id: client_id,
     intents: intents,
     cache: bot.Cache(messages: booklet.new(dict.new())),
+    websocket_name: option.None,
   )
 }
 
