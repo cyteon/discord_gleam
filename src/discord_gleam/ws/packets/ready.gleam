@@ -1,3 +1,4 @@
+import discord_gleam/types/guild
 import discord_gleam/types/user
 import gleam/dynamic/decode
 import gleam/json
@@ -6,6 +7,7 @@ pub type ReadyData {
   ReadyData(
     v: Int,
     user: user.User,
+    guilds: List(guild.Guild),
     session_id: String,
     resume_gateway_url: String,
   )
@@ -27,13 +29,24 @@ pub fn string_to_data(encoded: String) -> Result(ReadyPacket, json.DecodeError) 
 
       use user <- decode.field("user", user.from_json_decoder())
 
+      use guilds <- decode.field(
+        "guilds",
+        decode.list(guild.from_json_decoder()),
+      )
+
       use session_id <- decode.field("session_id", decode.string)
       use resume_gateway_url <- decode.field(
         "resume_gateway_url",
         decode.string,
       )
 
-      decode.success(ReadyData(v:, user:, session_id:, resume_gateway_url:))
+      decode.success(ReadyData(
+        v:,
+        user:,
+        guilds:,
+        session_id:,
+        resume_gateway_url:,
+      ))
     })
 
     decode.success(ReadyPacket(t:, s:, op:, d:))

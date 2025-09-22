@@ -3,8 +3,10 @@ import discord_gleam
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
 import discord_gleam/types/bot
+import discord_gleam/types/guild
 import discord_gleam/types/message
 import discord_gleam/types/slash_command
+import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/packets/interaction_create
 import gleam/bool
 import gleam/dict
@@ -82,6 +84,19 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
           <> ready.d.user.discriminator,
       )
 
+      list.each(ready.d.guilds, fn(guild) {
+        let assert guild.UnavailableGuild(id, ..) = guild
+        logging.log(logging.Info, "Unavailable guild: " <> id)
+
+        discord_gleam.request_guild_members(
+          bot,
+          guild_id: id,
+          option: request_guild_members.Query("", option.None),
+          presences: option.Some(True),
+          nonce: option.Some("test_request"),
+        )
+      })
+
       Nil
     }
 
@@ -146,6 +161,17 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
       Nil
     }
 
+    event_handler.GuildMemberAddPacket(member_add) -> {
+      logging.log(
+        logging.Info,
+        "Member added: "
+          <> member_add.d.guild_member.user.username
+          <> " (ID: "
+          <> member_add.d.guild_member.user.id
+          <> ")",
+      )
+    }
+
     event_handler.GuildMemberRemovePacket(member_remove) -> {
       logging.log(
         logging.Info,
@@ -155,8 +181,24 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
           <> member_remove.d.user.id
           <> ")",
       )
+    }
 
-      Nil
+    event_handler.GuildMemberUpdatePacket(member_update) -> {
+      logging.log(
+        logging.Info,
+        "Member updated: "
+          <> member_update.d.guild_member.user.username
+          <> " (ID: "
+          <> member_update.d.guild_member.user.id
+          <> ")",
+      )
+    }
+
+    event_handler.GuildMembersChunkPacket(chunk) -> {
+      logging.log(
+        logging.Info,
+        "Guild members chunk received: " <> chunk.d.guild_id,
+      )
     }
 
     event_handler.ChannelCreatePacket(channel) -> {
@@ -628,6 +670,10 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
 
         _ -> Nil
       }
+    }
+
+    event_handler.PresenceUpdatePacket(presence) -> {
+      logging.log(logging.Info, "Presence updated for: " <> presence.d.user.id)
     }
 
     _ -> Nil

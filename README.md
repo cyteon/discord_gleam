@@ -103,10 +103,10 @@ Intent: guilds
 - [x] GUILD_ROLE_DELETE
 
 Intent: guild_members
-- [ ] GUILD_MEMBER_ADD
-- [ ] GUILD_MEMBER_UPDATE
+- [x] GUILD_MEMBER_ADD
+- [x] GUILD_MEMBER_UPDATE
 - [x] GUILD_MEMBER_REMOVE
-- [ ] GUILD_MEMBERS_CHUNK
+- [x] GUILD_MEMBERS_CHUNK
 - [ ] THREAD_MEMBERS_UPDATE
 
 Intent: guild_moderation
@@ -140,7 +140,7 @@ Intent: guild_voice_states
 - [ ] VOICE_STATE_UPDATE
 
 Intent: guild_presences
-- [ ] PRESENCE_UPDATE
+- [x] PRESENCE_UPDATE
 
 Intent: guild_message_reactions/direct_message_reactions
 - [ ] MESSAGE_REACTION_ADD

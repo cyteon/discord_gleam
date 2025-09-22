@@ -33,6 +33,16 @@ pub type User {
   )
 }
 
+pub type AvatarDecoration {
+  AvatarDecoration(asset: String, sku_id: Snowflake)
+}
+
+pub fn avatar_decoration_decoder() -> decode.Decoder(AvatarDecoration) {
+  use asset <- decode.field("asset", decode.string)
+  use sku_id <- decode.field("sku_id", snowflake.decoder())
+  decode.success(AvatarDecoration(asset:, sku_id:))
+}
+
 /// Decode a string to a PartialUser
 pub fn string_to_data(encoded: String) -> Result(User, error.DiscordError) {
   case string.contains(encoded, "401: Unauthorized") {

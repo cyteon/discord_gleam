@@ -7,7 +7,10 @@ import discord_gleam/ws/packets/channel_update
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/guild_ban_add
 import discord_gleam/ws/packets/guild_ban_remove
+import discord_gleam/ws/packets/guild_member_add
 import discord_gleam/ws/packets/guild_member_remove
+import discord_gleam/ws/packets/guild_member_update
+import discord_gleam/ws/packets/guild_members_chunk
 import discord_gleam/ws/packets/guild_role_create
 import discord_gleam/ws/packets/guild_role_delete
 import discord_gleam/ws/packets/guild_role_update
@@ -16,6 +19,7 @@ import discord_gleam/ws/packets/message
 import discord_gleam/ws/packets/message_delete
 import discord_gleam/ws/packets/message_delete_bulk
 import discord_gleam/ws/packets/message_update
+import discord_gleam/ws/packets/presence_update
 import discord_gleam/ws/packets/ready
 import gleam/dict
 import gleam/list
@@ -60,8 +64,17 @@ pub type Packet {
   /// `GUILD_ROLE_DELETE` event
   GuildRoleDeletePacket(guild_role_delete.GuildRoleDeletePacket)
 
+  /// `GUILD_MEMBER_ADD` event
+  GuildMemberAddPacket(guild_member_add.GuildMemberAdd)
+  /// `GUILD_MEMBER_UPDATE` event
+  GuildMemberUpdatePacket(guild_member_update.GuildMemberUpdate)
   /// GUILD_MEMBER_REMOVE event
   GuildMemberRemovePacket(guild_member_remove.GuildMemberRemove)
+  /// `GUILD_MEMBERS_CHUNK` event
+  GuildMembersChunkPacket(guild_members_chunk.GuildMembersChunkPacket)
+
+  /// `PRESENCE_UPDATE` event
+  PresenceUpdatePacket(presence_update.PresenceUpdatePacket)
 
   /// When we receive a packet that we don't know how to handle
   UnknownPacket(generic.GenericPacket)
@@ -317,6 +330,34 @@ fn decode_packet(msg: String) -> Packet {
         }
       }
 
+    "GUILD_MEMBER_ADD" ->
+      case guild_member_add.string_to_data(msg) {
+        Ok(data) -> GuildMemberAddPacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_MEMBER_ADD packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "GUILD_MEMBER_UPDATE" ->
+      case guild_member_update.string_to_data(msg) {
+        Ok(data) -> GuildMemberUpdatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_MEMBER_UPDATE packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
     "GUILD_MEMBER_REMOVE" ->
       case guild_member_remove.string_to_data(msg) {
         Ok(data) -> GuildMemberRemovePacket(data)
@@ -324,6 +365,33 @@ fn decode_packet(msg: String) -> Packet {
           logging.log(
             logging.Error,
             "Failed to decode GUILD_MEMBER_REMOVE packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "GUILD_MEMBERS_CHUNK" ->
+      case guild_members_chunk.string_to_data(msg) {
+        Ok(data) -> GuildMembersChunkPacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_MEMBERS_CHUNK packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "PRESENCE_UPDATE" ->
+      case presence_update.string_to_data(msg) {
+        Ok(data) -> PresenceUpdatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode PRESENCE_UPDATE packet: "
               <> error.json_decode_error_to_string(err),
           )
 
