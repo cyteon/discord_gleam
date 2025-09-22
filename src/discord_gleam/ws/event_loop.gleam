@@ -48,7 +48,7 @@ pub fn main(
     |> request.set_path("/?v=10&encoding=json")
     |> request.set_header(
       "User-Agent",
-      "DiscordBot (https://github.com/cyteon/discord_gleam, 1.4.0)",
+      "DiscordBot (https://github.com/cyteon/discord_gleam, 1.7.1)",
     )
     |> request.set_header("Host", "gateway.discord.gg")
     |> request.set_header("Connection", "Upgrade")
@@ -331,21 +331,21 @@ pub fn main(
             4012 -> {
               logging.log(
                 logging.Error,
-                "Invalid API version, open a github issue, not reconnecting",
+                "Invalid API version, open a github issue on the discord_gleam repository, not reconnecting",
               )
             }
 
             4013 -> {
               logging.log(
                 logging.Error,
-                "Invalid intents used, open a github issue as this should not happen, not reconnecting",
+                "Invalid intents used, open a github issue on the discord_gleam repository, not reconnecting",
               )
             }
 
             4014 -> {
               logging.log(
                 logging.Error,
-                "Disallowed intents used, did you remember to enable any priveleged intents you used in the discord developer portal (https://discord.dev)? Not reconnecting",
+                "Disallowed intents used, did you remember to enable any priveleged intents you used in the Discord Developer Portal (https://discord.dev)? Not reconnecting",
               )
             }
 
