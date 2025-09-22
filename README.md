@@ -106,7 +106,7 @@ Intent: guild_members
 - [x] GUILD_MEMBER_ADD
 - [x] GUILD_MEMBER_UPDATE
 - [x] GUILD_MEMBER_REMOVE
-- [ ] GUILD_MEMBERS_CHUNK
+- [x] GUILD_MEMBERS_CHUNK
 - [ ] THREAD_MEMBERS_UPDATE
 
 Intent: guild_moderation
