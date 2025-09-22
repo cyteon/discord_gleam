@@ -20,7 +20,9 @@ pub type PresenceUser {
 pub type Presence {
   Presence(
     user: PresenceUser,
-    // NOTE: does not exist?
+    // NOTE: `guild_id` does not exist? 
+    // https://discord.com/developers/docs/events/gateway-events#presence have
+    // this field as required, but it is not present in the packet.
     // guild_id: Snowflake,
     status: String,
     activities: List(activity.Activity),
@@ -30,7 +32,6 @@ pub type Presence {
 
 pub fn from_json_decoder() -> decode.Decoder(Presence) {
   use user <- decode.field("user", presence_user_decoder())
-  // use guild_id <- decode.field("guild_id", snowflake.decoder())
   use status <- decode.field("status", decode.string)
   use activities <- decode.field(
     "activities",
@@ -38,13 +39,7 @@ pub fn from_json_decoder() -> decode.Decoder(Presence) {
   )
   use client_status <- decode.field("client_status", client_status_decoder())
 
-  decode.success(Presence(
-    user:,
-    // guild_id:,
-    status:,
-    activities:,
-    client_status:,
-  ))
+  decode.success(Presence(user:, status:, activities:, client_status:))
 }
 
 pub fn presence_user_decoder() -> decode.Decoder(PresenceUser) {

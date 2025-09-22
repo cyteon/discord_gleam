@@ -4,4 +4,3 @@
 erl_crash.dump
 .env
 .env.local
-temp.json

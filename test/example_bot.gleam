@@ -161,6 +161,17 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
       Nil
     }
 
+    event_handler.GuildMemberAddPacket(member_add) -> {
+      logging.log(
+        logging.Info,
+        "Member added: "
+          <> member_add.d.guild_member.user.username
+          <> " (ID: "
+          <> member_add.d.guild_member.user.id
+          <> ")",
+      )
+    }
+
     event_handler.GuildMemberRemovePacket(member_remove) -> {
       logging.log(
         logging.Info,
@@ -170,8 +181,24 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
           <> member_remove.d.user.id
           <> ")",
       )
+    }
 
-      Nil
+    event_handler.GuildMemberUpdatePacket(member_update) -> {
+      logging.log(
+        logging.Info,
+        "Member updated: "
+          <> member_update.d.guild_member.user.username
+          <> " (ID: "
+          <> member_update.d.guild_member.user.id
+          <> ")",
+      )
+    }
+
+    event_handler.GuildMembersChunkPacket(chunk) -> {
+      logging.log(
+        logging.Info,
+        "Guild members chunk received: " <> chunk.d.guild_id,
+      )
     }
 
     event_handler.ChannelCreatePacket(channel) -> {
@@ -647,13 +674,6 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
 
     event_handler.PresenceUpdatePacket(presence) -> {
       logging.log(logging.Info, "Presence updated for: " <> presence.d.user.id)
-    }
-
-    event_handler.GuildMembersChunkPacket(chunk) -> {
-      logging.log(
-        logging.Info,
-        "Guild members chunk received: " <> chunk.d.guild_id,
-      )
     }
 
     _ -> Nil

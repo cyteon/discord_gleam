@@ -1,6 +1,6 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
 import gleam/dynamic/decode
-import gleam/option.{type Option, None}
+import gleam/option.{type Option, None, Some}
 import gleam/string
 
 pub type ActivityTimestamp {
@@ -12,7 +12,7 @@ pub type ActivityEmoji {
 }
 
 pub type ActivityParty {
-  ActivityParty(id: Option(String), size: #(Int, Int))
+  ActivityParty(id: Option(String), size: Option(#(Int, Int)))
 }
 
 pub type ActivityAssets {
@@ -179,16 +179,21 @@ fn activity_emoji_decoder() {
 
 fn activity_party_decoder() {
   use id <- decode.optional_field("id", None, decode.optional(decode.string))
-  use size <- decode.field("size", decode.list(of: decode.int))
+  use size <- decode.optional_field(
+    "size",
+    None,
+    decode.optional(decode.list(of: decode.int)),
+  )
 
   case size {
-    [current_size, max_size] ->
-      decode.success(ActivityParty(id:, size: #(current_size, max_size)))
-    _ ->
+    Some([current_size, max_size]) ->
+      decode.success(ActivityParty(id:, size: Some(#(current_size, max_size))))
+    Some(_) ->
       decode.failure(
-        ActivityParty(None, #(0, 0)),
+        ActivityParty(None, None),
         "Expected list of two ints, but found " <> string.inspect(size),
       )
+    None -> decode.success(ActivityParty(id:, size: None))
   }
 }
 

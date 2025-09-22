@@ -7,7 +7,9 @@ import discord_gleam/ws/packets/channel_update
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/guild_ban_add
 import discord_gleam/ws/packets/guild_ban_remove
+import discord_gleam/ws/packets/guild_member_add
 import discord_gleam/ws/packets/guild_member_remove
+import discord_gleam/ws/packets/guild_member_update
 import discord_gleam/ws/packets/guild_members_chunk
 import discord_gleam/ws/packets/guild_role_create
 import discord_gleam/ws/packets/guild_role_delete
@@ -62,12 +64,15 @@ pub type Packet {
   /// `GUILD_ROLE_DELETE` event
   GuildRoleDeletePacket(guild_role_delete.GuildRoleDeletePacket)
 
+  /// `GUILD_MEMBER_ADD` event
+  GuildMemberAddPacket(guild_member_add.GuildMemberAdd)
+  /// `GUILD_MEMBER_UPDATE` event
+  GuildMemberUpdatePacket(guild_member_update.GuildMemberUpdate)
   /// GUILD_MEMBER_REMOVE event
   GuildMemberRemovePacket(guild_member_remove.GuildMemberRemove)
   /// `GUILD_MEMBERS_CHUNK` event
   GuildMembersChunkPacket(guild_members_chunk.GuildMembersChunkPacket)
 
-  // TODO: Add support for GUILD_MEMBER_ADD, GUILD_MEMBER_UPDATE
   /// `PRESENCE_UPDATE` event
   PresenceUpdatePacket(presence_update.PresenceUpdatePacket)
 
@@ -318,6 +323,34 @@ fn decode_packet(msg: String) -> Packet {
           logging.log(
             logging.Error,
             "Failed to decode GUILD_ROLE_DELETE packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "GUILD_MEMBER_ADD" ->
+      case guild_member_add.string_to_data(msg) {
+        Ok(data) -> GuildMemberAddPacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_MEMBER_ADD packet: "
+              <> error.json_decode_error_to_string(err),
+          )
+
+          UnknownPacket(generic_packet)
+        }
+      }
+
+    "GUILD_MEMBER_UPDATE" ->
+      case guild_member_update.string_to_data(msg) {
+        Ok(data) -> GuildMemberUpdatePacket(data)
+        Error(err) -> {
+          logging.log(
+            logging.Error,
+            "Failed to decode GUILD_MEMBER_UPDATE packet: "
               <> error.json_decode_error_to_string(err),
           )
 
