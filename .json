@@ -1,0 +1,1159 @@
+{
+  "t": "GUILD_MEMBERS_CHUNK",
+  "s": 3,
+  "op": 0,
+  "d": {
+    "presences": [
+      {
+        "user": {
+          "id": "1262338071874244650"
+        },
+        "status": "online",
+        "processed_at_timestamp": 0,
+        "client_status": {
+          "web": "online"
+        },
+        "activities": []
+      },
+      {
+        "user": {
+          "id": "1249200395683627110"
+        },
+        "status": "online",
+        "processed_at_timestamp": 0,
+        "client_status": {
+          "web": "online"
+        },
+        "activities": [
+          {
+            "type": 3,
+            "name": "Ducky likes the Cloud",
+            "id": "ec0b28a579ecb4bd",
+            "created_at": 1758553231841
+          }
+        ]
+      },
+      {
+        "user": {
+          "id": "1226487228914602005"
+        },
+        "status": "online",
+        "processed_at_timestamp": 1758564697059,
+        "client_status": {
+          "web": "online"
+        },
+        "activities": [
+          {
+            "type": 3,
+            "name": "netflix",
+            "id": "ec0b28a579ecb4bd",
+            "created_at": 1758564697059
+          }
+        ]
+      },
+      {
+        "user": {
+          "id": "969328835239755847"
+        },
+        "status": "online",
+        "processed_at_timestamp": 1758564680890,
+        "client_status": {
+          "desktop": "online"
+        },
+        "activities": []
+      },
+      {
+        "user": {
+          "id": "873918300726394960"
+        },
+        "status": "online",
+        "processed_at_timestamp": 0,
+        "client_status": {
+          "web": "online"
+        },
+        "activities": [
+          {
+            "type": 2,
+            "name": "your feedback!",
+            "id": "ec0b28a579ecb4bd",
+            "created_at": 1758229703562
+          }
+        ]
+      },
+      {
+        "user": {
+          "id": "871722786006138960"
+        },
+        "status": "dnd",
+        "processed_at_timestamp": 1758564688423,
+        "client_status": {
+          "web": "dnd"
+        },
+        "activities": [
+          {
+            "type": 0,
+            "timestamps": {
+              "start": 1758564688357
+            },
+            "state": "Workspace: discord_gleam",
+            "session_id": "5914c85957dbee9eba89e9b88b3fbaec",
+            "name": "Visual Studio Code",
+            "id": "b6d0b2a9176433fb",
+            "flags": 0,
+            "details": "Editing .env",
+            "created_at": 1758564688423,
+            "assets": {
+              "small_text": "Visual Studio Code",
+              "small_image": "1359299466493956258",
+              "large_text": "Editing a ENV file",
+              "large_image": "1359298813033971723"
+            },
+            "application_id": "383226320970055681"
+          }
+        ]
+      },
+      {
+        "user": {
+          "id": "823939421686071386"
+        },
+        "status": "idle",
+        "processed_at_timestamp": 1758561820778,
+        "client_status": {
+          "web": "idle"
+        },
+        "activities": []
+      },
+      {
+        "user": {
+          "id": "725985503177867295"
+        },
+        "status": "online",
+        "processed_at_timestamp": 1758564450018,
+        "client_status": {
+          "desktop": "online"
+        },
+        "activities": [
+          {
+            "type": 0,
+            "timestamps": {
+              "start": 1758564008824
+            },
+            "state": "Idling",
+            "session_id": "9d76ed140aff5bf4c123b2a6e6b15a25",
+            "platform": "desktop",
+            "name": "Zed",
+            "id": "97548dd53b41bd64",
+            "details": "In Zed",
+            "created_at": 1758564450018,
+            "buttons": [
+              "View Repository"
+            ],
+            "assets": {
+              "small_text": "Idle",
+              "small_image": "mp:external/PAxlVBSX43mmiccNaoGf4TtgqUKzuGIPsa38BVyguus/https/raw.githubusercontent.com/xhyrom/zed-discord-presence/main/assets/icons/idle.png",
+              "large_text": "Zed",
+              "large_image": "mp:external/GdvaRYwHnXvYygejA1jbzVS0SWWGGcZdzkiSPlxlUcI/https/raw.githubusercontent.com/xhyrom/zed-discord-presence/main/assets/icons/zed.png"
+            },
+            "application_id": "1263505205522337886"
+          }
+        ]
+      },
+      {
+        "user": {
+          "id": "678287437583351808"
+        },
+        "status": "dnd",
+        "processed_at_timestamp": 0,
+        "client_status": {
+          "mobile": "dnd",
+          "desktop": "dnd"
+        },
+        "activities": [
+          {
+            "type": 0,
+            "timestamps": {
+              "start": 1758557822998
+            },
+            "name": "ServerTimer – ServerTimer.java",
+            "id": "31f8d043c95265db",
+            "created_at": 1758557826237
+          }
+        ]
+      },
+      {
+        "user": {
+          "id": "536991182035746816"
+        },
+        "status": "online",
+        "processed_at_timestamp": 1758564639280,
+        "client_status": {
+          "web": "online"
+        },
+        "activities": [
+          {
+            "type": 3,
+            "name": "wickbot.com | Shard441",
+            "id": "ec0b28a579ecb4bd",
+            "created_at": 1758564639280
+          }
+        ]
+      },
+      {
+        "user": {
+          "id": "534859465648898071"
+        },
+        "status": "online",
+        "processed_at_timestamp": 1758562378976,
+        "client_status": {
+          "desktop": "online"
+        },
+        "activities": []
+      }
+    ],
+    "nonce": "test_request",
+    "members": [
+      {
+        "user": {
+          "username": "opo9440",
+          "public_flags": 4194432,
+          "primary_guild": {
+            "tag": "SIMU",
+            "identity_guild_id": "930244061674229823",
+            "identity_enabled": true,
+            "badge": "992fd1c815d43d4a308155f0d6cf84ce"
+          },
+          "id": "534859465648898071",
+          "global_name": "opo",
+          "display_name_styles": null,
+          "display_name": "opo",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "50c606afb7e918f720f58277aa26b585"
+        },
+        "roles": [],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-06-08T16:01:20.668000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": "2024-08-01T18:16:51.309000+00:00",
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "Wick",
+          "public_flags": 65536,
+          "primary_guild": null,
+          "id": "536991182035746816",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "3938",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "c850c9bbeb25e119a4c85a9bfdb7871e"
+        },
+        "roles": [
+          "1278423538612699159"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-08-28T18:38:43.664000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "ninsacc",
+          "public_flags": 4194432,
+          "primary_guild": {
+            "tag": "DATA",
+            "identity_guild_id": "931996684215521300",
+            "identity_enabled": true,
+            "badge": "638f1ac8f60f9ef79596defe834ea89a"
+          },
+          "id": "569352110991343616",
+          "global_name": "blxddy",
+          "display_name_styles": null,
+          "display_name": "blxddy",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "0039c6f54a07a0efc621804216f9ece1"
+        },
+        "roles": [],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-08-14T12:58:32.336000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "srpcd",
+          "public_flags": 128,
+          "primary_guild": {
+            "tag": "CODE",
+            "identity_guild_id": "547906569489350657",
+            "identity_enabled": true,
+            "badge": "3858554c542da4e8e4b52ff00a558ced"
+          },
+          "id": "660043349776007184",
+          "global_name": "SrpCD",
+          "display_name_styles": null,
+          "display_name": "SrpCD",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "824eae97d7d264371e0f1a27b8978670"
+        },
+        "roles": [],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-07-30T20:38:33.057000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "gizzyy._",
+          "public_flags": 128,
+          "primary_guild": {
+            "tag": "㏚OTO",
+            "identity_guild_id": "725241819960705154",
+            "identity_enabled": true,
+            "badge": "159909e3a7ec67dbc98fbf67fa78f00d"
+          },
+          "id": "669947245776338994",
+          "global_name": "Gizzy?",
+          "display_name_styles": null,
+          "display_name": "Gizzy?",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "c842cd480cbd6909994186b532080117"
+        },
+        "roles": [],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-11-04T21:15:54.644000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "prosurestring",
+          "public_flags": 4194560,
+          "primary_guild": {
+            "tag": null,
+            "identity_guild_id": null,
+            "identity_enabled": false,
+            "badge": null
+          },
+          "id": "678287437583351808",
+          "global_name": "Nicki",
+          "display_name_styles": null,
+          "display_name": "Nicki",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "67fa0aef77c472d50efcee84905b0fc1"
+        },
+        "roles": [],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-10-29T20:07:50.970000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "goos.deb",
+          "public_flags": 4194432,
+          "primary_guild": {
+            "tag": "Soko",
+            "identity_guild_id": "903852579837059113",
+            "identity_enabled": true,
+            "badge": "cc46c72aa52f3bdcd105d1811a1dc3be"
+          },
+          "id": "725985503177867295",
+          "global_name": "グースさん",
+          "display_name_styles": null,
+          "display_name": "グースさん",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": {
+            "sku_id": "1349486948942745695",
+            "expires_at": null,
+            "asset": "a_44d96dca4f514777925f23d841f36fac"
+          },
+          "avatar": "8f4b0b37d3c853eb2fc2673092844732"
+        },
+        "roles": [],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-11-09T18:10:48.271000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": "2025-06-05T14:00:35.340000+00:00",
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "luq.mn",
+          "public_flags": 256,
+          "primary_guild": {
+            "tag": "C++",
+            "identity_guild_id": "331718482485837825",
+            "identity_enabled": true,
+            "badge": "83f1d16eac1fd582e35136687cfba6ae"
+          },
+          "id": "813939364626169856",
+          "global_name": "luq",
+          "display_name_styles": null,
+          "display_name": "luq",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "e5f0a176d2f3bf0db20672f81eb10222"
+        },
+        "roles": [
+          "1257031375438086164"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-07-24T10:08:31.227000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "zayaanar",
+          "public_flags": 0,
+          "primary_guild": {
+            "tag": "DNS",
+            "identity_guild_id": "830872854677422150",
+            "identity_enabled": true,
+            "badge": "a03c68aba7972fd7a4452fe22e1036a9"
+          },
+          "id": "823939421686071386",
+          "global_name": "Zayaan AR",
+          "display_name_styles": null,
+          "display_name": "Zayaan AR",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "6c536bc4c8ac3ea49b9af144baf9dd47"
+        },
+        "roles": [],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-11-04T21:19:13.264000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": "2024-11-24T14:03:32.148000+00:00",
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "duckeydev",
+          "public_flags": 64,
+          "primary_guild": {
+            "tag": "HMLB",
+            "identity_guild_id": "184315303323238400",
+            "identity_enabled": true,
+            "badge": "59c0f381f2399f5317d14ebcda909857"
+          },
+          "id": "845312519001342052",
+          "global_name": "Ducky",
+          "display_name_styles": null,
+          "display_name": "Ducky",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "ad209fd629974989e27ce2ac4f51a97f"
+        },
+        "roles": [
+          "1257031375438086164"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": "diddy",
+        "mute": false,
+        "joined_at": "2024-10-28T13:18:13.021000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "cyteon",
+          "public_flags": 4194368,
+          "primary_guild": {
+            "tag": "HMLB",
+            "identity_guild_id": "184315303323238400",
+            "identity_enabled": true,
+            "badge": "59c0f381f2399f5317d14ebcda909857"
+          },
+          "id": "871722786006138960",
+          "global_name": "Cyteon",
+          "display_name_styles": null,
+          "display_name": "Cyteon",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "c0809eda1bdad5d9384b4469a2aaa84f"
+        },
+        "roles": [
+          "1393309393096806521",
+          "1257031375438086164"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-06-02T09:39:53.506000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "Sokora",
+          "public_flags": 65536,
+          "primary_guild": null,
+          "id": "873918300726394960",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "4110",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "7a8cf94daded7dab9453ef3e946f0973"
+        },
+        "roles": [
+          "1308468051129401366"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-11-19T16:24:53.641000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "rutujek",
+          "public_flags": 64,
+          "primary_guild": {
+            "tag": "dsc.",
+            "identity_guild_id": "733135938347073576",
+            "identity_enabled": true,
+            "badge": "6d7c4bb50cba51282a1cee0ac13bec3c"
+          },
+          "id": "969328835239755847",
+          "global_name": "RUTUJEK",
+          "display_name_styles": null,
+          "display_name": "RUTUJEK",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "bbb01940dc0a1eb9e6a45bfa8e4af974"
+        },
+        "roles": [],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-06-30T18:19:59.085000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": "2024-09-01T18:26:02.503000+00:00",
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "m.y.o.b",
+          "public_flags": 256,
+          "primary_guild": {
+            "tag": "DANK",
+            "identity_guild_id": "682809584985178135",
+            "identity_enabled": true,
+            "badge": "21129b437afdc5d4c56b399d9d86e25d"
+          },
+          "id": "981554522969223228",
+          "global_name": "MYŒẞ",
+          "display_name_styles": null,
+          "display_name": "MYŒẞ",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "9972eb34d2546b2242e0a8d080e66a6c"
+        },
+        "roles": [],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-09-10T10:08:51.174000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "skycodee",
+          "public_flags": 4194432,
+          "primary_guild": null,
+          "id": "1131236182899052696",
+          "global_name": "Sky",
+          "display_name_styles": null,
+          "display_name": "Sky",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": {
+            "sku_id": "1407510667489185793",
+            "expires_at": 1761433200,
+            "asset": "a_64c339e0c128dcb279ae201b1190d9d3"
+          },
+          "avatar": "9d4aed7f01b76d02947d982fc55d25d0"
+        },
+        "roles": [
+          "1257031375438086164"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-11-05T18:01:18.496000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "dimkauzh",
+          "public_flags": 0,
+          "primary_guild": {
+            "tag": "Soko",
+            "identity_guild_id": "903852579837059113",
+            "identity_enabled": true,
+            "badge": "cc46c72aa52f3bdcd105d1811a1dc3be"
+          },
+          "id": "1168798734650449992",
+          "global_name": "タコ",
+          "display_name_styles": null,
+          "display_name": "タコ",
+          "discriminator": "0",
+          "collectibles": null,
+          "bot": false,
+          "avatar_decoration_data": null,
+          "avatar": "93326ffaf93fdf0a242f145646a60518"
+        },
+        "roles": [
+          "1257031375438086164"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-08-01T09:51:58.039000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "PotatoBot",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1226487228914602005",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "2165",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "a_fd5e979b2dd4301e6ae0a4fd1b2d9035"
+        },
+        "roles": [
+          "1268878175757271106",
+          "1264990298493288499",
+          "1257031375438086164"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-08-02T10:28:51.837000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": "2024-10-07T16:21:41.765000+00:00",
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "TicTacToe",
+          "public_flags": 65536,
+          "primary_guild": null,
+          "id": "1237733960595935264",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "1866",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "2ef42803702d55329ae82b5eb1a5267f"
+        },
+        "roles": [
+          "1265388067221409912",
+          "1268279405759828081"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-07-31T18:49:33.892000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "PotatoDev",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1244657670762532966",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "2697",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "a_66fed4e214d2a24d7de23f4326dbc962"
+        },
+        "roles": [
+          "1264990298493288499",
+          "1267902332335816868"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-07-30T17:51:12.547000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "Duck Bot",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1249200395683627110",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "4280",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "d4057581a92f9ed123383a668654f819"
+        },
+        "roles": [
+          "1341810200956633108",
+          "1340278174029713421"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2025-02-15T11:06:57.947000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "Autonomous",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1256993230071791719",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "4169",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": null
+        },
+        "roles": [
+          "1264990298493288499",
+          "1273562290754555949"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-08-15T08:41:51.881000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "Bot in Gleam",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1262338071874244650",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "6163",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "d7e4b230b91ef021d2096cfbb5b9c165"
+        },
+        "roles": [
+          "1264990298493288499",
+          "1303420280714166367"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-11-05T18:06:51.555000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": "2025-04-08T08:19:41.744000+00:00",
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "Hellshitter",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1262573714747293750",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "9800",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "2879e225451cfa25ca7dfd23615db458"
+        },
+        "roles": [
+          "1264967296296812608",
+          "1265388067221409912"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-07-22T15:28:25.474000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "AIM-120C",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1264925219206991947",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "4369",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "70a0e09650d8d0ab26f9a25d06f92097"
+        },
+        "roles": [
+          "1264990298493288499",
+          "1302719348854751275"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-11-03T19:41:36.223000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "CookieMonster",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1268929435457818717",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "5610",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "f1f3c46bcc69d6d6d874a35c80910a7e"
+        },
+        "roles": [
+          "1264990298493288499",
+          "1284466260066701325"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-09-14T10:50:20.755000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "d.py template test bot",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1273249166230814783",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "3842",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": null
+        },
+        "roles": [
+          "1273256103127420952",
+          "1264990298493288499"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-08-14T12:25:11.005000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "FlareAI",
+          "public_flags": 65536,
+          "primary_guild": null,
+          "id": "1282474839512449046",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "6319",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "642ac80e2bf69480a96d4887f26387c2"
+        },
+        "roles": [
+          "1265388067221409912",
+          "1308591471716466791"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-11-20T00:35:19.357000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "RSS Feed",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1295088049906253954",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "8967",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "55529e8a8180487d03aeca50cf9f548b"
+        },
+        "roles": [
+          "1377910096243195935"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2025-05-30T07:22:47.495773+00:00",
+        "flags": 1,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "The Goverment",
+          "public_flags": 0,
+          "primary_guild": null,
+          "id": "1296127079905235026",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "9363",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "e168015bb7c3255b32da92784bbe1864"
+        },
+        "roles": [
+          "1264990298493288499",
+          "1296127340606394391"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-10-16T15:07:18.974000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      },
+      {
+        "user": {
+          "username": "Morae",
+          "public_flags": 524288,
+          "primary_guild": null,
+          "id": "1304463919208992832",
+          "global_name": null,
+          "display_name_styles": null,
+          "display_name": null,
+          "discriminator": "0424",
+          "collectibles": null,
+          "bot": true,
+          "avatar_decoration_data": null,
+          "avatar": "f7415fb38b6b3147f0cdbe84d124350f"
+        },
+        "roles": [
+          "1264990298493288499"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-11-08T16:09:05.646000+00:00",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+      }
+    ],
+    "guild_id": "1246760192167641129",
+    "chunk_index": 0,
+    "chunk_count": 1
+  }
+}

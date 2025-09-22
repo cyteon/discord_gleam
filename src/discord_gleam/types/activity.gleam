@@ -58,7 +58,7 @@ pub type Activity {
     secrets: Option(ActivitySecrets),
     instance: Option(Bool),
     flags: Option(Int),
-    buttons: Option(List(ActivityButton)),
+    buttons: Option(List(String)),
   )
 }
 
@@ -131,7 +131,7 @@ pub fn from_json_decoder() -> decode.Decoder(Activity) {
   use buttons <- decode.optional_field(
     "buttons",
     None,
-    decode.optional(decode.list(of: activity_button_decoder())),
+    decode.optional(decode.list(of: decode.string)),
   )
 
   decode.success(Activity(
@@ -255,10 +255,4 @@ fn activity_secrets_decoder() {
     decode.optional(decode.string),
   )
   decode.success(ActivitySecrets(join:, spectate:, match:))
-}
-
-fn activity_button_decoder() {
-  use label <- decode.field("label", decode.string)
-  use url <- decode.field("url", decode.string)
-  decode.success(ActivityButton(label:, url:))
 }
