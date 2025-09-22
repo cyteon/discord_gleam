@@ -88,7 +88,7 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
         let assert guild.UnavailableGuild(id, ..) = guild
         logging.log(logging.Info, "Unavailable guild: " <> id)
 
-        request_guild_members.request_guild_members(
+        discord_gleam.request_guild_members(
           bot,
           guild_id: id,
           option: request_guild_members.Query("", option.None),

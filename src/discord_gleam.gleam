@@ -4,6 +4,7 @@
 
 import booklet
 import discord_gleam/discord/intents
+import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
 import discord_gleam/http/endpoints
 import discord_gleam/internal/error
@@ -13,6 +14,7 @@ import discord_gleam/types/message
 import discord_gleam/types/message_send_response
 import discord_gleam/types/reply
 import discord_gleam/types/slash_command
+import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/event_loop
 import discord_gleam/ws/packets/interaction_create
 import gleam/dict
@@ -288,4 +290,26 @@ pub fn interaction_reply_message(
   ephemeral: Bool,
 ) -> Result(Nil, error.DiscordError) {
   endpoints.interaction_send_text(interaction, message, ephemeral)
+}
+
+/// Used to request all members of a guild. The server will send 
+/// GUILD_MEMBERS_CHUNK events in response with up to 1000 members per chunk 
+/// until all members that match the request have been sent.
+/// 
+/// Nonce can only be up to 32 bytes. If you send an invalid nonce it will be
+/// ignored and the reply member_chunk(s) will not have a nonce set.
+pub fn request_guild_members(
+  bot: bot.Bot,
+  guild_id guild_id: snowflake.Snowflake,
+  option option: request_guild_members.RequestGuildMembersOption,
+  presences presences: option.Option(Bool),
+  nonce nonce: option.Option(String),
+) -> Nil {
+  request_guild_members.request_guild_members(
+    bot,
+    guild_id,
+    option,
+    presences,
+    nonce,
+  )
 }
