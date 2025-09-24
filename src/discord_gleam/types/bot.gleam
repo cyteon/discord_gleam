@@ -13,12 +13,12 @@ pub type Bot {
     client_id: Snowflake,
     intents: intents.Intents,
     cache: Cache,
-    websocket_name: Option(process.Name(UserMessage)),
+    websocket_name: Option(process.Name(BotMessage)),
   )
 }
 
 /// Used to send user messages to the websocket process
-pub type UserMessage {
+pub type BotMessage {
   SendPacket(packet: String)
 }
 
