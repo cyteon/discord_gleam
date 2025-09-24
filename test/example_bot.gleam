@@ -70,7 +70,9 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   let _ = discord_gleam.wipe_guild_commands(bot, guild_id)
   let _ = discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
 
-  discord_gleam.start(bot, [handler])
+  let assert Ok(_) =
+    discord_gleam.simple(bot, [handler])
+    |> discord_gleam.start()
 
   process.sleep_forever()
 }

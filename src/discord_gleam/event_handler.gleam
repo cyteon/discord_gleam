@@ -25,8 +25,18 @@ import gleam/dict
 import gleam/list
 import logging
 
-pub type EventHandler =
-  fn(bot.Bot, Packet) -> Nil
+// pub type SimpleEventHandler =
+//   fn(bot.Bot, Packet) -> Nil
+
+pub type Mode {
+  Simple(bot: bot.Bot, handlers: List(fn(bot.Bot, Packet) -> Nil))
+}
+
+pub fn bot_from_mode(mode: Mode) -> bot.Bot {
+  case mode {
+    Simple(bot, ..) -> bot
+  }
+}
 
 /// The supported packets
 pub type Packet {
@@ -121,13 +131,17 @@ fn internal_handler(
 pub fn handle_event(
   bot: bot.Bot,
   msg: String,
-  handlers: List(EventHandler),
+  mode: Mode,
   state_ets: booklet.Booklet(dict.Dict(String, String)),
 ) -> Nil {
   let packet = decode_packet(msg)
   internal_handler(bot, packet, state_ets)
 
-  list.each(handlers, fn(handler) { handler(bot, packet) })
+  case mode {
+    Simple(bot, handlers) -> {
+      list.each(handlers, fn(handler) { handler(bot, packet) })
+    }
+  }
 }
 
 fn decode_packet(msg: String) -> Packet {

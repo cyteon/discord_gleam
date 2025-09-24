@@ -10,7 +10,6 @@ import discord_gleam/ws/packets/hello
 import discord_gleam/ws/packets/identify
 import gleam/dict
 import gleam/erlang/process
-import gleam/function
 import gleam/http
 import gleam/http/request
 import gleam/int
@@ -18,7 +17,6 @@ import gleam/json
 import gleam/option
 import gleam/otp/actor
 import gleam/result
-import gleam/string
 import logging
 import repeatedly
 import stratus
@@ -39,8 +37,7 @@ pub type EventLoopMessage {
 
 /// Start the event loop, with a set of event handlers.
 pub fn start_event_loop(
-  bot: bot.Bot,
-  event_handlers: List(event_handler.EventHandler),
+  mode: event_handler.Mode,
   host: String,
   reconnect: Bool,
   session_id: String,
@@ -58,9 +55,8 @@ pub fn start_event_loop(
       Start -> {
         let started =
           start_discord_websocket(
-            bot,
+            mode,
             subject,
-            event_handlers,
             host,
             reconnect,
             session_id,
@@ -76,9 +72,8 @@ pub fn start_event_loop(
       Restart(host, session_id) -> {
         let started =
           start_discord_websocket(
-            bot,
+            mode,
             subject,
-            event_handlers,
             host,
             reconnect,
             session_id,
@@ -98,9 +93,8 @@ pub fn start_event_loop(
 }
 
 fn start_discord_websocket(
-  bot: bot.Bot,
+  mode: event_handler.Mode,
   event_loop_subject: process.Subject(EventLoopMessage),
-  event_handlers: List(event_handler.EventHandler),
   host: String,
   reconnect: Bool,
   session_id: String,
@@ -126,7 +120,11 @@ fn start_discord_websocket(
     State(has_received_hello: False, s: 0, event_loop_subject:)
 
   let name: process.Name(bot.UserMessage) = process.new_name("user_msg_subject")
-  let bot = bot.Bot(..bot, websocket_name: option.Some(name))
+  let bot =
+    bot.Bot(
+      ..event_handler.bot_from_mode(mode),
+      websocket_name: option.Some(name),
+    )
 
   let started =
     stratus.new_with_initialiser(request: req, init: fn() {
@@ -149,7 +147,7 @@ fn start_discord_websocket(
             state,
             msg,
             bot,
-            event_handlers,
+            mode,
             reconnect,
             session_id,
             state_ets,
@@ -189,7 +187,7 @@ fn handle_text_message(
   state: State,
   msg: String,
   bot: bot.Bot,
-  event_handlers: List(event_handler.EventHandler),
+  mode: event_handler.Mode,
   reconnect: Bool,
   session_id: String,
   state_ets: booklet.Booklet(dict.Dict(String, String)),
@@ -326,7 +324,7 @@ fn handle_text_message(
           event_loop_subject: state.event_loop_subject,
         )
 
-      event_handler.handle_event(bot, msg, event_handlers, state_ets)
+      event_handler.handle_event(bot, msg, mode, state_ets)
 
       stratus.continue(new_state)
     }
