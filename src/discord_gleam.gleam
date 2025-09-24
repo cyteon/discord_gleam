@@ -18,8 +18,10 @@ import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/event_loop
 import discord_gleam/ws/packets/interaction_create
 import gleam/dict
+import gleam/erlang/process
 import gleam/list
 import gleam/option
+import gleam/otp/actor
 
 /// Create a new bot instance.
 /// 
@@ -70,13 +72,23 @@ pub fn bot(
 ///  }
 /// }
 /// 
-pub fn run(
+pub fn start(
   bot: bot.Bot,
   event_handlers: List(event_handler.EventHandler),
-) -> Nil {
+) -> Result(
+  actor.Started(process.Subject(event_loop.EventLoopMessage)),
+  actor.StartError,
+) {
   let state = booklet.new(dict.new())
 
-  event_loop.main(bot, event_handlers, "gateway.discord.gg", False, "", state)
+  event_loop.start_event_loop(
+    bot,
+    event_handlers,
+    "gateway.discord.gg",
+    False,
+    "",
+    state,
+  )
 }
 
 /// Send a message to a channel.
