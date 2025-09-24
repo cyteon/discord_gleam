@@ -1,6 +1,8 @@
 import booklet
 import discord_gleam/internal/error
 import discord_gleam/types/bot
+import gleam/erlang/process
+import gleam/option
 
 import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
@@ -26,16 +28,42 @@ import gleam/dict
 import gleam/list
 import logging
 
-// pub type SimpleEventHandler =
-//   fn(bot.Bot, Packet) -> Nil
-
-pub type Mode {
-  Simple(bot: bot.Bot, handlers: List(fn(bot.Bot, Packet) -> Nil))
+pub type HandlerMessage(user_message) {
+  DiscordPacket(Packet)
+  User(user_message)
 }
 
-pub fn bot_from_mode(mode: Mode) -> bot.Bot {
+pub type InternalMessage(user_message) {
+  InternalPacket(String)
+  InternalUser(user_message)
+}
+
+pub type Next(new_state, user_message) {
+  Continue(new_state, option.Option(process.Selector(user_message)))
+  Stop
+  StopAbnormal(reason: String)
+}
+
+pub type Mode(user_state, user_message) {
+  Simple(
+    bot: bot.Bot,
+    handlers: List(fn(bot.Bot, Packet) -> Nil),
+    next: Next(user_state, user_message),
+    nil_state: user_state,
+  )
+  Normal(
+    bot: bot.Bot,
+    on_init: fn(process.Selector(user_message)) ->
+      #(user_state, process.Selector(user_message)),
+    handler: fn(bot.Bot, user_state, HandlerMessage(user_message)) ->
+      Next(user_state, user_message),
+  )
+}
+
+pub fn bot_from_mode(mode: Mode(user_state, user_message)) -> bot.Bot {
   case mode {
     Simple(bot, ..) -> bot
+    Normal(bot, ..) -> bot
   }
 }
 
@@ -131,16 +159,29 @@ fn internal_handler(
 /// Handle an event from the Discord API, using a set of event handlers.
 pub fn handle_event(
   bot: bot.Bot,
-  msg: String,
-  mode: Mode,
+  user_state: user_state,
+  msg: InternalMessage(user_message),
+  mode: Mode(user_state, user_message),
   state_ets: booklet.Booklet(dict.Dict(String, String)),
-) -> Nil {
-  let packet = decode_packet(msg)
-  internal_handler(bot, packet, state_ets)
+) -> Next(user_state, user_message) {
+  case msg {
+    InternalPacket(packet) -> {
+      let packet = decode_packet(packet)
+      internal_handler(bot, packet, state_ets)
 
-  case mode {
-    Simple(bot, handlers) -> {
-      list.each(handlers, fn(handler) { handler(bot, packet) })
+      case mode {
+        Simple(bot, handlers, next, _nil_state) -> {
+          list.each(handlers, fn(handler) { handler(bot, packet) })
+          next
+        }
+        Normal(bot, _on_init, handler) -> {
+          handler(bot, user_state, DiscordPacket(packet))
+        }
+      }
+    }
+    InternalUser(msg) -> {
+      let assert Normal(bot, _on_init, handler) = mode
+      handler(bot, user_state, User(msg))
     }
   }
 }
