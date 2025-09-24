@@ -47,6 +47,17 @@ pub fn bot(
   )
 }
 
+pub opaque type Mode {
+  Simple(bot: bot.Bot, handlers: List(fn(bot.Bot, event_handler.Packet) -> Nil))
+}
+
+pub fn simple(
+  bot: bot.Bot,
+  handlers: List(fn(bot.Bot, event_handler.Packet) -> Nil),
+) -> Mode {
+  Simple(bot, handlers)
+}
+
 /// Start the event loop, with a set of event handlers.
 ///
 /// Example:
@@ -73,8 +84,7 @@ pub fn bot(
 /// }
 /// 
 pub fn start(
-  bot: bot.Bot,
-  event_handlers: List(event_handler.EventHandler),
+  mode: Mode,
 ) -> Result(
   actor.Started(process.Subject(event_loop.EventLoopMessage)),
   actor.StartError,
@@ -82,13 +92,18 @@ pub fn start(
   let state = booklet.new(dict.new())
 
   event_loop.start_event_loop(
-    bot,
-    event_handlers,
+    to_internal_mode(mode),
     "gateway.discord.gg",
     False,
     "",
     state,
   )
+}
+
+fn to_internal_mode(mode: Mode) -> event_handler.Mode {
+  case mode {
+    Simple(bot, handlers) -> event_handler.Simple(bot, handlers)
+  }
 }
 
 /// Send a message to a channel.
