@@ -23,6 +23,8 @@ import gleam/list
 import gleam/option
 import gleam/otp/actor
 
+// TODO: DOCS
+
 /// Create a new bot instance.
 /// 
 /// Example:
@@ -47,15 +49,70 @@ pub fn bot(
   )
 }
 
-pub opaque type Mode {
-  Simple(bot: bot.Bot, handlers: List(fn(bot.Bot, event_handler.Packet) -> Nil))
+pub opaque type Next(user_state, user_message) {
+  Continue(user_state, option.Option(process.Selector(user_message)))
+  Stop
+  StopAbnormal(reason: String)
+}
+
+pub fn continue(state: user_state) -> Next(user_state, user_message) {
+  Continue(state, option.None)
+}
+
+pub fn with_selector(
+  state: Next(user_state, user_message),
+  selector: process.Selector(user_message),
+) -> Next(user_state, user_message) {
+  case state {
+    Continue(user_state, _) -> Continue(user_state, option.Some(selector))
+    _ -> state
+  }
+}
+
+pub fn stop() -> Next(user_state, user_message) {
+  Stop
+}
+
+pub fn stop_abnormal(reason: String) -> Next(user_state, user_message) {
+  StopAbnormal(reason)
+}
+
+pub opaque type Mode(user_state, user_message) {
+  Simple(
+    bot: bot.Bot,
+    handlers: List(fn(bot.Bot, event_handler.Packet) -> Nil),
+    next: Next(user_state, user_message),
+    nil_state: user_state,
+  )
+  Normal(
+    bot: bot.Bot,
+    on_init: fn(process.Selector(user_message)) ->
+      #(user_state, process.Selector(user_message)),
+    handler: fn(bot.Bot, user_state, HandlerMessage(user_message)) ->
+      Next(user_state, user_message),
+  )
+}
+
+pub type HandlerMessage(user_message) {
+  Packet(event_handler.Packet)
+  User(user_message)
 }
 
 pub fn simple(
   bot: bot.Bot,
   handlers: List(fn(bot.Bot, event_handler.Packet) -> Nil),
-) -> Mode {
-  Simple(bot, handlers)
+) -> Mode(Nil, Nil) {
+  Simple(bot, handlers, Continue(Nil, option.None), Nil)
+}
+
+pub fn new(
+  bot: bot.Bot,
+  on_init: fn(process.Selector(user_message)) ->
+    #(user_state, process.Selector(user_message)),
+  handler: fn(bot.Bot, user_state, HandlerMessage(user_message)) ->
+    Next(user_state, user_message),
+) -> Mode(user_state, user_message) {
+  Normal(bot, on_init, handler)
 }
 
 /// Start the event loop, with a set of event handlers.
@@ -84,7 +141,7 @@ pub fn simple(
 /// }
 /// 
 pub fn start(
-  mode: Mode,
+  mode: Mode(user_state, user_message),
 ) -> Result(
   actor.Started(process.Subject(event_loop.EventLoopMessage)),
   actor.StartError,
@@ -100,9 +157,39 @@ pub fn start(
   )
 }
 
-fn to_internal_mode(mode: Mode) -> event_handler.Mode {
+fn to_internal_mode(
+  mode: Mode(user_state, user_message),
+) -> event_handler.Mode(user_state, user_message) {
   case mode {
-    Simple(bot, handlers) -> event_handler.Simple(bot, handlers)
+    Simple(bot, handlers, next, nil_state) ->
+      event_handler.Simple(bot, handlers, to_internal_next(next), nil_state)
+    Normal(bot, on_init, handler) -> {
+      let handler = fn(bot, user_state, msg) {
+        handler(bot, user_state, internal_to_handler_message(msg))
+        |> to_internal_next()
+      }
+
+      event_handler.Normal(bot, on_init, handler)
+    }
+  }
+}
+
+fn internal_to_handler_message(
+  msg: event_handler.HandlerMessage(user_message),
+) -> HandlerMessage(user_message) {
+  case msg {
+    event_handler.DiscordPacket(packet) -> Packet(packet)
+    event_handler.User(msg) -> User(msg)
+  }
+}
+
+fn to_internal_next(
+  next: Next(user_state, user_message),
+) -> event_handler.Next(user_state, user_message) {
+  case next {
+    Continue(user_state, opt) -> event_handler.Continue(user_state, opt)
+    Stop -> event_handler.Stop
+    StopAbnormal(reason) -> event_handler.StopAbnormal(reason)
   }
 }
 

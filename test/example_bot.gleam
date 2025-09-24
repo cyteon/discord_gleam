@@ -72,9 +72,25 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   let _ = discord_gleam.wipe_guild_commands(bot, guild_id)
   let _ = discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
 
+  // SIMPLE BOT EXAMPLE
+  // let bot =
+  //   supervision.worker(fn() {
+  //     discord_gleam.simple(bot, [simple_handler])
+  //     |> discord_gleam.start()
+  //   })
+
+  // NORMAL BOT EXAMPLE
   let bot =
     supervision.worker(fn() {
-      discord_gleam.simple(bot, [handler])
+      discord_gleam.new(
+        bot,
+        fn(selector) {
+          let subject = process.new_subject()
+
+          #(subject, process.select(selector, subject))
+        },
+        normal_handler,
+      )
       |> discord_gleam.start()
     })
 
@@ -86,7 +102,7 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   process.sleep_forever()
 }
 
-fn handler(bot: bot.Bot, packet: event_handler.Packet) {
+fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
   case packet {
     event_handler.ReadyPacket(ready) -> {
       logging.log(
@@ -690,5 +706,47 @@ fn handler(bot: bot.Bot, packet: event_handler.Packet) {
     }
 
     _ -> Nil
+  }
+}
+
+fn normal_handler(
+  bot: bot.Bot,
+  state: process.Subject(String),
+  msg: discord_gleam.HandlerMessage(String),
+) {
+  case msg {
+    discord_gleam.Packet(packet) -> {
+      case packet {
+        event_handler.MessagePacket(message) -> {
+          logging.log(logging.Info, "Got message: " <> message.d.content)
+
+          case message.d.content {
+            "!ping" -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.d.channel_id,
+                  "Pong!",
+                  [],
+                )
+
+              discord_gleam.continue(state)
+            }
+            "!send " <> message -> {
+              process.send(state, message)
+
+              discord_gleam.continue(state)
+            }
+            _ -> discord_gleam.continue(state)
+          }
+        }
+        _ -> discord_gleam.continue(state)
+      }
+    }
+
+    discord_gleam.User(msg) -> {
+      logging.log(logging.Info, "Got user message from subject: " <> msg)
+      discord_gleam.continue(state)
+    }
   }
 }

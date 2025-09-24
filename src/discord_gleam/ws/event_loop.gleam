@@ -21,11 +21,12 @@ import logging
 import repeatedly
 import stratus
 
-pub type State {
+pub type State(user_state) {
   State(
     has_received_hello: Bool,
     s: Int,
     event_loop_subject: process.Subject(EventLoopMessage),
+    user_state: user_state,
   )
 }
 
@@ -35,9 +36,14 @@ pub type EventLoopMessage {
   Stop
 }
 
+pub type WebsocketMessage(user_message) {
+  BotMessage(bot.BotMessage)
+  User(user_message)
+}
+
 /// Start the event loop, with a set of event handlers.
 pub fn start_event_loop(
-  mode: event_handler.Mode,
+  mode: event_handler.Mode(user_state, user_message),
   host: String,
   reconnect: Bool,
   session_id: String,
@@ -97,7 +103,7 @@ pub fn start_event_loop(
 }
 
 fn start_discord_websocket(
-  mode: event_handler.Mode,
+  mode: event_handler.Mode(user_state, user_message),
   event_loop_subject: process.Subject(EventLoopMessage),
   host: String,
   reconnect: Bool,
@@ -120,9 +126,6 @@ fn start_discord_websocket(
 
   logging.log(logging.Debug, "Creating websocket client builder")
 
-  let initial_state =
-    State(has_received_hello: False, s: 0, event_loop_subject:)
-
   let name: process.Name(bot.BotMessage) = process.new_name("bot_msg_subject")
   let bot =
     bot.Bot(
@@ -137,6 +140,30 @@ fn start_discord_websocket(
         let selector =
           process.new_selector()
           |> process.select(process.named_subject(name))
+          |> process.map_selector(BotMessage)
+
+        let #(user_state, selector) = case mode {
+          event_handler.Normal(bot:, on_init:, ..) -> {
+            let #(user_state, user_selector) = on_init(process.new_selector())
+
+            let selector =
+              process.map_selector(user_selector, User)
+              |> process.merge_selector(selector, _)
+
+            #(user_state, selector)
+          }
+          event_handler.Simple(nil_state:, ..) -> {
+            #(nil_state, selector)
+          }
+        }
+
+        let initial_state =
+          State(
+            has_received_hello: False,
+            s: 0,
+            event_loop_subject:,
+            user_state:,
+          )
 
         stratus.initialised(initial_state)
         |> stratus.selecting(selector)
@@ -157,12 +184,45 @@ fn start_discord_websocket(
             state_ets,
           )
 
-        stratus.User(bot.SendPacket(packet)) -> {
+        stratus.User(BotMessage(bot.SendPacket(packet))) -> {
           logging.log(logging.Debug, "User packet: " <> packet)
 
           let _ = stratus.send_text_message(conn, packet)
 
           stratus.continue(state)
+        }
+
+        stratus.User(User(msg)) -> {
+          let next =
+            event_handler.handle_event(
+              bot,
+              state.user_state,
+              event_handler.InternalUser(msg),
+              mode,
+              state_ets,
+            )
+
+          case next {
+            event_handler.Continue(user_state, opt) -> {
+              let new_state = State(..state, user_state:)
+              let next = stratus.continue(new_state)
+
+              case opt {
+                option.Some(user_selector) ->
+                  stratus.with_selector(
+                    next,
+                    process.map_selector(user_selector, User),
+                  )
+                option.None -> next
+              }
+            }
+            event_handler.Stop -> {
+              stratus.stop()
+            }
+            event_handler.StopAbnormal(reason) -> {
+              stratus.stop_abnormal(reason)
+            }
+          }
         }
 
         stratus.Binary(_) -> {
@@ -188,10 +248,10 @@ fn start_discord_websocket(
 
 fn handle_text_message(
   conn: stratus.Connection,
-  state: State,
+  state: State(user_state),
   msg: String,
   bot: bot.Bot,
-  mode: event_handler.Mode,
+  mode: event_handler.Mode(user_state, user_message),
   reconnect: Bool,
   session_id: String,
   state_ets: booklet.Booklet(dict.Dict(String, String)),
@@ -222,6 +282,7 @@ fn handle_text_message(
           has_received_hello: True,
           s: 0,
           event_loop_subject: state.event_loop_subject,
+          user_state: state.user_state,
         )
 
       case hello.string_to_data(msg) {
@@ -326,17 +387,45 @@ fn handle_text_message(
           has_received_hello: True,
           s: generic_packet.s,
           event_loop_subject: state.event_loop_subject,
+          user_state: state.user_state,
         )
 
-      event_handler.handle_event(bot, msg, mode, state_ets)
+      let next =
+        event_handler.handle_event(
+          bot,
+          state.user_state,
+          event_handler.InternalPacket(msg),
+          mode,
+          state_ets,
+        )
 
-      stratus.continue(new_state)
+      case next {
+        event_handler.Continue(user_state, opt) -> {
+          let new_state = State(..new_state, user_state:)
+          let next = stratus.continue(new_state)
+
+          case opt {
+            option.Some(user_selector) ->
+              stratus.with_selector(
+                next,
+                process.map_selector(user_selector, User),
+              )
+            option.None -> next
+          }
+        }
+        event_handler.Stop -> {
+          stratus.stop()
+        }
+        event_handler.StopAbnormal(reason) -> {
+          stratus.stop_abnormal(reason)
+        }
+      }
     }
   }
 }
 
 fn on_close(
-  state: State,
+  state: State(user_state),
   state_ets: booklet.Booklet(dict.Dict(String, String)),
   close_reason: stratus.CloseReason,
 ) {
