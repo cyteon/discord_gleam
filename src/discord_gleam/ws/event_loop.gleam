@@ -43,7 +43,10 @@ pub fn start_event_loop(
   session_id: String,
   state_ets: booklet.Booklet(dict.Dict(String, String)),
 ) {
+  logging.log(logging.Debug, "Starting event loop")
+
   actor.new_with_initialiser(1000, fn(subject) {
+    logging.log(logging.Debug, "Sending start message")
     actor.send(subject, Start)
 
     actor.initialised(subject)
@@ -53,6 +56,7 @@ pub fn start_event_loop(
   |> actor.on_message(fn(subject, msg) {
     case msg {
       Start -> {
+        logging.log(logging.Debug, "Received start message")
         let started =
           start_discord_websocket(
             mode,
@@ -114,12 +118,12 @@ fn start_discord_websocket(
     |> request.set_header("Upgrade", "websocket")
     |> request.set_header("Sec-WebSocket-Version", "13")
 
-  logging.log(logging.Debug, "Creating builder")
+  logging.log(logging.Debug, "Creating websocket client builder")
 
   let initial_state =
     State(has_received_hello: False, s: 0, event_loop_subject:)
 
-  let name: process.Name(bot.UserMessage) = process.new_name("user_msg_subject")
+  let name: process.Name(bot.BotMessage) = process.new_name("bot_msg_subject")
   let bot =
     bot.Bot(
       ..event_handler.bot_from_mode(mode),

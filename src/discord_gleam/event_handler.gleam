@@ -1,6 +1,7 @@
 import booklet
 import discord_gleam/internal/error
 import discord_gleam/types/bot
+
 import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
 import discord_gleam/ws/packets/channel_update

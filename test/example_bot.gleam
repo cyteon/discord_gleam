@@ -15,6 +15,8 @@ import gleam/float
 import gleam/int
 import gleam/list
 import gleam/option.{None, Some}
+import gleam/otp/static_supervisor as supervisor
+import gleam/otp/supervision
 import gleam/string
 import logging
 
@@ -70,9 +72,16 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   let _ = discord_gleam.wipe_guild_commands(bot, guild_id)
   let _ = discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
 
+  let bot =
+    supervision.worker(fn() {
+      discord_gleam.simple(bot, [handler])
+      |> discord_gleam.start()
+    })
+
   let assert Ok(_) =
-    discord_gleam.simple(bot, [handler])
-    |> discord_gleam.start()
+    supervisor.new(supervisor.OneForOne)
+    |> supervisor.add(bot)
+    |> supervisor.start()
 
   process.sleep_forever()
 }
