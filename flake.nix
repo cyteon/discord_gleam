@@ -4,40 +4,14 @@
   };
 
   outputs = {nixpkgs, ...}: let
-    lib = nixpkgs.lib;
     supportedSystems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
-    forEachSupportedSystem = f:
-      lib.genAttrs supportedSystems (system:
-        f {
-          pkgs = import nixpkgs {inherit system;};
-        });
+    forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+    nixpkgsFor = forAllSystems (system: nixpkgs.legacyPackages.${system});
   in {
-    devShells = forEachSupportedSystem ({pkgs}: {
-      default = pkgs.mkShell {
-        packages = with pkgs; [
-          gleam
-          erlang_28
-          beam28Packages.rebar3
-        ];
-      };
-    });
-    apps = forEachSupportedSystem ({pkgs}: let
-      runtimeInputs = with pkgs; [
-        gleam
-        erlang_28
-        beam28Packages.rebar3
-      ];
+    devShells = forAllSystems (system: let
+      pkgs = nixpkgsFor.${system};
     in {
-      test = {
-        type = "app";
-        program = "${(pkgs.writeShellApplication {
-          inherit runtimeInputs;
-          name = "app";
-          text = ''
-            ${pkgs.gleam}/bin/gleam test
-          '';
-        })}/bin/app";
-      };
+      default = import ./shell.nix {inherit pkgs;};
     });
   };
 }

@@ -4,3 +4,5 @@
 erl_crash.dump
 .env
 .env.local
+.direnv
+.envrc
