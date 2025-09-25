@@ -23,8 +23,6 @@ import gleam/list
 import gleam/option
 import gleam/otp/actor
 
-// TODO: DOCS
-
 /// Create a new bot instance.
 /// 
 /// Example:
@@ -49,16 +47,25 @@ pub fn bot(
   )
 }
 
+/// Instruction on how event loop actor should proceed after handling an event
+/// 
+/// - `Continue` - Continue processing with the updated state and optional
+/// selector for custom user messages
+/// - `Stop` - Stop the event loop
+/// - `StopAbnormal` - Stop the event loop with an abnormal reason
 pub opaque type Next(user_state, user_message) {
   Continue(user_state, option.Option(process.Selector(user_message)))
   Stop
   StopAbnormal(reason: String)
 }
 
+/// Continue processing with the updated state. Use `with_selector` to add a 
+/// selector for custom user messages.
 pub fn continue(state: user_state) -> Next(user_state, user_message) {
   Continue(state, option.None)
 }
 
+/// Add a selector for custom user messages.
 pub fn with_selector(
   state: Next(user_state, user_message),
   selector: process.Selector(user_message),
@@ -69,14 +76,23 @@ pub fn with_selector(
   }
 }
 
+/// Stop the event loop
 pub fn stop() -> Next(user_state, user_message) {
   Stop
 }
 
+/// Stop the event loop with an abnormal reason
 pub fn stop_abnormal(reason: String) -> Next(user_state, user_message) {
   StopAbnormal(reason)
 }
 
+/// The mode of the event handler
+/// 
+/// Simple mode is used for simple bots that don't need to handle custom user 
+/// state and messages. Can have multiple handlers.
+/// 
+/// Normal mode is used for bots that need to handle custom user state and
+/// messages. Can have only one handler.
 pub opaque type Mode(user_state, user_message) {
   Simple(
     bot: bot.Bot,
@@ -93,11 +109,15 @@ pub opaque type Mode(user_state, user_message) {
   )
 }
 
+/// The message type for the event handler with custom user messages
 pub type HandlerMessage(user_message) {
+  /// A discord packet
   Packet(event_handler.Packet)
+  /// A custom user message
   User(user_message)
 }
 
+/// Create a simple mode with multiple handlers
 pub fn simple(
   bot: bot.Bot,
   handlers: List(fn(bot.Bot, event_handler.Packet) -> Nil),
@@ -105,6 +125,12 @@ pub fn simple(
   Simple(bot, handlers, Continue(Nil, option.None), Nil)
 }
 
+/// Create a normal mode with a single handler
+/// 
+/// `on_init` function is called once discord websocket connection is
+/// initialized. It must return a tuple with initial state and selector for 
+/// custom messages. If there is no custom messages, user can pass the same 
+/// selector from the argument
 pub fn new(
   bot: bot.Bot,
   on_init: fn(process.Selector(user_message)) ->
@@ -115,19 +141,22 @@ pub fn new(
   Normal(bot, on_init, handler)
 }
 
-/// Start the event loop, with a set of event handlers.
+/// Start the event loop with a current mode.
 ///
 /// Example:
 /// ```gleam
 /// import discord_gleam/discord/intents
 /// import discord_gleam/event_handler
+/// import gleam/erlang/process
 /// 
 /// fn main() {
 ///  let bot = discord_gleam.bot("TOKEN", "CLIENT_ID", intents.default())
 /// 
-///  let event_handlers = [handler]
+///  let assert Ok(_) = 
+///    discord_gleam.simple(bot, [handler])
+///    |> discord_gleam.start()
 /// 
-///  discord_gleam.run(bot, event_handlers)
+///  process.sleep_forever()
 /// }
 /// 
 /// fn handler(bot: bot.Bot, packet: event_handler.Packet) {
@@ -139,6 +168,7 @@ pub fn new(
 ///   _ -> Nil
 ///  }
 /// }
+/// ```
 /// 
 pub fn start(
   mode: Mode(user_state, user_message),
