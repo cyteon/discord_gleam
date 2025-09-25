@@ -21,24 +21,11 @@ import logging
 import repeatedly
 import stratus
 
-pub type State(user_state) {
-  State(
-    has_received_hello: Bool,
-    s: Int,
-    event_loop_subject: process.Subject(EventLoopMessage),
-    user_state: user_state,
-  )
-}
-
+/// The message type for the event loop actor
 pub type EventLoopMessage {
   Start
   Restart(host: String, session_id: String)
   Stop
-}
-
-pub type WebsocketMessage(user_message) {
-  BotMessage(bot.BotMessage)
-  User(user_message)
 }
 
 /// Start the event loop, with a set of event handlers.
@@ -80,6 +67,7 @@ pub fn start_event_loop(
         }
       }
       Restart(host, session_id) -> {
+        logging.log(logging.Debug, "Restarting discord websocket")
         let started =
           start_discord_websocket(
             mode,
@@ -93,13 +81,27 @@ pub fn start_event_loop(
         case started {
           Ok(Nil) -> actor.continue(subject)
           Error(_actor_failed) ->
-            actor.stop_abnormal("failed to start discord websocket")
+            actor.stop_abnormal("failed to restart discord websocket")
         }
       }
       Stop -> actor.stop()
     }
   })
   |> actor.start()
+}
+
+pub type WebsocketState(user_state) {
+  State(
+    has_received_hello: Bool,
+    s: Int,
+    event_loop_subject: process.Subject(EventLoopMessage),
+    user_state: user_state,
+  )
+}
+
+pub type WebsocketMessage(user_message) {
+  BotMessage(bot.BotMessage)
+  User(user_message)
 }
 
 fn start_discord_websocket(
@@ -143,7 +145,7 @@ fn start_discord_websocket(
           |> process.map_selector(BotMessage)
 
         let #(user_state, selector) = case mode {
-          event_handler.Normal(bot:, on_init:, ..) -> {
+          event_handler.Normal(on_init:, ..) -> {
             let #(user_state, user_selector) = on_init(process.new_selector())
 
             let selector =
@@ -248,7 +250,7 @@ fn start_discord_websocket(
 
 fn handle_text_message(
   conn: stratus.Connection,
-  state: State(user_state),
+  state: WebsocketState(user_state),
   msg: String,
   bot: bot.Bot,
   mode: event_handler.Mode(user_state, user_message),
@@ -425,7 +427,7 @@ fn handle_text_message(
 }
 
 fn on_close(
-  state: State(user_state),
+  state: WebsocketState(user_state),
   state_ets: booklet.Booklet(dict.Dict(String, String)),
   close_reason: stratus.CloseReason,
 ) {

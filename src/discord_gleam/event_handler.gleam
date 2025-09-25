@@ -28,27 +28,39 @@ import gleam/dict
 import gleam/list
 import logging
 
+/// The message type for the event handler with custom user messages
 pub type HandlerMessage(user_message) {
   DiscordPacket(Packet)
   User(user_message)
 }
 
+/// The message type received from event loop
 pub type InternalMessage(user_message) {
   InternalPacket(String)
   InternalUser(user_message)
 }
 
+/// Instruction on how event loop actor should proceed after handling an event
 pub type Next(new_state, user_message) {
   Continue(new_state, option.Option(process.Selector(user_message)))
   Stop
   StopAbnormal(reason: String)
 }
 
+/// The mode of the event handler
+/// 
+/// Simple mode is used for simple bots that don't need to handle custom user 
+/// state and messages. `default_next` and `nil_state` fields are required for 
+/// proper type inference. Recommended to use `Nil` state and continue with no 
+/// selector.
+/// 
+/// Normal mode is used for bots that need to handle custom user state 
+/// and messages.
 pub type Mode(user_state, user_message) {
   Simple(
     bot: bot.Bot,
     handlers: List(fn(bot.Bot, Packet) -> Nil),
-    next: Next(user_state, user_message),
+    default_next: Next(user_state, user_message),
     nil_state: user_state,
   )
   Normal(
@@ -60,6 +72,7 @@ pub type Mode(user_state, user_message) {
   )
 }
 
+/// Get the bot from all possible modes
 pub fn bot_from_mode(mode: Mode(user_state, user_message)) -> bot.Bot {
   case mode {
     Simple(bot, ..) -> bot
@@ -67,7 +80,7 @@ pub fn bot_from_mode(mode: Mode(user_state, user_message)) -> bot.Bot {
   }
 }
 
-/// The supported packets
+/// The supported discord packets
 pub type Packet {
   /// `READY` event
   ReadyPacket(ready.ReadyPacket)
@@ -156,7 +169,8 @@ fn internal_handler(
   }
 }
 
-/// Handle an event from the Discord API, using a set of event handlers.
+/// Handle an event from the Discord API, using a current handler mode, state
+/// and internal message.
 pub fn handle_event(
   bot: bot.Bot,
   user_state: user_state,
