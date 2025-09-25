@@ -737,6 +737,12 @@ fn normal_handler(
 
               discord_gleam.continue(state)
             }
+            "!stop" -> {
+              discord_gleam.stop()
+            }
+            "!stop_abnormal" -> {
+              discord_gleam.stop_abnormal("testing what will happen")
+            }
             _ -> discord_gleam.continue(state)
           }
         }
