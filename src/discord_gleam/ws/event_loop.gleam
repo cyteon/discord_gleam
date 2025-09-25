@@ -454,12 +454,10 @@ fn on_close(
       case stratus.get_custom_code(custom_close_reason) {
         4000 -> {
           logging.log(logging.Error, "Unknown error, not reconnecting")
-          process.send(state.event_loop_subject, Stop)
         }
 
         4001 -> {
           logging.log(logging.Error, "Unknown opcode, not reconnecting")
-          process.send(state.event_loop_subject, Stop)
         }
 
         4002 -> {
@@ -467,12 +465,10 @@ fn on_close(
             logging.Error,
             "Decode error, open a github issue, not reconnecting",
           )
-          process.send(state.event_loop_subject, Stop)
         }
 
         4003 -> {
           logging.log(logging.Error, "Not authenticated, not reconnecting")
-          process.send(state.event_loop_subject, Stop)
         }
 
         4004 -> {
@@ -480,7 +476,6 @@ fn on_close(
             logging.Error,
             "Authentication failed, check your token, not reconnecting",
           )
-          process.send(state.event_loop_subject, Stop)
         }
 
         4005 -> {
@@ -488,7 +483,6 @@ fn on_close(
             logging.Error,
             "Already authenticated, open a github issue, not reconnecting",
           )
-          process.send(state.event_loop_subject, Stop)
         }
 
         4007 -> {
@@ -509,8 +503,6 @@ fn on_close(
             logging.Error,
             "You have been ratelimited, not reconnecting",
           )
-
-          process.send(state.event_loop_subject, Stop)
         }
 
         4009 -> {
@@ -532,12 +524,10 @@ fn on_close(
 
         4010 -> {
           logging.log(logging.Error, "Invalid shard, not reconnecting")
-          process.send(state.event_loop_subject, Stop)
         }
 
         4011 -> {
           logging.log(logging.Error, "Sharding required, not reconnecting")
-          process.send(state.event_loop_subject, Stop)
         }
 
         4012 -> {
@@ -545,7 +535,6 @@ fn on_close(
             logging.Error,
             "Invalid API version, open a github issue on the discord_gleam repository, not reconnecting",
           )
-          process.send(state.event_loop_subject, Stop)
         }
 
         4013 -> {
@@ -553,7 +542,6 @@ fn on_close(
             logging.Error,
             "Invalid intents used, open a github issue on the discord_gleam repository, not reconnecting",
           )
-          process.send(state.event_loop_subject, Stop)
         }
 
         4014 -> {
@@ -561,15 +549,13 @@ fn on_close(
             logging.Error,
             "Disallowed intents used, did you remember to enable any priveleged intents you used in the Discord Developer Portal (https://discord.dev)? Not reconnecting",
           )
-          process.send(state.event_loop_subject, Stop)
         }
 
         _ -> {
           logging.log(logging.Error, "Unknown close code, not reconnecting")
-          process.send(state.event_loop_subject, Stop)
         }
       }
     }
-    _ -> process.send(state.event_loop_subject, Stop)
+    _ -> Nil
   }
 }
