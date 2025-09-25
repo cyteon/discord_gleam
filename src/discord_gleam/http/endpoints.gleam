@@ -11,16 +11,16 @@ import discord_gleam/types/slash_command
 import discord_gleam/types/user
 import discord_gleam/ws/packets/interaction_create
 import gleam/dynamic/decode
-import gleam/hackney
 import gleam/http
 import gleam/http/response
+import gleam/httpc
 import gleam/json
 import logging
 
 /// Get the current user
 pub fn me(token: String) -> Result(user.User, error.DiscordError) {
   let request = request.new_auth(http.Get, "/users/@me", token)
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case response.get_header(resp, "content-type") {
         Ok("application/json") -> {
@@ -65,7 +65,7 @@ pub fn send_message(
       data,
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         200 -> {
@@ -106,7 +106,7 @@ pub fn create_dm_channel(
       json.to_string(json.object([#("recipient_id", json.string(user_id))])),
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         200 -> {
@@ -187,7 +187,7 @@ pub fn reply(
       data,
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         200 -> {
@@ -228,7 +228,7 @@ pub fn kick_member(
       #("X-Audit-Log-Reason", reason),
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         204 -> {
@@ -270,7 +270,7 @@ pub fn ban_member(
       #("X-Audit-Log-Reason", reason),
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         204 -> {
@@ -311,7 +311,7 @@ pub fn delete_message(
       #("X-Audit-Log-Reason", reason),
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         204 -> {
@@ -356,7 +356,7 @@ pub fn edit_message(
       data,
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         200 -> {
@@ -396,7 +396,7 @@ pub fn wipe_global_commands(
       "{}",
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         200 -> {
@@ -436,7 +436,7 @@ pub fn wipe_guild_commands(
       "{}",
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         200 -> {
@@ -476,7 +476,7 @@ pub fn register_global_command(
       slash_command.command_to_string(command),
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         201 -> {
@@ -531,7 +531,7 @@ pub fn register_guild_command(
       slash_command.command_to_string(command),
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         201 -> {
@@ -584,7 +584,7 @@ pub fn interaction_send_text(
       slash_command.make_basic_text_reply(message, ephemeral),
     )
 
-  case hackney.send(request) {
+  case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         204 -> {
