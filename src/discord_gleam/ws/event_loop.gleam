@@ -219,9 +219,19 @@ fn start_discord_websocket(
               }
             }
             event_handler.Stop -> {
+              logging.log(
+                logging.Debug,
+                "Stopping discord websocket connection",
+              )
+              process.send(state.event_loop_subject, Stop)
               stratus.stop()
             }
             event_handler.StopAbnormal(reason) -> {
+              logging.log(
+                logging.Error,
+                "Stopping discord websocket connection with abnormal reason: "
+                  <> reason,
+              )
               stratus.stop_abnormal(reason)
             }
           }
@@ -416,9 +426,15 @@ fn handle_text_message(
           }
         }
         event_handler.Stop -> {
+          logging.log(logging.Debug, "Stopping discord websocket connection")
           stratus.stop()
         }
         event_handler.StopAbnormal(reason) -> {
+          logging.log(
+            logging.Error,
+            "Stopping discord websocket connection with abnormal reason: "
+              <> reason,
+          )
           stratus.stop_abnormal(reason)
         }
       }
