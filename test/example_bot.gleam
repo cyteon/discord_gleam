@@ -73,26 +73,26 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   let _ = discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
 
   // SIMPLE BOT EXAMPLE
-  // let bot =
-  //   supervision.worker(fn() {
-  //     discord_gleam.simple(bot, [simple_handler])
-  //     |> discord_gleam.start()
-  //   })
-
-  // NORMAL BOT EXAMPLE
   let bot =
     supervision.worker(fn() {
-      discord_gleam.new(
-        bot,
-        fn(selector) {
-          let subject = process.new_subject()
-
-          #(subject, process.select(selector, subject))
-        },
-        normal_handler,
-      )
+      discord_gleam.simple(bot, [simple_handler])
       |> discord_gleam.start()
     })
+
+  // ADVANCED BOT EXAMPLE
+  // let bot =
+  //  supervision.worker(fn() {
+  //    discord_gleam.new(
+  //      bot,
+  //      fn(selector) {
+  //        let subject = process.new_subject()
+  //
+  //        #(subject, process.select(selector, subject))
+  //      },
+  //      normal_handler,
+  //    )
+  //    |> discord_gleam.start()
+  //  })
 
   let assert Ok(_) =
     supervisor.new(supervisor.OneForOne)
