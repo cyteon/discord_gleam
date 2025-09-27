@@ -1,5 +1,5 @@
 import gleam/dynamic/decode
-import gleam/hackney
+import gleam/httpc
 import gleam/json
 import gleam/list
 import gleam/otp/actor
@@ -13,7 +13,7 @@ pub type DiscordError {
   InvalidFormat(decode.DecodeError)
   WebsocketError(Nil)
   /// When a request to the API fails
-  HttpError(hackney.Error)
+  HttpError(httpc.HttpError)
   /// When the API returns an error, but the request was successful
   GenericHttpError(status_code: Int, body: String)
   ActorError(actor.StartError)
