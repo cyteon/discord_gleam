@@ -129,11 +129,8 @@ fn start_discord_websocket(
   logging.log(logging.Debug, "Creating websocket client builder")
 
   let name: process.Name(bot.BotMessage) = process.new_name("bot_msg_subject")
-  let bot =
-    bot.Bot(
-      ..event_handler.bot_from_mode(mode),
-      websocket_name: option.Some(name),
-    )
+  let mode = event_handler.set_websocket_name(mode, name)
+  let bot = event_handler.bot_from_mode(mode)
 
   let started =
     stratus.new_with_initialiser(request: req, init: fn() {

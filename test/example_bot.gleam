@@ -73,26 +73,26 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   let _ = discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
 
   // SIMPLE BOT EXAMPLE
-  let bot =
-    supervision.worker(fn() {
-      discord_gleam.simple(bot, [simple_handler])
-      |> discord_gleam.start()
-    })
+  // let bot =
+  //   supervision.worker(fn() {
+  //     discord_gleam.simple(bot, [simple_handler])
+  //     |> discord_gleam.start()
+  //   })
 
   // ADVANCED BOT EXAMPLE
-  // let bot =
-  //  supervision.worker(fn() {
-  //    discord_gleam.new(
-  //      bot,
-  //      fn(selector) {
-  //        let subject = process.new_subject()
-  //
-  //        #(subject, process.select(selector, subject))
-  //      },
-  //      normal_handler,
-  //    )
-  //    |> discord_gleam.start()
-  //  })
+  let bot =
+    supervision.worker(fn() {
+      discord_gleam.new(
+        bot,
+        fn(selector) {
+          let subject = process.new_subject()
+
+          #(subject, process.select(selector, subject))
+        },
+        normal_handler,
+      )
+      |> discord_gleam.start()
+    })
 
   let assert Ok(_) =
     supervisor.new(supervisor.OneForOne)
@@ -717,6 +717,31 @@ fn normal_handler(
   case msg {
     discord_gleam.Packet(packet) -> {
       case packet {
+        event_handler.ReadyPacket(ready) -> {
+          logging.log(
+            logging.Info,
+            "Logged in as "
+              <> ready.d.user.username
+              <> "#"
+              <> ready.d.user.discriminator,
+          )
+
+          list.each(ready.d.guilds, fn(guild) {
+            let assert guild.UnavailableGuild(id, ..) = guild
+            logging.log(logging.Info, "Unavailable guild: " <> id)
+
+            discord_gleam.request_guild_members(
+              bot,
+              guild_id: id,
+              option: request_guild_members.Query("", option.None),
+              presences: option.Some(True),
+              nonce: option.Some("test_request"),
+            )
+          })
+
+          discord_gleam.continue(state)
+        }
+
         event_handler.MessagePacket(message) -> {
           logging.log(logging.Info, "Got message: " <> message.d.content)
 

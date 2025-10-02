@@ -80,6 +80,19 @@ pub fn bot_from_mode(mode: Mode(user_state, user_message)) -> bot.Bot {
   }
 }
 
+/// Set the websocket name for the bot
+pub fn set_websocket_name(
+  mode: Mode(user_state, user_message),
+  name: process.Name(bot.BotMessage),
+) -> Mode(user_state, user_message) {
+  case mode {
+    Simple(bot:, ..) ->
+      Simple(..mode, bot: bot.Bot(..bot, websocket_name: option.Some(name)))
+    Normal(bot:, ..) ->
+      Normal(..mode, bot: bot.Bot(..bot, websocket_name: option.Some(name)))
+  }
+}
+
 /// The supported discord packets
 pub type Packet {
   /// `READY` event
