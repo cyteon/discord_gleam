@@ -80,6 +80,7 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   //   })
 
   // ADVANCED BOT EXAMPLE
+  let name = process.new_name("user_message_subject")
   let bot =
     supervision.worker(fn() {
       discord_gleam.new(
@@ -87,10 +88,17 @@ pub fn main(token: String, client_id: String, guild_id: String) {
         fn(selector) {
           let subject = process.new_subject()
 
+          process.send_after(
+            process.named_subject(name),
+            1000,
+            "named subject message",
+          )
+
           #(subject, process.select(selector, subject))
         },
-        normal_handler,
+        fn(bot, state, msg) { normal_handler(bot, state, name, msg) },
       )
+      |> discord_gleam.with_name(name)
       |> discord_gleam.start()
     })
 
@@ -712,6 +720,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 fn normal_handler(
   bot: bot.Bot,
   state: process.Subject(String),
+  name: process.Name(String),
   msg: discord_gleam.HandlerMessage(String),
 ) {
   case msg {
@@ -759,6 +768,11 @@ fn normal_handler(
             }
             "!send " <> message -> {
               process.send(state, message)
+
+              discord_gleam.continue(state)
+            }
+            "!send_to_name " <> message -> {
+              process.send(process.named_subject(name), message)
 
               discord_gleam.continue(state)
             }

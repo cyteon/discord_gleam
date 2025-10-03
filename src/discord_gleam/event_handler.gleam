@@ -65,11 +65,22 @@ pub type Mode(user_state, user_message) {
   )
   Normal(
     bot: bot.Bot,
+    name: process.Name(user_message),
     on_init: fn(process.Selector(user_message)) ->
       #(user_state, process.Selector(user_message)),
     handler: fn(bot.Bot, user_state, HandlerMessage(user_message)) ->
       Next(user_state, user_message),
   )
+}
+
+/// Check if the mode is normal mode
+pub fn name_from_mode(
+  mode: Mode(user_state, user_message),
+) -> Result(process.Name(user_message), Nil) {
+  case mode {
+    Normal(name:, ..) -> Ok(name)
+    Simple(..) -> Error(Nil)
+  }
 }
 
 /// Get the bot from all possible modes
@@ -80,16 +91,13 @@ pub fn bot_from_mode(mode: Mode(user_state, user_message)) -> bot.Bot {
   }
 }
 
-/// Set the websocket name for the bot
-pub fn set_websocket_name(
+pub fn set_bot(
   mode: Mode(user_state, user_message),
-  name: process.Name(bot.BotMessage),
+  bot: bot.Bot,
 ) -> Mode(user_state, user_message) {
   case mode {
-    Simple(bot:, ..) ->
-      Simple(..mode, bot: bot.Bot(..bot, websocket_name: option.Some(name)))
-    Normal(bot:, ..) ->
-      Normal(..mode, bot: bot.Bot(..bot, websocket_name: option.Some(name)))
+    Simple(..) -> Simple(..mode, bot:)
+    Normal(..) -> Normal(..mode, bot:)
   }
 }
 
@@ -201,13 +209,13 @@ pub fn handle_event(
           list.each(handlers, fn(handler) { handler(bot, packet) })
           next
         }
-        Normal(bot, _on_init, handler) -> {
+        Normal(bot, _name, _on_init, handler) -> {
           handler(bot, user_state, DiscordPacket(packet))
         }
       }
     }
     InternalUser(msg) -> {
-      let assert Normal(bot, _on_init, handler) = mode
+      let assert Normal(bot, _name, _on_init, handler) = mode
       handler(bot, user_state, User(msg))
     }
   }
