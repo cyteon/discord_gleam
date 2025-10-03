@@ -4,7 +4,6 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/ws/packets/message.{type MessagePacketData}
 import gleam/dict
 import gleam/erlang/process
-import gleam/option.{type Option}
 
 /// The Bot type holds bot data used by a lot of high-level functions
 pub type Bot {
@@ -13,7 +12,7 @@ pub type Bot {
     client_id: Snowflake,
     intents: intents.Intents,
     cache: Cache,
-    websocket_name: Option(process.Name(BotMessage)),
+    subject: process.Subject(BotMessage),
   )
 }
 

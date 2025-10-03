@@ -3,7 +3,7 @@ import discord_gleam/types/bot
 import gleam/erlang/process
 import gleam/json
 import gleam/list
-import gleam/option.{type Option, None, Some}
+import gleam/option.{type Option}
 
 pub type RequestGuildMembersOption {
   Query(String, limit: Option(Int))
@@ -32,12 +32,7 @@ pub fn request_guild_members(
     json.object([#("op", json.int(8)), #("d", data_to_json(data))])
     |> json.to_string()
 
-  case bot.websocket_name {
-    Some(name) -> {
-      process.send(process.named_subject(name), bot.SendPacket(packet))
-    }
-    None -> Nil
-  }
+  process.send(bot.subject, bot.SendPacket(packet))
 }
 
 fn data_to_json(data: RequestGuildMembersData) -> json.Json {

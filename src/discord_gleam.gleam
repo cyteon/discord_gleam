@@ -43,7 +43,7 @@ pub fn bot(
     client_id: client_id,
     intents: intents,
     cache: bot.Cache(messages: booklet.new(dict.new())),
-    websocket_name: option.None,
+    subject: process.new_subject(),
   )
 }
 
@@ -102,6 +102,7 @@ pub opaque type Mode(user_state, user_message) {
   )
   Normal(
     bot: bot.Bot,
+    name: process.Name(user_message),
     on_init: fn(process.Selector(user_message)) ->
       #(user_state, process.Selector(user_message)),
     handler: fn(bot.Bot, user_state, HandlerMessage(user_message)) ->
@@ -138,7 +139,24 @@ pub fn new(
   handler: fn(bot.Bot, user_state, HandlerMessage(user_message)) ->
     Next(user_state, user_message),
 ) -> Mode(user_state, user_message) {
-  Normal(bot, on_init, handler)
+  Normal(
+    bot,
+    process.new_name("normal_mode_user_message_subject"),
+    on_init,
+    handler,
+  )
+}
+
+/// Set process name for the event loop. Allows to use named subjects for custom
+/// user messages in normal mode.
+pub fn with_name(
+  mode: Mode(user_state, user_message),
+  name: process.Name(user_message),
+) -> Mode(user_state, user_message) {
+  case mode {
+    Normal(..) -> Normal(..mode, name:)
+    Simple(..) -> mode
+  }
 }
 
 /// Start the event loop with a current mode.
@@ -193,13 +211,13 @@ fn to_internal_mode(
   case mode {
     Simple(bot, handlers, next, nil_state) ->
       event_handler.Simple(bot, handlers, to_internal_next(next), nil_state)
-    Normal(bot, on_init, handler) -> {
+    Normal(bot, name, on_init, handler) -> {
       let handler = fn(bot, user_state, msg) {
         handler(bot, user_state, internal_to_handler_message(msg))
         |> to_internal_next()
       }
 
-      event_handler.Normal(bot, on_init, handler)
+      event_handler.Normal(bot, name, on_init, handler)
     }
   }
 }
