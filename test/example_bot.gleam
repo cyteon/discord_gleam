@@ -73,26 +73,34 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   let _ = discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
 
   // SIMPLE BOT EXAMPLE
-  let bot =
-    supervision.worker(fn() {
-      discord_gleam.simple(bot, [simple_handler])
-      |> discord_gleam.start()
-    })
+  // let bot =
+  //   supervision.worker(fn() {
+  //     discord_gleam.simple(bot, [simple_handler])
+  //     |> discord_gleam.start()
+  //   })
 
   // ADVANCED BOT EXAMPLE
-  // let bot =
-  //  supervision.worker(fn() {
-  //    discord_gleam.new(
-  //      bot,
-  //      fn(selector) {
-  //        let subject = process.new_subject()
-  //
-  //        #(subject, process.select(selector, subject))
-  //      },
-  //      normal_handler,
-  //    )
-  //    |> discord_gleam.start()
-  //  })
+  let name = process.new_name("user_message_subject")
+  let bot =
+    supervision.worker(fn() {
+      discord_gleam.new(
+        bot,
+        fn(selector) {
+          let subject = process.new_subject()
+
+          process.send_after(
+            process.named_subject(name),
+            1000,
+            "named subject message",
+          )
+
+          #(subject, process.select(selector, subject))
+        },
+        fn(bot, state, msg) { normal_handler(bot, state, name, msg) },
+      )
+      |> discord_gleam.with_name(name)
+      |> discord_gleam.start()
+    })
 
   let assert Ok(_) =
     supervisor.new(supervisor.OneForOne)
@@ -712,11 +720,37 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 fn normal_handler(
   bot: bot.Bot,
   state: process.Subject(String),
+  name: process.Name(String),
   msg: discord_gleam.HandlerMessage(String),
 ) {
   case msg {
     discord_gleam.Packet(packet) -> {
       case packet {
+        event_handler.ReadyPacket(ready) -> {
+          logging.log(
+            logging.Info,
+            "Logged in as "
+              <> ready.d.user.username
+              <> "#"
+              <> ready.d.user.discriminator,
+          )
+
+          list.each(ready.d.guilds, fn(guild) {
+            let assert guild.UnavailableGuild(id, ..) = guild
+            logging.log(logging.Info, "Unavailable guild: " <> id)
+
+            discord_gleam.request_guild_members(
+              bot,
+              guild_id: id,
+              option: request_guild_members.Query("", option.None),
+              presences: option.Some(True),
+              nonce: option.Some("test_request"),
+            )
+          })
+
+          discord_gleam.continue(state)
+        }
+
         event_handler.MessagePacket(message) -> {
           logging.log(logging.Info, "Got message: " <> message.d.content)
 
@@ -734,6 +768,11 @@ fn normal_handler(
             }
             "!send " <> message -> {
               process.send(state, message)
+
+              discord_gleam.continue(state)
+            }
+            "!send_to_name " <> message -> {
+              process.send(process.named_subject(name), message)
 
               discord_gleam.continue(state)
             }

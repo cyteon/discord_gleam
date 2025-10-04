@@ -90,12 +90,14 @@ pub fn start_event_loop(
   |> actor.start()
 }
 
-pub type WebsocketState(user_state) {
+pub type WebsocketState(user_state, user_message) {
   State(
     has_received_hello: Bool,
     s: Int,
     event_loop_subject: process.Subject(EventLoopMessage),
     user_state: user_state,
+    bot: bot.Bot,
+    mode: event_handler.Mode(user_state, user_message),
   )
 }
 
@@ -128,49 +130,61 @@ fn start_discord_websocket(
 
   logging.log(logging.Debug, "Creating websocket client builder")
 
-  let name: process.Name(bot.BotMessage) = process.new_name("bot_msg_subject")
-  let bot =
-    bot.Bot(
-      ..event_handler.bot_from_mode(mode),
-      websocket_name: option.Some(name),
-    )
-
   let started =
     stratus.new_with_initialiser(request: req, init: fn() {
-      process.register(process.self(), name)
-      |> result.map(fn(_nil) {
-        let selector =
-          process.new_selector()
-          |> process.select(process.named_subject(name))
-          |> process.map_selector(BotMessage)
-
-        let #(user_state, selector) = case mode {
-          event_handler.Normal(on_init:, ..) -> {
-            let #(user_state, user_selector) = on_init(process.new_selector())
-
-            let selector =
-              process.map_selector(user_selector, User)
-              |> process.merge_selector(selector, _)
-
-            #(user_state, selector)
-          }
-          event_handler.Simple(nil_state:, ..) -> {
-            #(nil_state, selector)
-          }
-        }
-
-        let initial_state =
-          State(
-            has_received_hello: False,
-            s: 0,
-            event_loop_subject:,
-            user_state:,
+      use selector <- result.try(case event_handler.name_from_mode(mode) {
+        Ok(name) -> {
+          process.register(process.self(), name)
+          |> result.map(fn(_nil) {
+            process.new_selector()
+            |> process.select_map(process.named_subject(name), User)
+          })
+          |> result.replace_error(
+            "failed to register name for websocket client process",
           )
-
-        stratus.initialised(initial_state)
-        |> stratus.selecting(selector)
+        }
+        Error(_) -> Ok(process.new_selector())
       })
-      |> result.replace_error("Failed to initialise websocket client")
+
+      let bot_message_subject = process.new_subject()
+      let bot =
+        bot.Bot(
+          ..event_handler.bot_from_mode(mode),
+          subject: bot_message_subject,
+        )
+      let mode = event_handler.set_bot(mode, bot)
+
+      let selector =
+        process.select_map(selector, bot_message_subject, BotMessage)
+
+      let #(user_state, selector) = case mode {
+        event_handler.Normal(on_init:, ..) -> {
+          let #(user_state, user_selector) = on_init(process.new_selector())
+
+          let selector =
+            process.map_selector(user_selector, User)
+            |> process.merge_selector(selector, _)
+
+          #(user_state, selector)
+        }
+        event_handler.Simple(nil_state:, ..) -> {
+          #(nil_state, selector)
+        }
+      }
+
+      let initial_state =
+        State(
+          has_received_hello: False,
+          s: 0,
+          event_loop_subject:,
+          user_state:,
+          bot:,
+          mode:,
+        )
+
+      stratus.initialised(initial_state)
+      |> stratus.selecting(selector)
+      |> Ok
     })
     |> stratus.on_message(fn(state, msg, conn) {
       case msg {
@@ -179,8 +193,8 @@ fn start_discord_websocket(
             conn,
             state,
             msg,
-            bot,
-            mode,
+            state.bot,
+            state.mode,
             reconnect,
             session_id,
             state_ets,
@@ -197,10 +211,10 @@ fn start_discord_websocket(
         stratus.User(User(msg)) -> {
           let next =
             event_handler.handle_event(
-              bot,
+              state.bot,
               state.user_state,
               event_handler.InternalUser(msg),
-              mode,
+              state.mode,
               state_ets,
             )
 
@@ -260,7 +274,7 @@ fn start_discord_websocket(
 
 fn handle_text_message(
   conn: stratus.Connection,
-  state: WebsocketState(user_state),
+  state: WebsocketState(user_state, user_message),
   msg: String,
   bot: bot.Bot,
   mode: event_handler.Mode(user_state, user_message),
@@ -295,6 +309,8 @@ fn handle_text_message(
           s: 0,
           event_loop_subject: state.event_loop_subject,
           user_state: state.user_state,
+          bot: state.bot,
+          mode: state.mode,
         )
 
       case hello.string_to_data(msg) {
@@ -400,6 +416,8 @@ fn handle_text_message(
           s: generic_packet.s,
           event_loop_subject: state.event_loop_subject,
           user_state: state.user_state,
+          bot: state.bot,
+          mode: state.mode,
         )
 
       let next =
@@ -443,7 +461,7 @@ fn handle_text_message(
 }
 
 fn on_close(
-  state: WebsocketState(user_state),
+  state: WebsocketState(user_state, user_message),
   state_ets: booklet.Booklet(dict.Dict(String, String)),
   close_reason: stratus.CloseReason,
 ) {
