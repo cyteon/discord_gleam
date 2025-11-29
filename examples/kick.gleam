@@ -2,6 +2,9 @@ import discord_gleam
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
 import discord_gleam/types/message
+import gleam/erlang/process
+import gleam/otp/static_supervisor as supervisor
+import gleam/otp/supervision
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
@@ -11,12 +14,23 @@ pub fn main() {
   logging.configure()
   logging.set_level(logging.Info)
 
-  let bot = discord_gleam.bot("TOKEN", "CLIENT ID", intents.default())
+  let bot = discord_gleam.bot("token", "client id", intents.default())
 
-  discord_gleam.run(bot, [event_handler])
+  let bot =
+    supervision.worker(fn() {
+      discord_gleam.simple(bot, [simple_handler])
+      |> discord_gleam.start()
+    })
+
+  let assert Ok(_) =
+    supervisor.new(supervisor.OneForOne)
+    |> supervisor.add(bot)
+    |> supervisor.start()
+
+  process.sleep_forever()
 }
 
-fn event_handler(bot, packet: event_handler.Packet) {
+fn simple_handler(bot, packet: event_handler.Packet) {
   case packet {
     event_handler.ReadyPacket(ready) -> {
       logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
