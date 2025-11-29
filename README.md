@@ -9,10 +9,13 @@ gleam add discord_gleam
 
 ```gleam
 import discord_gleam
+import discord_gleam/discord/intents
 import discord_gleam/event_handler
 import discord_gleam/types/message
-import discord_gleam/discord/intents
+import gleam/erlang/process
 import gleam/list
+import gleam/otp/static_supervisor as supervisor
+import gleam/otp/supervision
 import gleam/string
 import logging
 
@@ -20,12 +23,23 @@ pub fn main() {
   logging.configure()
   logging.set_level(logging.Info)
 
-  let bot = discord_gleam.bot("YOUR TOKEN", "YOUR CLIENT ID", intents.default())
+  let bot = discord_gleam.bot("token", "client id", intents.default())
 
-  discord_gleam.run(bot, [event_handler])
+  let bot =
+    supervision.worker(fn() {
+      discord_gleam.simple(bot, [simple_handler])
+      |> discord_gleam.start()
+    })
+
+  let assert Ok(_) =
+    supervisor.new(supervisor.OneForOne)
+    |> supervisor.add(bot)
+    |> supervisor.start()
+
+  process.sleep_forever()
 }
 
-fn event_handler(bot, packet: event_handler.Packet) {
+fn simple_handler(bot, packet: event_handler.Packet) {
   case packet {
     event_handler.MessagePacket(message) -> {
       logging.log(logging.Info, "Got message: " <> message.d.content)
@@ -40,7 +54,7 @@ fn event_handler(bot, packet: event_handler.Packet) {
         _ -> Nil
       }
     }
-    
+
     _ -> Nil
   }
 }
