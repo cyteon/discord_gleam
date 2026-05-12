@@ -463,11 +463,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 
             "!embed" -> {
               let embed1 =
-                message.Embed(
-                  title: "Embed Title",
-                  description: "Embed Description",
-                  color: 0x00FF00,
-                )
+                message.embed("Embed Title", "Embed Description", 0x00FF00)
 
               let _ =
                 discord_gleam.send_message(bot, message.d.channel_id, "Embed!", [

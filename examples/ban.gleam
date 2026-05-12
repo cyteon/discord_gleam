@@ -3,11 +3,11 @@ import discord_gleam/discord/intents
 import discord_gleam/event_handler
 import discord_gleam/types/message
 import gleam/erlang/process
-import gleam/otp/static_supervisor as supervisor
-import gleam/otp/supervision
 import gleam/io
 import gleam/list
 import gleam/option
+import gleam/otp/static_supervisor as supervisor
+import gleam/otp/supervision
 import gleam/string
 import logging
 
