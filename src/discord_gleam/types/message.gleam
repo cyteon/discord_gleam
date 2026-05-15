@@ -37,7 +37,17 @@ pub type Embed {
 }
 
 pub fn embed(title: String, description: String, color: Int) -> Embed {
-  Embed(title, description, color, None, None, None, None, None, [])
+  Embed(
+    title: title,
+    description: description,
+    color: color,
+    url: None,
+    image: None,
+    thumbnail: None,
+    footer: None,
+    author: None,
+    fields: [],
+  )
 }
 
 pub fn set_url(embed: Embed, url: String) -> Embed {
