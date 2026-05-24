@@ -7,23 +7,27 @@
 gleam add discord_gleam
 ```
 
+## Example Bot
+
 ```gleam
 import discord_gleam
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
-import discord_gleam/types/message
 import gleam/erlang/process
-import gleam/list
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
-import gleam/string
 import logging
 
 pub fn main() {
   logging.configure()
   logging.set_level(logging.Info)
 
-  let bot = discord_gleam.bot("token", "client id", intents.default())
+  let bot =
+    discord_gleam.bot(
+      "TOKEN",
+      "CLIENT_ID",
+      intents.default(),
+    )
 
   let bot =
     supervision.worker(fn() {
@@ -41,12 +45,21 @@ pub fn main() {
 
 fn simple_handler(bot, packet: event_handler.Packet) {
   case packet {
+    event_handler.ReadyPacket(ready) -> {
+      logging.log(
+        logging.Info,
+        "Bot is ready! Logged in as: " <> ready.d.user.username,
+      )
+      Nil
+    }
+
     event_handler.MessagePacket(message) -> {
       logging.log(logging.Info, "Got message: " <> message.d.content)
 
       case message.d.content {
         "!ping" -> {
-          discord_gleam.send_message(bot, message.d.channel_id, "Pong!", [])
+          let _ =
+            discord_gleam.send_message(bot, message.d.channel_id, "Pong!", [])
 
           Nil
         }
