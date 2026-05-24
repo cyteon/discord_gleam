@@ -263,11 +263,7 @@ fn start_discord_websocket(
     |> stratus.start()
 
   case started {
-    Error(stratus.ActorFailed(actor_failed)) -> Error(actor_failed)
-    Error(stratus.HandshakeFailed(_)) ->
-      Error(actor.InitFailed("handshake failed"))
-    Error(stratus.FailedToTransferSocket(_)) ->
-      Error(actor.InitFailed("failed to transfer socket"))
+    Error(err) -> Error(err)
     Ok(_) -> Ok(Nil)
   }
 }
