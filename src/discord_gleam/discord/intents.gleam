@@ -28,7 +28,11 @@ pub type Intents {
   )
 }
 
-fn add_intent_bit(bitfield: Int, intent_enabled: Bool, bit_position: Int) -> Int {
+fn add_intent_bit(
+  bitfield: Int,
+  intent_enabled: Bool,
+  bit_position: Int,
+) -> Int {
   case intent_enabled {
     False -> bitfield
     True -> int.bitwise_or(bitfield, int.bitwise_shift_left(1, bit_position))

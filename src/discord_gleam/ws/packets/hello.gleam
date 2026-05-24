@@ -10,7 +10,9 @@ pub type HelloPacket {
   HelloPacket(op: Int, d: HelloPacketData)
 }
 
-pub fn string_to_data(encoded: String) -> Result(HelloPacket, json.DecodeError) {
+pub fn string_to_data(
+  encoded: String,
+) -> Result(HelloPacket, json.DecodeError) {
   let decoder = {
     use op <- decode.field("op", decode.int)
     use d <- decode.field("d", {

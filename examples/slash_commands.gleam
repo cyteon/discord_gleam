@@ -4,10 +4,10 @@ import discord_gleam/event_handler
 import discord_gleam/types/slash_command
 import discord_gleam/ws/packets/interaction_create
 import gleam/erlang/process
-import gleam/otp/static_supervisor as supervisor
-import gleam/otp/supervision
 import gleam/list
 import gleam/option
+import gleam/otp/static_supervisor as supervisor
+import gleam/otp/supervision
 import logging
 
 pub fn main() {

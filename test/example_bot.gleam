@@ -766,19 +766,23 @@ fn normal_handler(
 
               discord_gleam.continue(state)
             }
+
             "!send " <> message -> {
               process.send(state, message)
 
               discord_gleam.continue(state)
             }
+
             "!send_to_name " <> message -> {
               process.send(process.named_subject(name), message)
 
               discord_gleam.continue(state)
             }
+
             "!stop" -> {
               discord_gleam.stop()
             }
+
             "!stop_abnormal" -> {
               discord_gleam.stop_abnormal("testing what will happen")
             }
