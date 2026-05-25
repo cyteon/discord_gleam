@@ -1,4 +1,6 @@
-import discord_gleam/types/message.{type Embed}
+import discord_gleam/types/message.{
+  type Embed, embed_to_json as message_embed_to_json,
+}
 import gleam/json
 import gleam/list
 
@@ -9,7 +11,7 @@ pub type Reply {
 
 /// Convert a reply to a JSON string
 pub fn to_string(msg: Reply) -> String {
-  let embeds_json = list.map(msg.embeds, embed_to_json)
+  let embeds_json = list.map(msg.embeds, message_embed_to_json)
   json.object([
     #("content", json.string(msg.content)),
     #("embeds", json.array(embeds_json, of: fn(x) { x })),
@@ -19,13 +21,4 @@ pub fn to_string(msg: Reply) -> String {
     ),
   ])
   |> json.to_string
-}
-
-/// Convert an embed to a JSON object
-pub fn embed_to_json(embed: Embed) -> json.Json {
-  json.object([
-    #("title", json.string(embed.title)),
-    #("description", json.string(embed.description)),
-    #("color", json.int(embed.color)),
-  ])
 }
