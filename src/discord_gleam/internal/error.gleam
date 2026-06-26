@@ -6,21 +6,11 @@ import gleam/otp/actor
 import gleam/string
 
 pub type DiscordError {
-  UnknownAccount
-  EmptyOptionWhenRequired
   JsonDecodeError(json.DecodeError)
-  InvalidDynamicList(List(decode.DecodeError))
-  InvalidFormat(decode.DecodeError)
-  WebsocketError(Nil)
-  /// When a request to the API fails
+  /// The HTTP request itself failed, e.g. due to a network error
   HttpError(httpc.HttpError)
   /// When the API returns an error, but the request was successful
   GenericHttpError(status_code: Int, body: String)
-  ActorError(actor.StartError)
-  NilMapEntry(Nil)
-  /// Used when a builder dosen't have all of the properties it requires
-  BadBuilderProperties(String)
-  Unauthorized(String)
 }
 
 pub fn json_decode_error_to_string(error: json.DecodeError) -> String {
