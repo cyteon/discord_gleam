@@ -72,40 +72,52 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   let _ = discord_gleam.wipe_guild_commands(bot, guild_id)
   let _ = discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
 
-  // SIMPLE BOT EXAMPLE
-  // let bot =
-  //   supervision.worker(fn() {
-  //     discord_gleam.simple(bot, [simple_handler])
-  //     |> discord_gleam.start()
-  //   })
+  // putting this here so i dont have to comment out like 20 lines to test one or the other
+  let use_simple = True
 
-  // ADVANCED BOT EXAMPLE
-  let name = process.new_name("user_message_subject")
-  let bot =
-    supervision.worker(fn() {
-      discord_gleam.new(
-        bot,
-        fn(selector) {
-          let subject = process.new_subject()
+  let _ = case use_simple {
+    True -> {
+      let bot =
+        supervision.worker(fn() {
+          discord_gleam.simple(bot, [simple_handler])
+          |> discord_gleam.start()
+        })
 
-          process.send_after(
-            process.named_subject(name),
-            1000,
-            "named subject message",
+      let assert Ok(_) =
+        supervisor.new(supervisor.OneForOne)
+        |> supervisor.add(bot)
+        |> supervisor.start()
+    }
+
+    False -> {
+      let name = process.new_name("user_message_subject")
+      let bot =
+        supervision.worker(fn() {
+          discord_gleam.new(
+            bot,
+            fn(selector) {
+              let subject = process.new_subject()
+
+              process.send_after(
+                process.named_subject(name),
+                1000,
+                "named subject message",
+              )
+
+              #(subject, process.select(selector, subject))
+            },
+            fn(bot, state, msg) { normal_handler(bot, state, name, msg) },
           )
+          |> discord_gleam.with_name(name)
+          |> discord_gleam.start()
+        })
 
-          #(subject, process.select(selector, subject))
-        },
-        fn(bot, state, msg) { normal_handler(bot, state, name, msg) },
-      )
-      |> discord_gleam.with_name(name)
-      |> discord_gleam.start()
-    })
-
-  let assert Ok(_) =
-    supervisor.new(supervisor.OneForOne)
-    |> supervisor.add(bot)
-    |> supervisor.start()
+      let assert Ok(_) =
+        supervisor.new(supervisor.OneForOne)
+        |> supervisor.add(bot)
+        |> supervisor.start()
+    }
+  }
 
   process.sleep_forever()
 }

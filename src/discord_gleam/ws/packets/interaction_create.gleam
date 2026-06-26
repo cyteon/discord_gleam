@@ -29,9 +29,10 @@ pub type InteractionOption {
 pub type InteractionCreateData {
   InteractionCreateData(
     token: String,
-    member: InteractionCreateMember,
+    member: Option(InteractionCreateMember),
+    user: Option(user.User),
     id: Snowflake,
-    guild_id: Snowflake,
+    guild_id: Option(Snowflake),
     data: InteractionCommand,
     channel_id: Snowflake,
   )
@@ -78,13 +79,28 @@ pub fn string_to_data(
     use op <- decode.field("op", decode.int)
     use d <- decode.field("d", {
       use token <- decode.field("token", decode.string)
-      use member <- decode.field("member", {
-        use user <- decode.field("user", user.from_json_decoder())
-        decode.success(InteractionCreateMember(user:))
-      })
+
+      use member <- decode.optional_field(
+        "member",
+        option.None,
+        decode.optional({
+          use user <- decode.field("user", user.from_json_decoder())
+          decode.success(InteractionCreateMember(user:))
+        }),
+      )
+      use user <- decode.optional_field(
+        "user",
+        option.None,
+        decode.optional(user.from_json_decoder()),
+      )
 
       use id <- decode.field("id", snowflake.decoder())
-      use guild_id <- decode.field("guild_id", snowflake.decoder())
+      use guild_id <- decode.optional_field(
+        "guild_id",
+        option.None,
+        decode.optional(snowflake.decoder()),
+      )
+
       use data <- decode.field("data", {
         use type_ <- decode.field("type", decode.int)
         use name <- decode.field("name", decode.string)
@@ -103,6 +119,7 @@ pub fn string_to_data(
       decode.success(InteractionCreateData(
         token:,
         member:,
+        user:,
         id:,
         guild_id:,
         data:,
