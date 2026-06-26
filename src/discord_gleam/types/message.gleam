@@ -62,7 +62,11 @@ pub fn set_thumbnail(embed: Embed, thumbnail_url: String) -> Embed {
   Embed(..embed, thumbnail: Some(EmbedThumbnail(url: thumbnail_url)))
 }
 
-pub fn set_footer(embed: Embed, text: String, icon_url: Option(String)) -> Embed {
+pub fn set_footer(
+  embed: Embed,
+  text: String,
+  icon_url: Option(String),
+) -> Embed {
   Embed(..embed, footer: Some(EmbedFooter(text: text, icon_url: icon_url)))
 }
 
