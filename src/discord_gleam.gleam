@@ -6,7 +6,11 @@ import booklet
 import discord_gleam/discord/intents
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/event_handler
-import discord_gleam/http/endpoints
+import discord_gleam/http/applications
+import discord_gleam/http/channels
+import discord_gleam/http/guilds
+import discord_gleam/http/interactions
+import discord_gleam/http/users
 import discord_gleam/internal/error
 import discord_gleam/types/bot
 import discord_gleam/types/channel
@@ -265,7 +269,7 @@ pub fn send_message(
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let msg = message.Message(content: message, embeds: embeds)
 
-  endpoints.send_message(bot.token, channel_id, msg)
+  channels.send_message(bot.token, channel_id, msg)
 }
 
 /// Create a DM channel with a user. \
@@ -274,7 +278,7 @@ pub fn create_dm_channel(
   bot: bot.Bot,
   user_id: Snowflake(snowflake.User),
 ) -> Result(channel.Channel, error.DiscordError) {
-  endpoints.create_dm_channel(bot.token, user_id)
+  users.create_dm_channel(bot.token, user_id)
 }
 
 /// Send a direct message to a user. \
@@ -290,7 +294,7 @@ pub fn send_direct_message(
 ) -> Result(Nil, error.DiscordError) {
   let msg = message.Message(content: message, embeds: embeds)
 
-  endpoints.send_direct_message(bot.token, user_id, msg)
+  users.send_direct_message(bot.token, user_id, msg)
 }
 
 /// Reply to a message in a channel.
@@ -316,7 +320,7 @@ pub fn reply(
   let msg =
     reply.Reply(content: message, message_id: message_id, embeds: embeds)
 
-  endpoints.reply(bot.token, channel_id, msg)
+  channels.reply(bot.token, channel_id, msg)
 }
 
 /// Kicks an member from an server. \
@@ -340,7 +344,7 @@ pub fn kick_member(
   user_id: Snowflake(snowflake.User),
   reason: String,
 ) -> Result(Nil, error.DiscordError) {
-  endpoints.kick_member(bot.token, guild_id, user_id, reason)
+  guilds.kick_member(bot.token, guild_id, user_id, reason)
 }
 
 pub fn ban_member(
@@ -349,7 +353,7 @@ pub fn ban_member(
   user_id: Snowflake(snowflake.User),
   reason: String,
 ) -> Result(Nil, error.DiscordError) {
-  endpoints.ban_member(bot.token, guild_id, user_id, reason)
+  guilds.ban_member(bot.token, guild_id, user_id, reason)
 }
 
 /// Deletes an message from a channel. \
@@ -377,7 +381,7 @@ pub fn delete_message(
   message_id: Snowflake(snowflake.Message),
   reason: String,
 ) -> Result(Nil, error.DiscordError) {
-  endpoints.delete_message(bot.token, channel_id, message_id, reason)
+  channels.delete_message(bot.token, channel_id, message_id, reason)
 }
 
 /// Edits an existing message in a channel. \
@@ -391,13 +395,13 @@ pub fn edit_message(
 ) -> Result(Nil, error.DiscordError) {
   let msg = message.Message(content: content, embeds: embeds)
 
-  endpoints.edit_message(bot.token, channel_id, message_id, msg)
+  channels.edit_message(bot.token, channel_id, message_id, msg)
 }
 
 /// Wipes all the global slash commands for the bot. \
 /// Restarting your client might be required to see the changes. \
 pub fn wipe_global_commands(bot: bot.Bot) -> Result(Nil, error.DiscordError) {
-  endpoints.wipe_global_commands(bot.token, bot.client_id)
+  applications.wipe_global_commands(bot.token, bot.client_id)
 }
 
 /// Wipes all the guild slash commands for the bot. \
@@ -406,7 +410,7 @@ pub fn wipe_guild_commands(
   bot: bot.Bot,
   guild_id: Snowflake(snowflake.Guild),
 ) -> Result(Nil, error.DiscordError) {
-  endpoints.wipe_guild_commands(bot.token, bot.client_id, guild_id)
+  applications.wipe_guild_commands(bot.token, bot.client_id, guild_id)
 }
 
 /// Registers a global slash command. \
@@ -416,7 +420,9 @@ pub fn register_global_commands(
   commands: List(slash_command.SlashCommand),
 ) -> Result(Nil, #(slash_command.SlashCommand, error.DiscordError)) {
   list.try_each(commands, fn(command) {
-    case endpoints.register_global_command(bot.token, bot.client_id, command) {
+    case
+      applications.register_global_command(bot.token, bot.client_id, command)
+    {
       Ok(_) -> Ok(Nil)
       Error(err) -> Error(#(command, err))
     }
@@ -432,7 +438,7 @@ pub fn register_guild_commands(
 ) -> Result(Nil, #(slash_command.SlashCommand, error.DiscordError)) {
   list.try_each(commands, fn(command) {
     case
-      endpoints.register_guild_command(
+      applications.register_guild_command(
         bot.token,
         bot.client_id,
         guild_id,
@@ -451,7 +457,7 @@ pub fn interaction_reply_message(
   message: String,
   ephemeral: Bool,
 ) -> Result(Nil, error.DiscordError) {
-  endpoints.interaction_send_text(interaction, message, ephemeral)
+  interactions.interaction_send_text(interaction, message, ephemeral)
 }
 
 /// Used to request all members of a guild. The server will send

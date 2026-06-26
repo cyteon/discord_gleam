@@ -31,15 +31,6 @@ pub fn json_decode_error_to_string(error: json.DecodeError) -> String {
   }
 }
 
-pub fn dynamic_decode_error_to_string(error: decode.DecodeError) -> String {
-  "Expected "
-  <> error.expected
-  <> ", but found "
-  <> error.found
-  <> " at "
-  <> string.join(error.path, with: ".")
-}
-
 pub fn decode_error_to_string(error: decode.DecodeError) -> String {
   "Expected "
   <> error.expected
