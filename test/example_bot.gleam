@@ -1,7 +1,7 @@
 import booklet
 import discord_gleam
 import discord_gleam/discord/intents
-import discord_gleam/discord/snowflake.{type Snowflake}
+import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
 import discord_gleam/types/bot
 import discord_gleam/types/guild
@@ -146,7 +146,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         )
 
         discord_gleam.request_guild_members(
-          bot,
+          bot: bot,
           guild_id: id,
           option: request_guild_members.Query("", option.None),
           presences: option.Some(True),
@@ -782,7 +782,7 @@ fn normal_handler(
             )
 
             discord_gleam.request_guild_members(
-              bot,
+              bot: bot,
               guild_id: id,
               option: request_guild_members.Query("", option.None),
               presences: option.Some(True),

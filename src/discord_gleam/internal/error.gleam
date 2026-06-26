@@ -2,7 +2,6 @@ import gleam/dynamic/decode
 import gleam/httpc
 import gleam/json
 import gleam/list
-import gleam/otp/actor
 import gleam/string
 
 pub type DiscordError {
