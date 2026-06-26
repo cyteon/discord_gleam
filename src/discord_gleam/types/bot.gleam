@@ -9,7 +9,7 @@ import gleam/erlang/process
 pub type Bot {
   Bot(
     token: String,
-    client_id: Snowflake,
+    client_id: Snowflake(snowflake.Application),
     intents: intents.Intents,
     cache: Cache,
     subject: process.Subject(BotMessage),
@@ -23,5 +23,9 @@ pub type BotMessage {
 
 /// The cache currently only stores messages, which can be used to for example get deleted messages
 pub type Cache {
-  Cache(messages: booklet.Booklet(dict.Dict(Snowflake, MessagePacketData)))
+  Cache(
+    messages: booklet.Booklet(
+      dict.Dict(Snowflake(snowflake.Message), MessagePacketData),
+    ),
+  )
 }

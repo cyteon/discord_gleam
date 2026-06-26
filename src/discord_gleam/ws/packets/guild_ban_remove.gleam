@@ -4,7 +4,10 @@ import gleam/dynamic/decode
 import gleam/json
 
 pub type GuildBanRemovePacketData {
-  GuildBanRemovePacketData(user: user.User, guild_id: Snowflake)
+  GuildBanRemovePacketData(
+    user: user.User,
+    guild_id: Snowflake(snowflake.Guild),
+  )
 }
 
 /// Packet sent by Discord when a member is unbanned

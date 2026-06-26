@@ -4,7 +4,7 @@ import gleam/dynamic/decode
 import gleam/json
 
 pub type GuildMemberRemoveData {
-  GuildMemberRemoveData(user: user.User, guild_id: Snowflake)
+  GuildMemberRemoveData(user: user.User, guild_id: Snowflake(snowflake.Guild))
 }
 
 /// Packet sent by Discord when a member is removed from a guild

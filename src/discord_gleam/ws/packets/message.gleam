@@ -8,9 +8,9 @@ import gleam/option.{type Option, None, Some}
 pub type MessagePacketData {
   MessagePacketData(
     content: String,
-    id: Snowflake,
-    guild_id: Option(Snowflake),
-    channel_id: Snowflake,
+    id: Snowflake(snowflake.Message),
+    guild_id: Option(Snowflake(snowflake.Guild)),
+    channel_id: Snowflake(snowflake.Channel),
     author: user.User,
   )
 }

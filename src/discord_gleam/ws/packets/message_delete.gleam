@@ -4,9 +4,9 @@ import gleam/json
 
 pub type MessageDeletePacketData {
   MessageDeletePacketData(
-    id: Snowflake,
-    guild_id: Snowflake,
-    channel_id: Snowflake,
+    id: Snowflake(snowflake.Message),
+    guild_id: Snowflake(snowflake.Guild),
+    channel_id: Snowflake(snowflake.Channel),
   )
 }
 

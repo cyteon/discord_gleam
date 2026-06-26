@@ -8,8 +8,8 @@ import gleam/result
 /// Data returned by discord when you send a message
 pub type MessageSendResponse {
   MessageSendResponse(
-    id: Snowflake,
-    channel_id: Snowflake,
+    id: Snowflake(snowflake.Message),
+    channel_id: Snowflake(snowflake.Channel),
     content: String,
     timestamp: String,
     author: user.User,

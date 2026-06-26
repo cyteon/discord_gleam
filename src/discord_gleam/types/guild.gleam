@@ -3,9 +3,9 @@ import gleam/dynamic/decode
 
 /// See https://discord.com/developers/docs/resources/guild#guild-resource \
 pub type Guild {
-  UnavailableGuild(id: Snowflake, unavailable: Bool)
+  UnavailableGuild(id: Snowflake(snowflake.Guild), unavailable: Bool)
   // TODO: Implement guild structure
-  Guild(id: Snowflake)
+  Guild(id: Snowflake(snowflake.Guild))
 }
 
 pub fn from_json_decoder() -> decode.Decoder(Guild) {

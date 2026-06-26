@@ -6,7 +6,7 @@ import gleam/json
 pub type GuildMemberAddData {
   GuildMemberAddData(
     guild_member: guild_member.GuildMember,
-    guild_id: Snowflake,
+    guild_id: Snowflake(snowflake.Guild),
   )
 }
 

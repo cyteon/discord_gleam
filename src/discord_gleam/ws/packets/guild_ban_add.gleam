@@ -7,7 +7,7 @@ import gleam/option
 pub type GuildBanAddPacketData {
   GuildBanAddPacketData(
     user: user.User,
-    guild_id: Snowflake,
+    guild_id: Snowflake(snowflake.Guild),
     delete_message_secs: option.Option(Int),
   )
 }

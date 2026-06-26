@@ -14,7 +14,10 @@ pub type GuildRoleCreatePacket {
 }
 
 pub type GuildRoleCreatePacketData {
-  GuildRoleCreatePacketData(guild_id: snowflake.Snowflake, role: role.Role)
+  GuildRoleCreatePacketData(
+    guild_id: snowflake.Snowflake(snowflake.Guild),
+    role: role.Role,
+  )
 }
 
 pub fn string_to_data(

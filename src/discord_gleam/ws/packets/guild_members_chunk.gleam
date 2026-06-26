@@ -7,11 +7,11 @@ import gleam/option.{type Option, None}
 
 pub type GuildMembersChunkData {
   GuildMembersChunkData(
-    guild_id: Snowflake,
+    guild_id: Snowflake(snowflake.Guild),
     members: List(guild_member.GuildMember),
     chunk_index: Int,
     chunk_count: Int,
-    not_found: Option(List(Snowflake)),
+    not_found: Option(List(Snowflake(snowflake.User))),
     presences: Option(List(presence.Presence)),
     nonce: Option(String),
   )

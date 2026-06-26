@@ -10,7 +10,7 @@ pub type DiscordError {
   /// The HTTP request itself failed, e.g. due to a network error
   HttpError(httpc.HttpError)
   /// When the API returns an error, but the request was successful
-  GenericHttpError(status_code: Int, body: String)
+  ApiError(status_code: Int, body: String)
 }
 
 pub fn json_decode_error_to_string(error: json.DecodeError) -> String {

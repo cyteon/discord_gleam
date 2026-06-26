@@ -7,12 +7,12 @@ import gleam/option.{type Option}
 
 pub type RequestGuildMembersOption {
   Query(String, limit: Option(Int))
-  UserIds(List(Snowflake))
+  UserIds(List(Snowflake(snowflake.User)))
 }
 
 pub type RequestGuildMembersData {
   RequestGuildMembersData(
-    guild_id: Snowflake,
+    guild_id: Snowflake(snowflake.Guild),
     option: RequestGuildMembersOption,
     presences: Option(Bool),
     nonce: Option(String),
@@ -21,7 +21,7 @@ pub type RequestGuildMembersData {
 
 pub fn request_guild_members(
   bot: bot.Bot,
-  guild_id guild_id: Snowflake,
+  guild_id guild_id: Snowflake(snowflake.Guild),
   option option: RequestGuildMembersOption,
   presences presences: Option(Bool),
   nonce nonce: Option(String),
@@ -37,7 +37,7 @@ pub fn request_guild_members(
 
 fn data_to_json(data: RequestGuildMembersData) -> json.Json {
   let fields = [
-    #("guild_id", json.string(data.guild_id)),
+    #("guild_id", json.string(snowflake.to_string(data.guild_id))),
   ]
 
   let fields = case data.presences {
@@ -58,7 +58,14 @@ fn data_to_json(data: RequestGuildMembersData) -> json.Json {
         #("limit", json.int(option.unwrap(limit, 0))),
       ])
     UserIds(user_ids) ->
-      list.append(fields, [#("user_ids", json.array(user_ids, of: json.string))])
+      list.append(fields, [
+        #(
+          "user_ids",
+          json.array(user_ids, of: fn(id) {
+            json.string(snowflake.to_string(id))
+          }),
+        ),
+      ])
   }
   |> json.object()
 }

@@ -12,7 +12,7 @@ pub type InteractionCommand {
   InteractionCommand(
     type_: Int,
     name: String,
-    id: Snowflake,
+    id: Snowflake(snowflake.Interaction),
     options: Option(List(InteractionOption)),
   )
 }
@@ -31,10 +31,10 @@ pub type InteractionCreateData {
     token: String,
     member: Option(InteractionCreateMember),
     user: Option(user.User),
-    id: Snowflake,
-    guild_id: Option(Snowflake),
+    id: Snowflake(snowflake.Interaction),
+    guild_id: Option(Snowflake(snowflake.Guild)),
     data: InteractionCommand,
-    channel_id: Snowflake,
+    channel_id: Snowflake(snowflake.Channel),
   )
 }
 

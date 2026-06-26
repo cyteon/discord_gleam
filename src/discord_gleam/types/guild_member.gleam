@@ -9,7 +9,7 @@ pub type GuildMember {
     nick: Option(String),
     avatar: Option(String),
     banner: Option(String),
-    roles: List(Snowflake),
+    roles: List(Snowflake(snowflake.Role)),
     // ISO8601 timestamp?
     joined_at: String,
     premium_since: Option(String),

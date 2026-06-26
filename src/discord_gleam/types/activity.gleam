@@ -8,7 +8,11 @@ pub type ActivityTimestamp {
 }
 
 pub type ActivityEmoji {
-  ActivityEmoji(name: String, id: Option(Snowflake), animated: Option(Bool))
+  ActivityEmoji(
+    name: String,
+    id: Option(Snowflake(snowflake.Emoji)),
+    animated: Option(Bool),
+  )
 }
 
 pub type ActivityParty {
@@ -46,7 +50,7 @@ pub type Activity {
     url: Option(String),
     created_at: Int,
     timestamps: Option(ActivityTimestamp),
-    application_id: Option(Snowflake),
+    application_id: Option(Snowflake(snowflake.Application)),
     status_display_type: Option(Int),
     details: Option(String),
     details_url: Option(String),

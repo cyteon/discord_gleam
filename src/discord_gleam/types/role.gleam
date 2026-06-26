@@ -9,7 +9,7 @@ import gleam/result
 /// This is a simplified version of the channel object.
 pub type Role {
   Role(
-    id: Snowflake,
+    id: Snowflake(snowflake.Role),
     name: String,
     color: option.Option(Int),
     hoist: Bool,

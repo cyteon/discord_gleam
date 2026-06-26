@@ -14,13 +14,13 @@ pub type ClientStatus {
 // NOTE: `PRESENCE_UPDATE` packet includes only user id?
 
 pub type PresenceUser {
-  PresenceUser(id: Snowflake)
+  PresenceUser(id: Snowflake(snowflake.User))
 }
 
 pub type Presence {
   Presence(
     user: PresenceUser,
-    // NOTE: `guild_id` does not exist? 
+    // NOTE: `guild_id` does not exist?
     // https://discord.com/developers/docs/events/gateway-events#presence have
     // this field as required, but it is not present in the packet.
     // guild_id: Snowflake,

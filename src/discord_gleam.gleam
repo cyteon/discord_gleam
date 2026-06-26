@@ -4,7 +4,7 @@
 
 import booklet
 import discord_gleam/discord/intents
-import discord_gleam/discord/snowflake
+import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/event_handler
 import discord_gleam/http/endpoints
 import discord_gleam/internal/error
@@ -24,11 +24,11 @@ import gleam/option
 import gleam/otp/actor
 
 /// Create a new bot instance.
-/// 
+///
 /// Example:
 /// ```gleam
 /// import discord_gleam/discord/intents
-/// 
+///
 /// fn main() {
 ///   let bot = discord_gleam.bot("TOKEN", "CLIENT_ID", intents.default()))
 /// }
@@ -40,7 +40,7 @@ pub fn bot(
 ) -> bot.Bot {
   bot.Bot(
     token: token,
-    client_id: client_id,
+    client_id: snowflake.from_string(client_id),
     intents: intents,
     cache: bot.Cache(messages: booklet.new(dict.new())),
     subject: process.new_subject(),
@@ -48,7 +48,7 @@ pub fn bot(
 }
 
 /// Instruction on how event loop actor should proceed after handling an event
-/// 
+///
 /// - `Continue` - Continue processing with the updated state and optional
 /// selector for custom user messages
 /// - `Stop` - Stop the event loop
@@ -59,7 +59,7 @@ pub opaque type Next(user_state, user_message) {
   StopAbnormal(reason: String)
 }
 
-/// Continue processing with the updated state. Use `with_selector` to add a 
+/// Continue processing with the updated state. Use `with_selector` to add a
 /// selector for custom user messages.
 pub fn continue(state: user_state) -> Next(user_state, user_message) {
   Continue(state, option.None)
@@ -87,10 +87,10 @@ pub fn stop_abnormal(reason: String) -> Next(user_state, user_message) {
 }
 
 /// The mode of the event handler
-/// 
-/// Simple mode is used for simple bots that don't need to handle custom user 
+///
+/// Simple mode is used for simple bots that don't need to handle custom user
 /// state and messages. Can have multiple handlers.
-/// 
+///
 /// Normal mode is used for bots that need to handle custom user state and
 /// messages. Can have only one handler.
 pub opaque type Mode(user_state, user_message) {
@@ -127,10 +127,10 @@ pub fn simple(
 }
 
 /// Create a normal mode with a single handler
-/// 
+///
 /// `on_init` function is called once discord websocket connection is
-/// initialized. It must return a tuple with initial state and selector for 
-/// custom messages. If there is no custom messages, user can pass the same 
+/// initialized. It must return a tuple with initial state and selector for
+/// custom messages. If there is no custom messages, user can pass the same
 /// selector from the argument
 pub fn new(
   bot: bot.Bot,
@@ -166,28 +166,28 @@ pub fn with_name(
 /// import discord_gleam/discord/intents
 /// import discord_gleam/event_handler
 /// import gleam/erlang/process
-/// 
+///
 /// fn main() {
 ///  let bot = discord_gleam.bot("TOKEN", "CLIENT_ID", intents.default())
-/// 
-///  let assert Ok(_) = 
+///
+///  let assert Ok(_) =
 ///    discord_gleam.simple(bot, [handler])
 ///    |> discord_gleam.start()
-/// 
+///
 ///  process.sleep_forever()
 /// }
-/// 
+///
 /// fn handler(bot: bot.Bot, packet: event_handler.Packet) {
 ///  case packet {
 ///   event_handler.ReadyPacket(ready) -> {
 ///     logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
 ///   }
-/// 
+///
 ///   _ -> Nil
 ///  }
 /// }
 /// ```
-/// 
+///
 pub fn start(
   mode: Mode(user_state, user_message),
 ) -> Result(
@@ -242,16 +242,16 @@ fn to_internal_next(
 }
 
 /// Send a message to a channel.
-/// 
+///
 /// Example:
 /// ```gleam
 /// import discord_gleam
-/// 
+///
 /// fn main() {
 ///  ...
-/// 
+///
 ///  let msg = discord_gleam.send_message(
-///   bot,  
+///   bot,
 ///   "CHANNEL_ID",
 ///   "Hello world!",
 ///   [] // embeds
@@ -259,7 +259,7 @@ fn to_internal_next(
 /// }
 pub fn send_message(
   bot: bot.Bot,
-  channel_id: String,
+  channel_id: Snowflake(snowflake.Channel),
   message: String,
   embeds: List(message.Embed),
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
@@ -272,7 +272,7 @@ pub fn send_message(
 /// Returns a channel object, or a DiscordError if it fails.
 pub fn create_dm_channel(
   bot: bot.Bot,
-  user_id: String,
+  user_id: Snowflake(snowflake.User),
 ) -> Result(channel.Channel, error.DiscordError) {
   endpoints.create_dm_channel(bot.token, user_id)
 }
@@ -280,11 +280,11 @@ pub fn create_dm_channel(
 /// Send a direct message to a user. \
 /// Same use as `send_message`, but use user_id instead of channel_id. \
 /// `discord_gleam.send_direct_message(bot, "USER_ID", "Hello world!", [])`
-/// 
+///
 /// Note: This will return a DiscordError if the DM channel cant be made
 pub fn send_direct_message(
   bot: bot.Bot,
-  user_id: String,
+  user_id: Snowflake(snowflake.User),
   message: String,
   embeds: List(message.Embed),
 ) -> Result(Nil, error.DiscordError) {
@@ -294,22 +294,22 @@ pub fn send_direct_message(
 }
 
 /// Reply to a message in a channel.
-/// 
+///
 /// Example:
-/// 
+///
 /// ```gleam
 /// import discord_gleam
-/// 
+///
 /// fn main() {
 ///  ...
-/// 
+///
 ///  discord_gleam.reply(bot, "CHANNEL_ID", "MESSAGE_ID", "Hello world!", [])
 /// }
 /// ```
 pub fn reply(
   bot: bot.Bot,
-  channel_id: String,
-  message_id: String,
+  channel_id: Snowflake(snowflake.Channel),
+  message_id: Snowflake(snowflake.Message),
   message: String,
   embeds: List(message.Embed),
 ) -> Result(Nil, error.DiscordError) {
@@ -321,23 +321,23 @@ pub fn reply(
 
 /// Kicks an member from an server. \
 /// The reason will be what is shown in the audit log.
-/// 
+///
 /// Example:
-/// 
+///
 /// ```gleam
 /// import discord_gleam
-/// 
+///
 /// fn main() {
 ///  ...
-/// 
+///
 ///  discord_gleam.kick_member(bot, "GUILD_ID", "USER_ID", "REASON")
 /// }
-/// 
+///
 /// For an full example, see the `examples/kick.gleam` file.
 pub fn kick_member(
   bot: bot.Bot,
-  guild_id: String,
-  user_id: String,
+  guild_id: Snowflake(snowflake.Guild),
+  user_id: Snowflake(snowflake.User),
   reason: String,
 ) -> Result(Nil, error.DiscordError) {
   endpoints.kick_member(bot.token, guild_id, user_id, reason)
@@ -345,8 +345,8 @@ pub fn kick_member(
 
 pub fn ban_member(
   bot: bot.Bot,
-  guild_id: String,
-  user_id: String,
+  guild_id: Snowflake(snowflake.Guild),
+  user_id: Snowflake(snowflake.User),
   reason: String,
 ) -> Result(Nil, error.DiscordError) {
   endpoints.ban_member(bot.token, guild_id, user_id, reason)
@@ -354,27 +354,27 @@ pub fn ban_member(
 
 /// Deletes an message from a channel. \
 /// The reason will be what is shown in the audit log.
-/// 
+///
 /// Example:
 /// ```gleam
 /// import discord_gleam
-/// 
+///
 /// fn main() {
 ///  ...
-/// 
+///
 ///  discord_gleam.delete_message(
-///   bot,  
+///   bot,
 ///  "CHANNEL_ID",
 ///  "MESSAGE_ID",
 ///  "REASON",
 ///  )
 /// }
-/// 
+///
 /// For an full example, see the `examples/delete_message.gleam` file.
 pub fn delete_message(
   bot: bot.Bot,
-  channel_id: String,
-  message_id: String,
+  channel_id: Snowflake(snowflake.Channel),
+  message_id: Snowflake(snowflake.Message),
   reason: String,
 ) -> Result(Nil, error.DiscordError) {
   endpoints.delete_message(bot.token, channel_id, message_id, reason)
@@ -384,8 +384,8 @@ pub fn delete_message(
 /// The message must have been sent by the bot itself.
 pub fn edit_message(
   bot: bot.Bot,
-  channel_id: String,
-  message_id: String,
+  channel_id: Snowflake(snowflake.Channel),
+  message_id: Snowflake(snowflake.Message),
   content: String,
   embeds: List(message.Embed),
 ) -> Result(Nil, error.DiscordError) {
@@ -404,7 +404,7 @@ pub fn wipe_global_commands(bot: bot.Bot) -> Result(Nil, error.DiscordError) {
 /// Restarting your client might be required to see the changes. \
 pub fn wipe_guild_commands(
   bot: bot.Bot,
-  guild_id: String,
+  guild_id: Snowflake(snowflake.Guild),
 ) -> Result(Nil, error.DiscordError) {
   endpoints.wipe_guild_commands(bot.token, bot.client_id, guild_id)
 }
@@ -427,7 +427,7 @@ pub fn register_global_commands(
 /// Restarting your client might be required to see the changes. \
 pub fn register_guild_commands(
   bot: bot.Bot,
-  guild_id: String,
+  guild_id: Snowflake(snowflake.Guild),
   commands: List(slash_command.SlashCommand),
 ) -> Result(Nil, #(slash_command.SlashCommand, error.DiscordError)) {
   list.try_each(commands, fn(command) {
@@ -454,15 +454,15 @@ pub fn interaction_reply_message(
   endpoints.interaction_send_text(interaction, message, ephemeral)
 }
 
-/// Used to request all members of a guild. The server will send 
-/// GUILD_MEMBERS_CHUNK events in response with up to 1000 members per chunk 
+/// Used to request all members of a guild. The server will send
+/// GUILD_MEMBERS_CHUNK events in response with up to 1000 members per chunk
 /// until all members that match the request have been sent.
-/// 
+///
 /// Nonce can only be up to 32 bytes. If you send an invalid nonce it will be
 /// ignored and the reply member_chunk(s) will not have a nonce set.
 pub fn request_guild_members(
-  bot: bot.Bot,
-  guild_id guild_id: snowflake.Snowflake,
+  bot bot: bot.Bot,
+  guild_id guild_id: snowflake.Snowflake(snowflake.Guild),
   option option: request_guild_members.RequestGuildMembersOption,
   presences presences: option.Option(Bool),
   nonce nonce: option.Option(String),

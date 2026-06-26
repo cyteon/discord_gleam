@@ -4,19 +4,18 @@ import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option}
 import gleam/result
-import gleam/string
 
 /// User object containing PartialUser and FullUser
 /// FullUser is currently not implemented
 pub type User {
   PartialUser(
-    id: Snowflake,
+    id: Snowflake(snowflake.User),
     username: String,
     discriminator: String,
     avatar: Option(String),
   )
   FullUser(
-    id: Snowflake,
+    id: Snowflake(snowflake.User),
     username: String,
     discriminator: String,
     avatar: Option(String),
@@ -34,7 +33,7 @@ pub type User {
 }
 
 pub type AvatarDecoration {
-  AvatarDecoration(asset: String, sku_id: Snowflake)
+  AvatarDecoration(asset: String, sku_id: Snowflake(snowflake.Sku))
 }
 
 pub fn avatar_decoration_decoder() -> decode.Decoder(AvatarDecoration) {

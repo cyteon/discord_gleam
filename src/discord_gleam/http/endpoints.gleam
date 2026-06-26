@@ -1,6 +1,7 @@
 //// Low-level functions for interacting with the Discord API. \
 //// Preferrably use the higher-level functions in src/discord_gleam.gleam.
 
+import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/http/request
 import discord_gleam/internal/error
 import discord_gleam/types/channel
@@ -26,11 +27,7 @@ pub fn me(token: String) -> Result(user.User, error.DiscordError) {
           user.string_to_data(resp.body)
         }
 
-        _ ->
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+        _ -> Error(error.ApiError(status_code: resp.status, body: resp.body))
       }
     }
 
@@ -45,7 +42,7 @@ pub fn me(token: String) -> Result(user.User, error.DiscordError) {
 /// Send a message to a channel
 pub fn send_message(
   token: String,
-  channel_id: String,
+  channel_id: Snowflake(snowflake.Channel),
   message: message.Message,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let data = message.to_string(message)
@@ -55,7 +52,7 @@ pub fn send_message(
   let request =
     request.new_auth_with_body(
       http.Post,
-      "/channels/" <> channel_id <> "/messages",
+      "/channels/" <> snowflake.to_string(channel_id) <> "/messages",
       token,
       data,
     )
@@ -72,10 +69,7 @@ pub fn send_message(
         _ -> {
           logging.log(logging.Error, "Failed to send message")
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -91,14 +85,18 @@ pub fn send_message(
 /// Create a DM channel, can be used to send direct messages where a direct message function is not created
 pub fn create_dm_channel(
   token: String,
-  user_id: String,
+  user_id: Snowflake(snowflake.User),
 ) -> Result(channel.Channel, error.DiscordError) {
   let request =
     request.new_auth_with_body(
       http.Post,
       "/users/@me/channels",
       token,
-      json.to_string(json.object([#("recipient_id", json.string(user_id))])),
+      json.to_string(
+        json.object([
+          #("recipient_id", json.string(snowflake.to_string(user_id))),
+        ]),
+      ),
     )
 
   case httpc.send(request) {
@@ -124,7 +122,7 @@ pub fn create_dm_channel(
         }
 
         v -> {
-          Error(error.GenericHttpError(status_code: v, body: resp.body))
+          Error(error.ApiError(status_code: v, body: resp.body))
         }
       }
     }
@@ -140,7 +138,7 @@ pub fn create_dm_channel(
 /// Creates a DM channel, then sends a message with `send_message()`.
 pub fn send_direct_message(
   token: String,
-  user_id: String,
+  user_id: Snowflake(snowflake.User),
   message: message.Message,
 ) -> Result(Nil, error.DiscordError) {
   let data: String = message.to_string(message)
@@ -167,7 +165,7 @@ pub fn send_direct_message(
 /// Reply to a message
 pub fn reply(
   token: String,
-  channel_id: String,
+  channel_id: Snowflake(snowflake.Channel),
   message: reply.Reply,
 ) -> Result(Nil, error.DiscordError) {
   let data = reply.to_string(message)
@@ -177,7 +175,7 @@ pub fn reply(
   let request =
     request.new_auth_with_body(
       http.Post,
-      "/channels/" <> channel_id <> "/messages",
+      "/channels/" <> snowflake.to_string(channel_id) <> "/messages",
       token,
       data,
     )
@@ -193,10 +191,7 @@ pub fn reply(
         _ -> {
           logging.log(logging.Error, "Failed to send reply")
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -211,14 +206,17 @@ pub fn reply(
 /// Kick a member from a server
 pub fn kick_member(
   token: String,
-  guild_id: String,
-  user_id: String,
+  guild_id: Snowflake(snowflake.Guild),
+  user_id: Snowflake(snowflake.User),
   reason: String,
 ) -> Result(Nil, error.DiscordError) {
   let request =
     request.new_auth_with_header(
       http.Delete,
-      "/guilds/" <> guild_id <> "/members/" <> user_id,
+      "/guilds/"
+        <> snowflake.to_string(guild_id)
+        <> "/members/"
+        <> snowflake.to_string(user_id),
       token,
       #("X-Audit-Log-Reason", reason),
     )
@@ -235,10 +233,7 @@ pub fn kick_member(
         _ -> {
           logging.log(logging.Error, "Failed to kick member")
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -253,14 +248,17 @@ pub fn kick_member(
 /// Ban a member from a server
 pub fn ban_member(
   token: String,
-  guild_id: String,
-  user_id: String,
+  guild_id: Snowflake(snowflake.Guild),
+  user_id: Snowflake(snowflake.User),
   reason: String,
 ) -> Result(Nil, error.DiscordError) {
   let request =
     request.new_auth_with_header(
       http.Put,
-      "/guilds/" <> guild_id <> "/bans/" <> user_id,
+      "/guilds/"
+        <> snowflake.to_string(guild_id)
+        <> "/bans/"
+        <> snowflake.to_string(user_id),
       token,
       #("X-Audit-Log-Reason", reason),
     )
@@ -276,10 +274,7 @@ pub fn ban_member(
         _ -> {
           logging.log(logging.Error, "Failed to ban member")
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -294,14 +289,17 @@ pub fn ban_member(
 /// Delete a message by channel id and message id
 pub fn delete_message(
   token: String,
-  channel_id: String,
-  message_id: String,
+  channel_id: Snowflake(snowflake.Channel),
+  message_id: Snowflake(snowflake.Message),
   reason: String,
 ) -> Result(Nil, error.DiscordError) {
   let request =
     request.new_auth_with_header(
       http.Delete,
-      "/channels/" <> channel_id <> "/messages/" <> message_id,
+      "/channels/"
+        <> snowflake.to_string(channel_id)
+        <> "/messages/"
+        <> snowflake.to_string(message_id),
       token,
       #("X-Audit-Log-Reason", reason),
     )
@@ -317,10 +315,7 @@ pub fn delete_message(
         _ -> {
           logging.log(logging.Error, "Failed to delete message")
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -335,8 +330,8 @@ pub fn delete_message(
 /// Edit an message by channel id and message id
 pub fn edit_message(
   token: String,
-  channel_id: String,
-  message_id: String,
+  channel_id: Snowflake(snowflake.Channel),
+  message_id: Snowflake(snowflake.Message),
   message: message.Message,
 ) -> Result(Nil, error.DiscordError) {
   let data = message.to_string(message)
@@ -346,7 +341,10 @@ pub fn edit_message(
   let request =
     request.new_auth_with_body(
       http.Patch,
-      "/channels/" <> channel_id <> "/messages/" <> message_id,
+      "/channels/"
+        <> snowflake.to_string(channel_id)
+        <> "/messages/"
+        <> snowflake.to_string(message_id),
       token,
       data,
     )
@@ -362,10 +360,7 @@ pub fn edit_message(
         _ -> {
           logging.log(logging.Error, "Failed to edit message")
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -381,12 +376,12 @@ pub fn edit_message(
 /// Wipes the global commands for the bot
 pub fn wipe_global_commands(
   token: String,
-  client_id: String,
+  client_id: Snowflake(snowflake.Application),
 ) -> Result(Nil, error.DiscordError) {
   let request =
     request.new_auth_with_body(
       http.Put,
-      "/applications/" <> client_id <> "/commands",
+      "/applications/" <> snowflake.to_string(client_id) <> "/commands",
       token,
       "{}",
     )
@@ -402,10 +397,7 @@ pub fn wipe_global_commands(
         _ -> {
           logging.log(logging.Error, "Failed to wipe global commands")
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -420,13 +412,17 @@ pub fn wipe_global_commands(
 /// Wipes the guild commands for the bot
 pub fn wipe_guild_commands(
   token: String,
-  client_id: String,
-  guild_id: String,
+  client_id: Snowflake(snowflake.Application),
+  guild_id: Snowflake(snowflake.Guild),
 ) -> Result(Nil, error.DiscordError) {
   let request =
     request.new_auth_with_body(
       http.Put,
-      "/applications/" <> client_id <> "/guilds/" <> guild_id <> "/commands",
+      "/applications/"
+        <> snowflake.to_string(client_id)
+        <> "/guilds/"
+        <> snowflake.to_string(guild_id)
+        <> "/commands",
       token,
       "{}",
     )
@@ -442,10 +438,7 @@ pub fn wipe_guild_commands(
         _ -> {
           logging.log(logging.Error, "Failed to wipe guild commands")
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -460,13 +453,13 @@ pub fn wipe_guild_commands(
 /// Register a new global slash command
 pub fn register_global_command(
   token: String,
-  client_id: String,
+  client_id: Snowflake(snowflake.Application),
   command: slash_command.SlashCommand,
 ) -> Result(Nil, error.DiscordError) {
   let request =
     request.new_auth_with_body(
       http.Post,
-      "/applications/" <> client_id <> "/commands",
+      "/applications/" <> snowflake.to_string(client_id) <> "/commands",
       token,
       slash_command.command_to_string(command),
     )
@@ -492,10 +485,7 @@ pub fn register_global_command(
             "Failed to add global command " <> command.name,
           )
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -514,14 +504,18 @@ pub fn register_global_command(
 /// Register a new guild-specific slash command
 pub fn register_guild_command(
   token: String,
-  client_id: String,
-  guild_id: String,
+  client_id: Snowflake(snowflake.Application),
+  guild_id: Snowflake(snowflake.Guild),
   command: slash_command.SlashCommand,
 ) -> Result(Nil, error.DiscordError) {
   let request =
     request.new_auth_with_body(
       http.Post,
-      "/applications/" <> client_id <> "/guilds/" <> guild_id <> "/commands",
+      "/applications/"
+        <> snowflake.to_string(client_id)
+        <> "/guilds/"
+        <> snowflake.to_string(guild_id)
+        <> "/commands",
       token,
       slash_command.command_to_string(command),
     )
@@ -547,10 +541,7 @@ pub fn register_guild_command(
             "Failed to add guild command " <> command.name,
           )
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }
@@ -572,7 +563,7 @@ pub fn interaction_send_text(
     request.new_with_body(
       http.Post,
       "/interactions/"
-        <> interaction.d.id
+        <> snowflake.to_string(interaction.d.id)
         <> "/"
         <> interaction.d.token
         <> "/callback",
@@ -591,10 +582,7 @@ pub fn interaction_send_text(
         _ -> {
           logging.log(logging.Error, "Failed to send Interaction Response")
 
-          Error(error.GenericHttpError(
-            status_code: resp.status,
-            body: resp.body,
-          ))
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }

@@ -1,6 +1,7 @@
 import booklet
 import discord_gleam
 import discord_gleam/discord/intents
+import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/event_handler
 import discord_gleam/types/bot
 import discord_gleam/types/guild
@@ -69,8 +70,12 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   let _ = discord_gleam.wipe_global_commands(bot)
   let _ = discord_gleam.register_global_commands(bot, [test_cmd])
 
-  let _ = discord_gleam.wipe_guild_commands(bot, guild_id)
-  let _ = discord_gleam.register_guild_commands(bot, guild_id, [test_cmd2])
+  let _ =
+    discord_gleam.wipe_guild_commands(bot, snowflake.from_string(guild_id))
+  let _ =
+    discord_gleam.register_guild_commands(bot, snowflake.from_string(guild_id), [
+      test_cmd2,
+    ])
 
   // putting this here so i dont have to comment out like 20 lines to test one or the other
   let use_simple = True
@@ -135,7 +140,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 
       list.each(ready.d.guilds, fn(guild) {
         let assert guild.UnavailableGuild(id, ..) = guild
-        logging.log(logging.Info, "Unavailable guild: " <> id)
+        logging.log(
+          logging.Info,
+          "Unavailable guild: " <> snowflake.to_string(id),
+        )
 
         discord_gleam.request_guild_members(
           bot,
@@ -162,7 +170,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         "User banned: "
           <> ban.d.user.username
           <> " (ID: "
-          <> ban.d.user.id
+          <> snowflake.to_string(ban.d.user.id)
           <> ")",
       )
     }
@@ -173,7 +181,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         "User unbanned: "
           <> ban.d.user.username
           <> " (ID: "
-          <> ban.d.user.id
+          <> snowflake.to_string(ban.d.user.id)
           <> ")",
       )
     }
@@ -184,7 +192,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         "Role created: "
           <> role.d.role.name
           <> " (ID: "
-          <> role.d.role.id
+          <> snowflake.to_string(role.d.role.id)
           <> ")",
       )
 
@@ -197,7 +205,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         "Role updated: "
           <> role.d.role.name
           <> " (ID: "
-          <> role.d.role.id
+          <> snowflake.to_string(role.d.role.id)
           <> ")",
       )
 
@@ -205,7 +213,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     }
 
     event_handler.GuildRoleDeletePacket(role) -> {
-      logging.log(logging.Info, "Role deleted: " <> role.d.role_id)
+      logging.log(
+        logging.Info,
+        "Role deleted: " <> snowflake.to_string(role.d.role_id),
+      )
 
       Nil
     }
@@ -216,7 +227,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         "Member added: "
           <> member_add.d.guild_member.user.username
           <> " (ID: "
-          <> member_add.d.guild_member.user.id
+          <> snowflake.to_string(member_add.d.guild_member.user.id)
           <> ")",
       )
     }
@@ -227,7 +238,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         "Member removed: "
           <> member_remove.d.user.username
           <> " (ID: "
-          <> member_remove.d.user.id
+          <> snowflake.to_string(member_remove.d.user.id)
           <> ")",
       )
     }
@@ -238,7 +249,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         "Member updated: "
           <> member_update.d.guild_member.user.username
           <> " (ID: "
-          <> member_update.d.guild_member.user.id
+          <> snowflake.to_string(member_update.d.guild_member.user.id)
           <> ")",
       )
     }
@@ -246,7 +257,8 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     event_handler.GuildMembersChunkPacket(chunk) -> {
       logging.log(
         logging.Info,
-        "Guild members chunk received: " <> chunk.d.guild_id,
+        "Guild members chunk received: "
+          <> snowflake.to_string(chunk.d.guild_id),
       )
     }
 
@@ -263,7 +275,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               None -> "No name"
             }
               <> " (ID: "
-              <> channel.d.id
+              <> snowflake.to_string(channel.d.id)
               <> ")",
           )
 
@@ -277,10 +289,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                 None -> "No name"
               }
                 <> "\nID: "
-                <> channel.d.id
+                <> snowflake.to_string(channel.d.id)
                 <> "\nParent ID: "
                 <> case channel.d.parent_id {
-                Some(id) -> id
+                Some(id) -> snowflake.to_string(id)
                 None -> "None"
               },
               [],
@@ -290,13 +302,16 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         }
 
         None -> {
-          logging.log(logging.Info, "DM channel created: " <> channel.d.id)
+          logging.log(
+            logging.Info,
+            "DM channel created: " <> snowflake.to_string(channel.d.id),
+          )
 
           let _ =
             discord_gleam.send_message(
               bot,
               channel.d.id,
-              "DM channel created: " <> channel.d.id,
+              "DM channel created: " <> snowflake.to_string(channel.d.id),
               [],
             )
 
@@ -314,7 +329,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
           None -> "No name"
         }
           <> " (ID: "
-          <> channel.d.id
+          <> snowflake.to_string(channel.d.id)
           <> ")",
       )
     }
@@ -328,13 +343,16 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
           None -> "No name"
         }
           <> " (ID: "
-          <> channel.d.id
+          <> snowflake.to_string(channel.d.id)
           <> ")",
       )
     }
 
     event_handler.MessagePacket(message) -> {
-      case message.d.author.id != bot.client_id {
+      case
+        snowflake.to_string(message.d.author.id)
+        != snowflake.to_string(bot.client_id)
+      {
         True -> {
           logging.log(logging.Info, "Got message: " <> message.d.content)
 
@@ -407,10 +425,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                       bot,
                       message.d.channel_id,
                       "ID: "
-                        <> channel.id
+                        <> snowflake.to_string(channel.id)
                         <> "\nLast message ID: "
                         <> case channel.last_message_id {
-                        Some(id) -> id
+                        Some(id) -> snowflake.to_string(id)
                         None -> "None"
                       },
                       [],
@@ -526,8 +544,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
             _ -> #("", [])
           }
 
-          let user = string.replace(user, "<@", "")
-          let user = string.replace(user, ">", "")
+          let user =
+            string.replace(user, "<@", "")
+            |> string.replace(">", "")
+            |> snowflake.from_string
 
           let reason = string.join(args, " ")
 
@@ -571,8 +591,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
             _ -> #("", [])
           }
 
-          let user = string.replace(user, "<@", "")
-          let user = string.replace(user, ">", "")
+          let user =
+            string.replace(user, "<@", "")
+            |> string.replace(">", "")
+            |> snowflake.from_string
 
           let reason = string.join(args, " ")
 
@@ -610,7 +632,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     }
 
     event_handler.MessageDeletePacket(deleted) -> {
-      logging.log(logging.Info, "Deleted message: " <> deleted.d.id)
+      logging.log(
+        logging.Info,
+        "Deleted message: " <> snowflake.to_string(deleted.d.id),
+      )
 
       let msg = dict.get(booklet.get(bot.cache.messages), deleted.d.id)
 
@@ -630,7 +655,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Bulk deleted messages: "
-          <> list.fold(deleted_bulk.d.ids, "", fn(acc, id) { acc <> id <> ", " }),
+          <> list.fold(deleted_bulk.d.ids, "", fn(acc, id) {
+          acc <> snowflake.to_string(id) <> ", "
+        }),
       )
     }
 
@@ -718,7 +745,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     }
 
     event_handler.PresenceUpdatePacket(presence) -> {
-      logging.log(logging.Info, "Presence updated for: " <> presence.d.user.id)
+      logging.log(
+        logging.Info,
+        "Presence updated for: " <> snowflake.to_string(presence.d.user.id),
+      )
     }
 
     _ -> Nil
@@ -745,7 +775,11 @@ fn normal_handler(
 
           list.each(ready.d.guilds, fn(guild) {
             let assert guild.UnavailableGuild(id, ..) = guild
-            logging.log(logging.Info, "Unavailable guild: " <> id)
+
+            logging.log(
+              logging.Info,
+              "Unavailable guild: " <> snowflake.to_string(id),
+            )
 
             discord_gleam.request_guild_members(
               bot,

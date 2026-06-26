@@ -1,4 +1,4 @@
-import discord_gleam/discord/snowflake
+import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/role
 import gleam/dynamic/decode
 import gleam/json
@@ -14,7 +14,10 @@ pub type GuildRoleUpdatePacket {
 }
 
 pub type GuildRoleUpdatePacketData {
-  GuildRoleUpdatePacketData(guild_id: snowflake.Snowflake, role: role.Role)
+  GuildRoleUpdatePacketData(
+    guild_id: Snowflake(snowflake.Guild),
+    role: role.Role,
+  )
 }
 
 pub fn string_to_data(

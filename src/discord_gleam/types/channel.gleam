@@ -9,15 +9,15 @@ import gleam/result
 /// This is a simplified version of the channel object.
 pub type Channel {
   Channel(
-    id: Snowflake,
+    id: Snowflake(snowflake.Channel),
     type_: Int,
     position: option.Option(Int),
-    guild_id: option.Option(Snowflake),
-    parent_id: option.Option(Snowflake),
+    guild_id: option.Option(Snowflake(snowflake.Guild)),
+    parent_id: option.Option(Snowflake(snowflake.Channel)),
     name: option.Option(String),
     topic: option.Option(String),
     nsfw: option.Option(Bool),
-    last_message_id: option.Option(Snowflake),
+    last_message_id: option.Option(Snowflake(snowflake.Message)),
   )
 }
 
