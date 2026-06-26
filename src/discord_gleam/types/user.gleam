@@ -45,15 +45,8 @@ pub fn avatar_decoration_decoder() -> decode.Decoder(AvatarDecoration) {
 
 /// Decode a string to a PartialUser
 pub fn string_to_data(encoded: String) -> Result(User, error.DiscordError) {
-  case string.contains(encoded, "401: Unauthorized") {
-    True -> {
-      Error(error.Unauthorized("Error, 401, Unauthorized :c, is token correct?"))
-    }
-    False -> {
-      json.parse(from: encoded, using: from_json_decoder())
-      |> result.map_error(error.JsonDecodeError)
-    }
-  }
+  json.parse(from: encoded, using: from_json_decoder())
+  |> result.map_error(error.JsonDecodeError)
 }
 
 pub fn from_json_decoder() -> decode.Decoder(User) {

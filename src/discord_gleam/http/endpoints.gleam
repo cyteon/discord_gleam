@@ -10,9 +10,7 @@ import discord_gleam/types/reply
 import discord_gleam/types/slash_command
 import discord_gleam/types/user
 import discord_gleam/ws/packets/interaction_create
-import gleam/dynamic/decode
 import gleam/http
-import gleam/http/response
 import gleam/httpc
 import gleam/json
 import logging
@@ -20,22 +18,19 @@ import logging
 /// Get the current user
 pub fn me(token: String) -> Result(user.User, error.DiscordError) {
   let request = request.new_auth(http.Get, "/users/@me", token)
+
   case httpc.send(request) {
     Ok(resp) -> {
-      case response.get_header(resp, "content-type") {
-        Ok("application/json") -> {
+      case resp.status {
+        200 -> {
           user.string_to_data(resp.body)
         }
+
         _ ->
-          Error(
-            error.InvalidFormat(
-              decode.DecodeError(
-                expected: "application/json content-type",
-                found: "unknown",
-                path: [],
-              ),
-            ),
-          )
+          Error(error.GenericHttpError(
+            status_code: resp.status,
+            body: resp.body,
+          ))
       }
     }
 
