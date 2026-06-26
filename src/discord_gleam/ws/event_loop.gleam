@@ -98,6 +98,7 @@ pub type WebsocketState(user_state, user_message) {
     user_state: user_state,
     bot: bot.Bot,
     mode: event_handler.Mode(user_state, user_message),
+    heartbeat: option.Option(repeatedly.Repeater(Nil)),
   )
 }
 
@@ -180,6 +181,7 @@ fn start_discord_websocket(
           user_state:,
           bot:,
           mode:,
+          heartbeat: option.None,
         )
 
       stratus.initialised(initial_state)
@@ -297,6 +299,8 @@ fn handle_text_message(
         False -> identify.create_packet(bot.token, bot.intents)
       }
 
+      let _ = option.map(state.heartbeat, repeatedly.stop)
+
       let _ = stratus.send_text_message(conn, identify)
 
       let new_state =
@@ -307,11 +311,12 @@ fn handle_text_message(
           user_state: state.user_state,
           bot: state.bot,
           mode: state.mode,
+          heartbeat: option.None,
         )
 
       case hello.string_to_data(msg) {
         Ok(data) -> {
-          process.spawn(fn() {
+          let repeater =
             repeatedly.call(data.d.heartbeat_interval, Nil, fn(_state, _count_) {
               let s = case dict.get(booklet.get(state_ets), "sequence") {
                 Ok(s) ->
@@ -338,9 +343,10 @@ fn handle_text_message(
 
               Nil
             })
-          })
 
-          Nil
+          let new_state = State(..new_state, heartbeat: option.Some(repeater))
+
+          stratus.continue(new_state)
         }
 
         Error(err) -> {
@@ -351,12 +357,11 @@ fn handle_text_message(
           )
 
           let _ = stratus.close(conn, stratus.Normal(<<>>))
-
           logging.log(logging.Critical, "Closing websocket due to fatal error")
+
+          stratus.continue(state)
         }
       }
-
-      stratus.continue(new_state)
     }
 
     True -> {
@@ -367,14 +372,7 @@ fn handle_text_message(
 
         _ -> {
           booklet.update(state_ets, fn(cache) {
-            dict.insert(
-              cache,
-              "sequence",
-              case dict.get(booklet.get(state_ets), "sequence") {
-                Ok(s) -> s
-                Error(_) -> "0"
-              },
-            )
+            dict.insert(cache, "sequence", int.to_string(generic_packet.s))
           })
 
           Nil
@@ -414,6 +412,7 @@ fn handle_text_message(
           user_state: state.user_state,
           bot: state.bot,
           mode: state.mode,
+          heartbeat: state.heartbeat,
         )
 
       let next =
@@ -462,6 +461,7 @@ fn on_close(
   close_reason: stratus.CloseReason,
 ) {
   logging.log(logging.Debug, "The webhook was closed")
+  let _ = option.map(state.heartbeat, repeatedly.stop)
 
   case close_reason {
     stratus.Custom(custom_close_reason) -> {
