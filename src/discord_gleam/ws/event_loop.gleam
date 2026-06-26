@@ -393,6 +393,29 @@ fn handle_text_message(
             Ok(url) -> url
             Error(_) -> "gateway.discord.gg"
           }
+
+          let session_id = case dict.get(booklet.get(state_ets), "session_id") {
+            Ok(s) -> s
+            Error(_) -> ""
+          }
+
+          process.send(state.event_loop_subject, Restart(host:, session_id:))
+        }
+
+        9 -> {
+          logging.log(logging.Debug, "Invalid session, reconnecting")
+          case stratus.close_custom(conn, 4009, <<>>) {
+            Ok(_) -> logging.log(logging.Debug, "Closed websocket")
+            Error(_) -> logging.log(logging.Error, "Failed to close websocket")
+          }
+
+          let host = case
+            dict.get(booklet.get(state_ets), "resume_gateway_url")
+          {
+            Ok(url) -> url
+            Error(_) -> "gateway.discord.gg"
+          }
+
           let session_id = case dict.get(booklet.get(state_ets), "session_id") {
             Ok(s) -> s
             Error(_) -> ""

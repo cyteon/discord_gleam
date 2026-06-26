@@ -19,7 +19,7 @@ pub type GuildMember {
     pending: Option(Bool),
     permissions: Option(String),
     communication_disabled_until: Option(String),
-    avatar_decoration: Option(user.AvatarDecoration),
+    avatar_decoration_data: Option(user.AvatarDecoration),
   )
 }
 
@@ -65,8 +65,8 @@ pub fn from_json_decoder() -> decode.Decoder(GuildMember) {
     None,
     decode.optional(decode.string),
   )
-  use avatar_decoration <- decode.optional_field(
-    "avatar_decoration",
+  use avatar_decoration_data <- decode.optional_field(
+    "avatar_decoration_data",
     None,
     decode.optional(user.avatar_decoration_decoder()),
   )
@@ -85,6 +85,6 @@ pub fn from_json_decoder() -> decode.Decoder(GuildMember) {
     pending:,
     permissions:,
     communication_disabled_until:,
-    avatar_decoration:,
+    avatar_decoration_data:,
   ))
 }
