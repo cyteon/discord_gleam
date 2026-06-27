@@ -1,9 +1,9 @@
 import booklet
 import discord_gleam
+import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
-import discord_gleam/types/bot
 import discord_gleam/types/guild
 import discord_gleam/types/message
 import discord_gleam/types/slash_command
@@ -26,7 +26,9 @@ pub fn main(token: String, client_id: String, guild_id: String) {
   logging.configure()
   logging.set_level(logging.Debug)
 
-  let bot = discord_gleam.bot(token, client_id, intents.all())
+  let bot =
+    bot.new(token, client_id)
+    |> bot.with_intents(intents.all())
 
   let test_cmd =
     slash_command.SlashCommand(

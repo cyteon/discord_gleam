@@ -1,9 +1,8 @@
 //// The primary module of discord_gleam. \
 //// This module contains high-level functions to interact with the Discord API. \
-//// But you can always implement stuff yourself using the low-level functions from the rest of the library. \
+//// But you can always implement stuff yourself using the low-level functions from the rest of the library.
 
 import booklet
-import discord_gleam/discord/intents
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/event_handler
 import discord_gleam/http/applications
@@ -23,35 +22,10 @@ import discord_gleam/ws/commands/update_presence
 import discord_gleam/ws/event_loop
 import discord_gleam/ws/gateway_state
 import discord_gleam/ws/packets/interaction_create
-import gleam/dict
 import gleam/erlang/process
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/otp/actor
-
-/// Create a new bot instance.
-///
-/// Example:
-/// ```gleam
-/// import discord_gleam/discord/intents
-///
-/// fn main() {
-///   let bot = discord_gleam.bot("TOKEN", "CLIENT_ID", intents.default()))
-/// }
-/// ```
-pub fn bot(
-  token: String,
-  client_id: String,
-  intents: intents.Intents,
-) -> bot.Bot {
-  bot.Bot(
-    token: token,
-    client_id: snowflake.from_string(client_id),
-    intents: intents,
-    cache: bot.Cache(messages: booklet.new(dict.new())),
-    subject: process.new_subject(),
-  )
-}
 
 /// Instruction on how event loop actor should proceed after handling an event
 ///

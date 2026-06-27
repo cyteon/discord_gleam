@@ -1,4 +1,4 @@
-//// Event loop for handling the discord gateway websocket
+//// Event loop for handling the discord gateway websocket \
 //// Dispatches events to registered event handlers
 
 import booklet
