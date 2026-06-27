@@ -21,6 +21,7 @@ import discord_gleam/types/slash_command
 import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/commands/update_presence
 import discord_gleam/ws/event_loop
+import discord_gleam/ws/gateway_state
 import discord_gleam/ws/packets/interaction_create
 import gleam/dict
 import gleam/erlang/process
@@ -199,7 +200,7 @@ pub fn start(
   actor.Started(process.Subject(event_loop.EventLoopMessage)),
   actor.StartError,
 ) {
-  let state = booklet.new(dict.new())
+  let state = booklet.new(gateway_state.new())
 
   event_loop.start_event_loop(
     to_internal_mode(mode),

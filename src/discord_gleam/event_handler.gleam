@@ -1,6 +1,7 @@
 import booklet
 import discord_gleam/internal/error
 import discord_gleam/types/bot
+import discord_gleam/ws/gateway_state
 import gleam/erlang/process
 import gleam/option
 
@@ -48,13 +49,13 @@ pub type Next(new_state, user_message) {
 }
 
 /// The mode of the event handler
-/// 
-/// Simple mode is used for simple bots that don't need to handle custom user 
-/// state and messages. `default_next` and `nil_state` fields are required for 
-/// proper type inference. Recommended to use `Nil` state and continue with no 
+///
+/// Simple mode is used for simple bots that don't need to handle custom user
+/// state and messages. `default_next` and `nil_state` fields are required for
+/// proper type inference. Recommended to use `Nil` state and continue with no
 /// selector.
-/// 
-/// Normal mode is used for bots that need to handle custom user state 
+///
+/// Normal mode is used for bots that need to handle custom user state
 /// and messages.
 pub type Mode(user_state, user_message) {
   Simple(
@@ -157,7 +158,7 @@ pub type Packet {
 fn internal_handler(
   bot: bot.Bot,
   packet: Packet,
-  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
 ) -> Nil {
   case packet {
     MessagePacket(msg) -> {
@@ -177,10 +178,12 @@ fn internal_handler(
     }
 
     ReadyPacket(ready) -> {
-      booklet.update(state_ets, fn(cache) {
-        let cache = dict.insert(cache, "session_id", ready.d.session_id)
-
-        dict.insert(cache, "resume_gateway_url", ready.d.resume_gateway_url)
+      booklet.update(state_ets, fn(state) {
+        gateway_state.GatewayState(
+          ..state,
+          session_id: ready.d.session_id,
+          resume_gateway_url: ready.d.resume_gateway_url,
+        )
       })
 
       Nil
@@ -197,7 +200,7 @@ pub fn handle_event(
   user_state: user_state,
   msg: InternalMessage(user_message),
   mode: Mode(user_state, user_message),
-  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
 ) -> Next(user_state, user_message) {
   case msg {
     InternalPacket(packet) -> {
@@ -209,11 +212,13 @@ pub fn handle_event(
           list.each(handlers, fn(handler) { handler(bot, packet) })
           next
         }
+
         Normal(bot, _name, _on_init, handler) -> {
           handler(bot, user_state, DiscordPacket(packet))
         }
       }
     }
+
     InternalUser(msg) -> {
       let assert Normal(bot, _name, _on_init, handler) = mode
       handler(bot, user_state, User(msg))

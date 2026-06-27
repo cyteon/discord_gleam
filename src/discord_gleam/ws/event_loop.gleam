@@ -5,16 +5,15 @@ import booklet
 import discord_gleam/event_handler
 import discord_gleam/internal/error
 import discord_gleam/types/bot
+import discord_gleam/ws/gateway_state
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/hello
 import discord_gleam/ws/packets/identify
-import gleam/dict
 import gleam/erlang/process
 import gleam/http
 import gleam/http/request
-import gleam/int
 import gleam/json
-import gleam/option
+import gleam/option.{None, Some}
 import gleam/otp/actor
 import gleam/result
 import logging
@@ -34,7 +33,7 @@ pub fn start_event_loop(
   host: String,
   reconnect: Bool,
   session_id: String,
-  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
 ) {
   logging.log(logging.Debug, "Starting event loop")
 
@@ -113,7 +112,7 @@ fn start_discord_websocket(
   host: String,
   reconnect: Bool,
   session_id: String,
-  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
 ) -> Result(Nil, actor.StartError) {
   let req =
     request.new()
@@ -278,7 +277,7 @@ fn handle_text_message(
   mode: event_handler.Mode(user_state, user_message),
   reconnect: Bool,
   session_id: String,
-  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
 ) {
   logging.log(logging.Debug, "Gateway text msg: " <> msg)
 
@@ -290,10 +289,7 @@ fn handle_text_message(
             bot.token,
             bot.intents,
             session_id,
-            case dict.get(booklet.get(state_ets), "sequence") {
-              Ok(s) -> s
-              Error(_) -> "0"
-            },
+            booklet.get(state_ets).sequence,
           )
 
         False -> identify.create_packet(bot.token, bot.intents)
@@ -318,14 +314,7 @@ fn handle_text_message(
         Ok(data) -> {
           let repeater =
             repeatedly.call(data.d.heartbeat_interval, Nil, fn(_state, _count_) {
-              let s = case dict.get(booklet.get(state_ets), "sequence") {
-                Ok(s) ->
-                  case int.parse(s) {
-                    Ok(i) -> i
-                    Error(_) -> 0
-                  }
-                Error(_) -> 0
-              }
+              let s = booklet.get(state_ets).sequence
 
               let packet =
                 json.object([
@@ -371,8 +360,8 @@ fn handle_text_message(
         0 -> Nil
 
         _ -> {
-          booklet.update(state_ets, fn(cache) {
-            dict.insert(cache, "sequence", int.to_string(generic_packet.s))
+          booklet.update(state_ets, fn(state) {
+            gateway_state.GatewayState(..state, sequence: generic_packet.s)
           })
 
           Nil
@@ -387,17 +376,8 @@ fn handle_text_message(
             Error(_) -> logging.log(logging.Error, "Failed to close websocket")
           }
 
-          let host = case
-            dict.get(booklet.get(state_ets), "resume_gateway_url")
-          {
-            Ok(url) -> url
-            Error(_) -> "gateway.discord.gg"
-          }
-
-          let session_id = case dict.get(booklet.get(state_ets), "session_id") {
-            Ok(s) -> s
-            Error(_) -> ""
-          }
+          let host = booklet.get(state_ets).resume_gateway_url
+          let session_id = booklet.get(state_ets).session_id
 
           process.send(state.event_loop_subject, Restart(host:, session_id:))
         }
@@ -409,17 +389,8 @@ fn handle_text_message(
             Error(_) -> logging.log(logging.Error, "Failed to close websocket")
           }
 
-          let host = case
-            dict.get(booklet.get(state_ets), "resume_gateway_url")
-          {
-            Ok(url) -> url
-            Error(_) -> "gateway.discord.gg"
-          }
-
-          let session_id = case dict.get(booklet.get(state_ets), "session_id") {
-            Ok(s) -> s
-            Error(_) -> ""
-          }
+          let host = booklet.get(state_ets).resume_gateway_url
+          let session_id = booklet.get(state_ets).session_id
 
           process.send(state.event_loop_subject, Restart(host:, session_id:))
         }
@@ -480,7 +451,7 @@ fn handle_text_message(
 
 fn on_close(
   state: WebsocketState(user_state, user_message),
-  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
   close_reason: stratus.CloseReason,
 ) {
   logging.log(logging.Debug, "The webhook was closed")
@@ -525,12 +496,7 @@ fn on_close(
         4007 -> {
           logging.log(logging.Error, "Invalid sequence, reconnecting")
 
-          let host = case
-            dict.get(booklet.get(state_ets), "resume_gateway_url")
-          {
-            Ok(url) -> url
-            Error(_) -> "gateway.discord.gg"
-          }
+          let host = booklet.get(state_ets).resume_gateway_url
 
           process.send(state.event_loop_subject, Restart(host:, session_id: ""))
         }
@@ -545,16 +511,8 @@ fn on_close(
         4009 -> {
           logging.log(logging.Error, "Session timed out, reconnecting")
 
-          let host = case
-            dict.get(booklet.get(state_ets), "resume_gateway_url")
-          {
-            Ok(url) -> url
-            Error(_) -> "gateway.discord.gg"
-          }
-          let session_id = case dict.get(booklet.get(state_ets), "session_id") {
-            Ok(s) -> s
-            Error(_) -> ""
-          }
+          let host = booklet.get(state_ets).resume_gateway_url
+          let session_id = booklet.get(state_ets).session_id
 
           process.send(state.event_loop_subject, Restart(host:, session_id:))
         }
