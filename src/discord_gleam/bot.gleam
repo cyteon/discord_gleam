@@ -44,7 +44,7 @@ pub fn new(token: String, client_id: String) -> Bot {
   Bot(
     token: token,
     client_id: snowflake.from_string(client_id),
-    intents: intents.none(),
+    intents: intents.default(),
     cache: Cache(messages: booklet.new(dict.new())),
     subject: process.new_subject(),
   )

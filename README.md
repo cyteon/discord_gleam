@@ -11,7 +11,7 @@ gleam add discord_gleam
 
 ```gleam
 import discord_gleam
-import discord_gleam/discord/intents
+import discord_gleam/bot
 import discord_gleam/event_handler
 import gleam/erlang/process
 import gleam/otp/static_supervisor as supervisor
@@ -23,10 +23,9 @@ pub fn main() {
   logging.set_level(logging.Info)
 
   let bot =
-    discord_gleam.bot(
+    bot.new(
       "TOKEN",
-      "CLIENT_ID",
-      intents.default(),
+      "CLIENT ID",
     )
 
   let bot =
@@ -73,7 +72,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
 }
 ```
 
-Further documentation can be found at <https://hexdocs.pm/discord_gleam>.
+Further documentation can be found at <https://hexdocs.pm/discord_gleam>. And more examples can be found in the `examples/` folder.
 
 ## Development
 
