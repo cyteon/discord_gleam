@@ -293,7 +293,7 @@ pub fn send_direct_message(
   user_id: Snowflake(snowflake.User),
   message: String,
   embeds: List(message.Embed),
-) -> Result(Nil, error.DiscordError) {
+) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let msg = message.Message(content: message, embeds: embeds)
 
   users.send_direct_message(bot.token, user_id, msg)
