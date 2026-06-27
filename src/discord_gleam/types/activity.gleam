@@ -66,7 +66,7 @@ pub type Activity {
   )
 }
 
-pub fn from_json_decoder() -> decode.Decoder(Activity) {
+pub fn from_json_string() -> decode.Decoder(Activity) {
   use name <- decode.field("name", decode.string)
   use type_ <- decode.field("type", decode.int)
   use url <- decode.optional_field("url", None, decode.optional(decode.string))

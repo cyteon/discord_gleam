@@ -10,7 +10,7 @@ pub type MessageUpdatePacket {
   MessageUpdatePacket(t: String, s: Int, op: Int, d: message.MessagePacketData)
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(MessageUpdatePacket, json.DecodeError) {
   let decoder = {
@@ -26,7 +26,7 @@ pub fn string_to_data(
         snowflake.decoder() |> decode.map(Some),
       )
       use channel_id <- decode.field("channel_id", snowflake.decoder())
-      use author <- decode.field("author", user.from_json_decoder())
+      use author <- decode.field("author", user.json_decoder())
 
       decode.success(message.MessagePacketData(
         content:,

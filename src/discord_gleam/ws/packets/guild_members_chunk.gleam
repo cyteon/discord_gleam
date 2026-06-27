@@ -21,7 +21,7 @@ pub type GuildMembersChunkPacket {
   GuildMembersChunkPacket(t: String, s: Int, op: Int, d: GuildMembersChunkData)
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(GuildMembersChunkPacket, json.DecodeError) {
   let decoder = {
@@ -32,7 +32,7 @@ pub fn string_to_data(
       use guild_id <- decode.field("guild_id", snowflake.decoder())
       use members <- decode.field(
         "members",
-        decode.list(of: guild_member.from_json_decoder()),
+        decode.list(of: guild_member.from_json_string()),
       )
       use chunk_index <- decode.field("chunk_index", decode.int)
       use chunk_count <- decode.field("chunk_count", decode.int)
@@ -44,7 +44,7 @@ pub fn string_to_data(
       use presences <- decode.optional_field(
         "presences",
         None,
-        decode.optional(decode.list(of: presence.from_json_decoder())),
+        decode.optional(decode.list(of: presence.from_json_string())),
       )
       use nonce <- decode.optional_field(
         "nonce",

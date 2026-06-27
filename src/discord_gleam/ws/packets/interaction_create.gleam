@@ -70,7 +70,7 @@ fn options_decoder() -> decode.Decoder(InteractionOption) {
   decode.success(InteractionOption(name:, type_:, value:, options:))
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(InteractionCreatePacket, json.DecodeError) {
   let decoder = {
@@ -84,14 +84,14 @@ pub fn string_to_data(
         "member",
         option.None,
         decode.optional({
-          use user <- decode.field("user", user.from_json_decoder())
+          use user <- decode.field("user", user.json_decoder())
           decode.success(InteractionCreateMember(user:))
         }),
       )
       use user <- decode.optional_field(
         "user",
         option.None,
-        decode.optional(user.from_json_decoder()),
+        decode.optional(user.json_decoder()),
       )
 
       use id <- decode.field("id", snowflake.decoder())

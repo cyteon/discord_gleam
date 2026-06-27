@@ -19,7 +19,7 @@ pub type GuildRoleDeletePacketData {
   )
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(GuildRoleDeletePacket, json.DecodeError) {
   let decoder = {

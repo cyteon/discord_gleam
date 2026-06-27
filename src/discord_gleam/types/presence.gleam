@@ -30,12 +30,12 @@ pub type Presence {
   )
 }
 
-pub fn from_json_decoder() -> decode.Decoder(Presence) {
+pub fn from_json_string() -> decode.Decoder(Presence) {
   use user <- decode.field("user", presence_user_decoder())
   use status <- decode.field("status", decode.string)
   use activities <- decode.field(
     "activities",
-    decode.list(activity.from_json_decoder()),
+    decode.list(activity.from_json_string()),
   )
   use client_status <- decode.field("client_status", client_status_decoder())
 

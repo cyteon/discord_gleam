@@ -227,11 +227,11 @@ pub fn handle_event(
 }
 
 fn decode_packet(msg: String) -> Packet {
-  let generic_packet = generic.string_to_data(msg)
+  let generic_packet = generic.from_json_string(msg)
 
   case generic_packet.t {
     "READY" ->
-      case ready.string_to_data(msg) {
+      case ready.from_json_string(msg) {
         Ok(data) -> ReadyPacket(data)
         Error(err) -> {
           logging.log(
@@ -245,7 +245,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "MESSAGE_CREATE" ->
-      case message.string_to_data(msg) {
+      case message.from_json_string(msg) {
         Ok(data) -> MessagePacket(data)
         Error(err) -> {
           logging.log(
@@ -259,7 +259,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "MESSAGE_UPDATE" ->
-      case message_update.string_to_data(msg) {
+      case message_update.from_json_string(msg) {
         Ok(data) -> MessageUpdatePacket(data)
         Error(err) -> {
           logging.log(
@@ -273,7 +273,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "MESSAGE_DELETE" ->
-      case message_delete.string_to_data(msg) {
+      case message_delete.from_json_string(msg) {
         Ok(data) -> MessageDeletePacket(data)
         Error(err) -> {
           logging.log(
@@ -287,7 +287,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "MESSAGE_DELETE_BULK" ->
-      case message_delete_bulk.string_to_data(msg) {
+      case message_delete_bulk.from_json_string(msg) {
         Ok(data) -> MessageDeleteBulkPacket(data)
         Error(err) -> {
           logging.log(
@@ -301,7 +301,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "INTERACTION_CREATE" ->
-      case interaction_create.string_to_data(msg) {
+      case interaction_create.from_json_string(msg) {
         Ok(data) -> InteractionCreatePacket(data)
         Error(err) -> {
           logging.log(
@@ -315,7 +315,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "CHANNEL_CREATE" ->
-      case channel_create.string_to_data(msg) {
+      case channel_create.from_json_string(msg) {
         Ok(data) -> ChannelCreatePacket(data)
         Error(err) -> {
           logging.log(
@@ -329,7 +329,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "CHANNEL_DELETE" ->
-      case channel_delete.string_to_data(msg) {
+      case channel_delete.from_json_string(msg) {
         Ok(data) -> ChannelDeletePacket(data)
         Error(err) -> {
           logging.log(
@@ -343,7 +343,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "CHANNEL_UPDATE" ->
-      case channel_update.string_to_data(msg) {
+      case channel_update.from_json_string(msg) {
         Ok(data) -> ChannelUpdatePacket(data)
         Error(err) -> {
           logging.log(
@@ -357,7 +357,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "GUILD_BAN_ADD" ->
-      case guild_ban_add.string_to_data(msg) {
+      case guild_ban_add.from_json_string(msg) {
         Ok(data) -> GuildBanAddPacket(data)
         Error(err) -> {
           logging.log(
@@ -371,7 +371,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "GUILD_BAN_REMOVE" ->
-      case guild_ban_remove.string_to_data(msg) {
+      case guild_ban_remove.from_json_string(msg) {
         Ok(data) -> GuildBanRemovePacket(data)
         Error(err) -> {
           logging.log(
@@ -385,7 +385,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "GUILD_ROLE_CREATE" ->
-      case guild_role_create.string_to_data(msg) {
+      case guild_role_create.from_json_string(msg) {
         Ok(data) -> GuildRoleCreatePacket(data)
         Error(err) -> {
           logging.log(
@@ -399,7 +399,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "GUILD_ROLE_UPDATE" ->
-      case guild_role_update.string_to_data(msg) {
+      case guild_role_update.from_json_string(msg) {
         Ok(data) -> GuildRoleUpdatePacket(data)
         Error(err) -> {
           logging.log(
@@ -413,7 +413,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "GUILD_ROLE_DELETE" ->
-      case guild_role_delete.string_to_data(msg) {
+      case guild_role_delete.from_json_string(msg) {
         Ok(data) -> GuildRoleDeletePacket(data)
         Error(err) -> {
           logging.log(
@@ -427,7 +427,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "GUILD_MEMBER_ADD" ->
-      case guild_member_add.string_to_data(msg) {
+      case guild_member_add.from_json_string(msg) {
         Ok(data) -> GuildMemberAddPacket(data)
         Error(err) -> {
           logging.log(
@@ -441,7 +441,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "GUILD_MEMBER_UPDATE" ->
-      case guild_member_update.string_to_data(msg) {
+      case guild_member_update.from_json_string(msg) {
         Ok(data) -> GuildMemberUpdatePacket(data)
         Error(err) -> {
           logging.log(
@@ -455,7 +455,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "GUILD_MEMBER_REMOVE" ->
-      case guild_member_remove.string_to_data(msg) {
+      case guild_member_remove.from_json_string(msg) {
         Ok(data) -> GuildMemberRemovePacket(data)
         Error(err) -> {
           logging.log(
@@ -469,7 +469,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "GUILD_MEMBERS_CHUNK" ->
-      case guild_members_chunk.string_to_data(msg) {
+      case guild_members_chunk.from_json_string(msg) {
         Ok(data) -> GuildMembersChunkPacket(data)
         Error(err) -> {
           logging.log(
@@ -482,7 +482,7 @@ fn decode_packet(msg: String) -> Packet {
       }
 
     "PRESENCE_UPDATE" ->
-      case presence_update.string_to_data(msg) {
+      case presence_update.from_json_string(msg) {
         Ok(data) -> PresenceUpdatePacket(data)
         Error(err) -> {
           logging.log(

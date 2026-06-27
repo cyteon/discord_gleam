@@ -22,12 +22,14 @@ pub type Channel {
 }
 
 /// Convert a JSON string to a channel object
-pub fn string_to_data(encoded: String) -> Result(Channel, error.DiscordError) {
-  json.parse(from: encoded, using: from_json_decoder())
+pub fn from_json_string(
+  encoded: String,
+) -> Result(Channel, error.DiscordError) {
+  json.parse(from: encoded, using: json_decoder())
   |> result.map_error(error.JsonDecodeError)
 }
 
-pub fn from_json_decoder() -> decode.Decoder(Channel) {
+pub fn json_decoder() -> decode.Decoder(Channel) {
   use id <- decode.field("id", snowflake.decoder())
   use type_ <- decode.field("type", decode.int)
   use position <- decode.optional_field(

@@ -25,7 +25,7 @@ pub fn from_json_string(
     use channel_id <- decode.field("channel_id", snowflake.decoder())
     use content <- decode.field("content", decode.string)
     use timestamp <- decode.field("timestamp", decode.string)
-    use author <- decode.field("author", user.from_json_decoder())
+    use author <- decode.field("author", user.json_decoder())
     decode.success(MessageSendResponse(
       id:,
       channel_id:,

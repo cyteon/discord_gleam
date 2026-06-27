@@ -20,7 +20,7 @@ pub type MessageDeleteBulkPacket {
   )
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(MessageDeleteBulkPacket, json.DecodeError) {
   let decoder = {

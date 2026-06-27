@@ -8,7 +8,7 @@ pub type Guild {
   Guild(id: Snowflake(snowflake.Guild))
 }
 
-pub fn from_json_decoder() -> decode.Decoder(Guild) {
+pub fn from_json_string() -> decode.Decoder(Guild) {
   use id <- decode.field("id", snowflake.decoder())
   use unavailable <- decode.optional_field("unavailable", False, decode.bool)
 

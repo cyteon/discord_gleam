@@ -1,5 +1,4 @@
 import discord_gleam/discord/intents
-import gleam/int
 import gleam/json
 
 pub fn create_packet(token: String, intents: intents.Intents) -> String {

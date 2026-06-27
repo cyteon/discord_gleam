@@ -18,7 +18,7 @@ pub type ReadyPacket {
   ReadyPacket(t: String, s: Int, op: Int, d: ReadyData)
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(ReadyPacket, json.DecodeError) {
   let decoder = {
@@ -29,11 +29,11 @@ pub fn string_to_data(
     use d <- decode.field("d", {
       use v <- decode.field("v", decode.int)
 
-      use user <- decode.field("user", user.from_json_decoder())
+      use user <- decode.field("user", user.json_decoder())
 
       use guilds <- decode.field(
         "guilds",
-        decode.list(guild.from_json_decoder()),
+        decode.list(guild.from_json_string()),
       )
 
       use session_id <- decode.field("session_id", decode.string)

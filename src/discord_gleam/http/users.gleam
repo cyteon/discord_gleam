@@ -19,7 +19,7 @@ pub fn me(token: String) -> Result(user.User, error.DiscordError) {
     Ok(resp) -> {
       case resp.status {
         200 -> {
-          user.string_to_data(resp.body)
+          user.from_json_string(resp.body)
         }
 
         _ -> Error(error.ApiError(status_code: resp.status, body: resp.body))
@@ -58,7 +58,7 @@ pub fn create_dm_channel(
           logging.log(logging.Debug, "DM channel created")
 
           let channel: Result(channel.Channel, error.DiscordError) =
-            channel.string_to_data(resp.body)
+            channel.from_json_string(resp.body)
 
           case channel {
             Ok(channel) -> {

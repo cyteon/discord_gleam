@@ -12,7 +12,7 @@ pub type GuildMemberRemove {
   GuildMemberRemove(t: String, s: Int, op: Int, d: GuildMemberRemoveData)
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(GuildMemberRemove, json.DecodeError) {
   let decoder = {
@@ -20,7 +20,7 @@ pub fn string_to_data(
     use s <- decode.field("s", decode.int)
     use op <- decode.field("op", decode.int)
     use d <- decode.field("d", {
-      use user <- decode.field("user", user.from_json_decoder())
+      use user <- decode.field("user", user.json_decoder())
       use guild_id <- decode.field("guild_id", snowflake.decoder())
       decode.success(GuildMemberRemoveData(user:, guild_id:))
     })

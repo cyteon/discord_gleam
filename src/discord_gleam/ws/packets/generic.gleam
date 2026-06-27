@@ -6,7 +6,7 @@ pub type GenericPacket {
   GenericPacket(t: String, s: Int, op: Int)
 }
 
-pub fn string_to_data(encoded: String) -> GenericPacket {
+pub fn from_json_string(encoded: String) -> GenericPacket {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)

@@ -15,14 +15,14 @@ pub type GuildMemberUpdate {
   GuildMemberUpdate(t: String, s: Int, op: Int, d: GuildMemberUpdateData)
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(GuildMemberUpdate, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
     use op <- decode.field("op", decode.int)
-    use guild_member <- decode.field("d", guild_member.from_json_decoder())
+    use guild_member <- decode.field("d", guild_member.from_json_string())
     use guild_id <- decode.field("d", {
       use guild_id <- decode.field("guild_id", snowflake.decoder())
       decode.success(guild_id)

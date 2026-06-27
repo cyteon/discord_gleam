@@ -180,7 +180,7 @@ fn start_discord_websocket(
           user_state:,
           bot:,
           mode:,
-          heartbeat: option.None,
+          heartbeat: None,
         )
 
       stratus.initialised(initial_state)
@@ -225,12 +225,13 @@ fn start_discord_websocket(
               let next = stratus.continue(new_state)
 
               case opt {
-                option.Some(user_selector) ->
+                Some(user_selector) ->
                   stratus.with_selector(
                     next,
                     process.map_selector(user_selector, User),
                   )
-                option.None -> next
+
+                None -> next
               }
             }
             event_handler.Stop -> {
@@ -307,10 +308,10 @@ fn handle_text_message(
           user_state: state.user_state,
           bot: state.bot,
           mode: state.mode,
-          heartbeat: option.None,
+          heartbeat: None,
         )
 
-      case hello.string_to_data(msg) {
+      case hello.from_json_string(msg) {
         Ok(data) -> {
           let repeater =
             repeatedly.call(data.d.heartbeat_interval, Nil, fn(_state, _count_) {
@@ -333,7 +334,7 @@ fn handle_text_message(
               Nil
             })
 
-          let new_state = State(..new_state, heartbeat: option.Some(repeater))
+          let new_state = State(..new_state, heartbeat: Some(repeater))
 
           stratus.continue(new_state)
         }
@@ -354,7 +355,7 @@ fn handle_text_message(
     }
 
     True -> {
-      let generic_packet = generic.string_to_data(msg)
+      let generic_packet = generic.from_json_string(msg)
 
       case generic_packet.s {
         0 -> Nil
@@ -424,12 +425,13 @@ fn handle_text_message(
           let next = stratus.continue(new_state)
 
           case opt {
-            option.Some(user_selector) ->
+            Some(user_selector) ->
               stratus.with_selector(
                 next,
                 process.map_selector(user_selector, User),
               )
-            option.None -> next
+
+            None -> next
           }
         }
         event_handler.Stop -> {

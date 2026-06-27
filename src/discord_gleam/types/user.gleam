@@ -43,12 +43,12 @@ pub fn avatar_decoration_decoder() -> decode.Decoder(AvatarDecoration) {
 }
 
 /// Decode a string to a PartialUser
-pub fn string_to_data(encoded: String) -> Result(User, error.DiscordError) {
-  json.parse(from: encoded, using: from_json_decoder())
+pub fn from_json_string(encoded: String) -> Result(User, error.DiscordError) {
+  json.parse(from: encoded, using: json_decoder())
   |> result.map_error(error.JsonDecodeError)
 }
 
-pub fn from_json_decoder() -> decode.Decoder(User) {
+pub fn json_decoder() -> decode.Decoder(User) {
   use id <- decode.field("id", snowflake.decoder())
   use username <- decode.field("username", decode.string)
   use discriminator <- decode.field("discriminator", decode.string)

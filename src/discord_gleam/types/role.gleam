@@ -24,12 +24,12 @@ pub type Role {
 }
 
 /// Convert a JSON string to a role object
-pub fn string_to_data(encoded: String) -> Result(Role, error.DiscordError) {
-  json.parse(from: encoded, using: from_json_decoder())
+pub fn from_json_string(encoded: String) -> Result(Role, error.DiscordError) {
+  json.parse(from: encoded, using: json_decoder())
   |> result.map_error(error.JsonDecodeError)
 }
 
-pub fn from_json_decoder() -> decode.Decoder(Role) {
+pub fn json_decoder() -> decode.Decoder(Role) {
   use id <- decode.field("id", snowflake.decoder())
   use name <- decode.field("name", decode.string)
   use color <- decode.optional_field(

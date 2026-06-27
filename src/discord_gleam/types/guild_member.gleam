@@ -23,8 +23,8 @@ pub type GuildMember {
   )
 }
 
-pub fn from_json_decoder() -> decode.Decoder(GuildMember) {
-  use user <- decode.field("user", user.from_json_decoder())
+pub fn from_json_string() -> decode.Decoder(GuildMember) {
+  use user <- decode.field("user", user.json_decoder())
   use nick <- decode.optional_field(
     "nick",
     None,

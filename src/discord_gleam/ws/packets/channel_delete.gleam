@@ -7,14 +7,14 @@ pub type ChannelDeletePacket {
   ChannelDeletePacket(t: String, s: Int, op: Int, d: channel.Channel)
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(ChannelDeletePacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
     use op <- decode.field("op", decode.int)
-    use d <- decode.field("d", channel.from_json_decoder())
+    use d <- decode.field("d", channel.json_decoder())
     decode.success(ChannelDeletePacket(t:, s:, op:, d:))
   }
 

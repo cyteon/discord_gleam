@@ -16,7 +16,7 @@ pub type MessageDeletePacket {
   MessageDeletePacket(t: String, s: Int, op: Int, d: MessageDeletePacketData)
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(MessageDeletePacket, json.DecodeError) {
   let decoder = {
