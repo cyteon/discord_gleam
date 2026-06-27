@@ -19,6 +19,7 @@ import discord_gleam/types/message_send_response
 import discord_gleam/types/reply
 import discord_gleam/types/slash_command
 import discord_gleam/ws/commands/request_guild_members
+import discord_gleam/ws/commands/update_presence
 import discord_gleam/ws/event_loop
 import discord_gleam/ws/packets/interaction_create
 import gleam/dict
@@ -399,13 +400,13 @@ pub fn edit_message(
 }
 
 /// Wipes all the global slash commands for the bot. \
-/// Restarting your client might be required to see the changes. \
+/// Restarting your client might be required to see the changes.
 pub fn wipe_global_commands(bot: bot.Bot) -> Result(Nil, error.DiscordError) {
   applications.wipe_global_commands(bot.token, bot.client_id)
 }
 
 /// Wipes all the guild slash commands for the bot. \
-/// Restarting your client might be required to see the changes. \
+/// Restarting your client might be required to see the changes.
 pub fn wipe_guild_commands(
   bot: bot.Bot,
   guild_id: Snowflake(snowflake.Guild),
@@ -414,7 +415,7 @@ pub fn wipe_guild_commands(
 }
 
 /// Registers a global slash command. \
-/// Restarting your client might be required to see the changes. \
+/// Restarting your client might be required to see the changes.
 pub fn register_global_commands(
   bot: bot.Bot,
   commands: List(slash_command.SlashCommand),
@@ -430,7 +431,7 @@ pub fn register_global_commands(
 }
 
 /// Registers a guild-specific slash command. \
-/// Restarting your client might be required to see the changes. \
+/// Restarting your client might be required to see the changes.
 pub fn register_guild_commands(
   bot: bot.Bot,
   guild_id: Snowflake(snowflake.Guild),
@@ -480,4 +481,13 @@ pub fn request_guild_members(
     presences,
     nonce,
   )
+}
+
+/// Used to update the bot's activity/presence
+/// Use with the bot passed from a handler, the normal bot object will not have the neccesary websocket data to send the packet
+pub fn update_presence(
+  bot: bot.Bot,
+  presence: update_presence.Presence,
+) -> Nil {
+  update_presence.update_presence(bot, presence)
 }

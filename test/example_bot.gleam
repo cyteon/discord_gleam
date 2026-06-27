@@ -8,6 +8,7 @@ import discord_gleam/types/guild
 import discord_gleam/types/message
 import discord_gleam/types/slash_command
 import discord_gleam/ws/commands/request_guild_members
+import discord_gleam/ws/commands/update_presence
 import discord_gleam/ws/packets/interaction_create
 import gleam/bool
 import gleam/dict
@@ -153,6 +154,16 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
           nonce: option.Some("test_request"),
         )
       })
+
+      discord_gleam.update_presence(
+        bot,
+        update_presence.Presence(
+          activities: [update_presence.playing("Gleam!")],
+          afk: False,
+          since: option.None,
+          status: update_presence.Online,
+        ),
+      )
 
       Nil
     }
