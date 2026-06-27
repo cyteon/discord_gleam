@@ -26,7 +26,7 @@ import discord_gleam/ws/packets/interaction_create
 import gleam/dict
 import gleam/erlang/process
 import gleam/list
-import gleam/option.{None, Some}
+import gleam/option.{type Option, None, Some}
 import gleam/otp/actor
 
 /// Create a new bot instance.
@@ -60,7 +60,7 @@ pub fn bot(
 /// - `Stop` - Stop the event loop
 /// - `StopAbnormal` - Stop the event loop with an abnormal reason
 pub opaque type Next(user_state, user_message) {
-  Continue(user_state, option.Option(process.Selector(user_message)))
+  Continue(user_state, Option(process.Selector(user_message)))
   Stop
   StopAbnormal(reason: String)
 }
@@ -472,8 +472,8 @@ pub fn request_guild_members(
   bot bot: bot.Bot,
   guild_id guild_id: snowflake.Snowflake(snowflake.Guild),
   option option: request_guild_members.RequestGuildMembersOption,
-  presences presences: option.Option(Bool),
-  nonce nonce: option.Option(String),
+  presences presences: Option(Bool),
+  nonce nonce: Option(String),
 ) -> Nil {
   request_guild_members.request_guild_members(
     bot,

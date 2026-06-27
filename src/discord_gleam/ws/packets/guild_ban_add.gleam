@@ -2,13 +2,13 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/user
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option.{None, Some}
+import gleam/option.{type Option, None, Some}
 
 pub type GuildBanAddPacketData {
   GuildBanAddPacketData(
     user: user.User,
     guild_id: Snowflake(snowflake.Guild),
-    delete_message_secs: option.Option(Int),
+    delete_message_secs: Option(Int),
   )
 }
 

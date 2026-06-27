@@ -2,7 +2,7 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/internal/error
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option.{None}
+import gleam/option.{type Option, None}
 import gleam/result
 
 /// See https://discord.com/developers/docs/topics/permissions#role-object \
@@ -11,10 +11,10 @@ pub type Role {
   Role(
     id: Snowflake(snowflake.Role),
     name: String,
-    color: option.Option(Int),
+    color: Option(Int),
     hoist: Bool,
-    icon: option.Option(String),
-    unicode_emoji: option.Option(String),
+    icon: Option(String),
+    unicode_emoji: Option(String),
     position: Int,
     permissions: String,
     managed: Bool,

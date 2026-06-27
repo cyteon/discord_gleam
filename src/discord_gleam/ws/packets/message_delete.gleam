@@ -1,12 +1,12 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option.{None}
+import gleam/option.{type Option, None}
 
 pub type MessageDeletePacketData {
   MessageDeletePacketData(
     id: Snowflake(snowflake.Message),
-    guild_id: option.Option(Snowflake(snowflake.Guild)),
+    guild_id: Option(Snowflake(snowflake.Guild)),
     channel_id: Snowflake(snowflake.Channel),
   )
 }

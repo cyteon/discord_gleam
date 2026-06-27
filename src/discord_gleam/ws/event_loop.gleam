@@ -13,7 +13,7 @@ import gleam/erlang/process
 import gleam/http
 import gleam/http/request
 import gleam/json
-import gleam/option.{None, Some}
+import gleam/option.{type Option, None, Some}
 import gleam/otp/actor
 import gleam/result
 import logging
@@ -97,7 +97,7 @@ pub type WebsocketState(user_state, user_message) {
     user_state: user_state,
     bot: bot.Bot,
     mode: event_handler.Mode(user_state, user_message),
-    heartbeat: option.Option(repeatedly.Repeater(Nil)),
+    heartbeat: Option(repeatedly.Repeater(Nil)),
   )
 }
 

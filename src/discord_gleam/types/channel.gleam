@@ -2,7 +2,7 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/internal/error
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option.{None}
+import gleam/option.{type Option, None}
 import gleam/result
 
 /// See https://discord.com/developers/docs/resources/channel#channel-object \
@@ -11,13 +11,13 @@ pub type Channel {
   Channel(
     id: Snowflake(snowflake.Channel),
     type_: Int,
-    position: option.Option(Int),
-    guild_id: option.Option(Snowflake(snowflake.Guild)),
-    parent_id: option.Option(Snowflake(snowflake.Channel)),
-    name: option.Option(String),
-    topic: option.Option(String),
-    nsfw: option.Option(Bool),
-    last_message_id: option.Option(Snowflake(snowflake.Message)),
+    position: Option(Int),
+    guild_id: Option(Snowflake(snowflake.Guild)),
+    parent_id: Option(Snowflake(snowflake.Channel)),
+    name: Option(String),
+    topic: Option(String),
+    nsfw: Option(Bool),
+    last_message_id: Option(Snowflake(snowflake.Message)),
   )
 }
 

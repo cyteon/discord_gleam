@@ -3,7 +3,7 @@ import discord_gleam/internal/error
 import discord_gleam/types/bot
 import discord_gleam/ws/gateway_state
 import gleam/erlang/process
-import gleam/option
+import gleam/option.{type Option}
 
 import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
@@ -43,7 +43,7 @@ pub type InternalMessage(user_message) {
 
 /// Instruction on how event loop actor should proceed after handling an event
 pub type Next(new_state, user_message) {
-  Continue(new_state, option.Option(process.Selector(user_message)))
+  Continue(new_state, Option(process.Selector(user_message)))
   Stop
   StopAbnormal(reason: String)
 }
