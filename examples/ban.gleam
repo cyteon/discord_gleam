@@ -84,8 +84,6 @@ fn simple_handler(bot, packet: event_handler.Packet) {
                     [],
                   )
 
-                  echo err
-
                   Nil
                 }
               }

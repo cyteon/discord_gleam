@@ -10,7 +10,7 @@ pub type GuildMemberUpdateData {
   )
 }
 
-/// Packet sent by Discord when a member is added to a guild
+/// Packet sent by Discord when a member is updated in a guild
 pub type GuildMemberUpdate {
   GuildMemberUpdate(t: String, s: Int, op: Int, d: GuildMemberUpdateData)
 }
