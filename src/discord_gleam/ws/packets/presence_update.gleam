@@ -13,7 +13,7 @@ pub fn from_json_string(
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
     use op <- decode.field("op", decode.int)
-    use d <- decode.field("d", presence.from_json_string())
+    use d <- decode.field("d", presence.json_decoder())
     decode.success(PresenceUpdatePacket(t:, s:, op:, d:))
   }
 

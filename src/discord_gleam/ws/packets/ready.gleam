@@ -31,10 +31,7 @@ pub fn from_json_string(
 
       use user <- decode.field("user", user.json_decoder())
 
-      use guilds <- decode.field(
-        "guilds",
-        decode.list(guild.from_json_string()),
-      )
+      use guilds <- decode.field("guilds", decode.list(guild.json_decoder()))
 
       use session_id <- decode.field("session_id", decode.string)
       use resume_gateway_url <- decode.field(

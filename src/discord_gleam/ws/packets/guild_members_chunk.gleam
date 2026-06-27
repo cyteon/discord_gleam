@@ -32,7 +32,7 @@ pub fn from_json_string(
       use guild_id <- decode.field("guild_id", snowflake.decoder())
       use members <- decode.field(
         "members",
-        decode.list(of: guild_member.from_json_string()),
+        decode.list(of: guild_member.json_decoder()),
       )
       use chunk_index <- decode.field("chunk_index", decode.int)
       use chunk_count <- decode.field("chunk_count", decode.int)
@@ -44,7 +44,7 @@ pub fn from_json_string(
       use presences <- decode.optional_field(
         "presences",
         None,
-        decode.optional(decode.list(of: presence.from_json_string())),
+        decode.optional(decode.list(of: presence.json_decoder())),
       )
       use nonce <- decode.optional_field(
         "nonce",

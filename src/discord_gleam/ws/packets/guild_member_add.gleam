@@ -22,7 +22,7 @@ pub fn from_json_string(
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
     use op <- decode.field("op", decode.int)
-    use guild_member <- decode.field("d", guild_member.from_json_string())
+    use guild_member <- decode.field("d", guild_member.json_decoder())
     use guild_id <- decode.field("d", {
       use guild_id <- decode.field("guild_id", snowflake.decoder())
       decode.success(guild_id)
