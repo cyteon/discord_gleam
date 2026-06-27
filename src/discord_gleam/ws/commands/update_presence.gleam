@@ -1,5 +1,4 @@
 import discord_gleam/bot
-import gleam/erlang/process
 import gleam/json
 import gleam/option.{type Option, None, Some}
 
@@ -70,7 +69,7 @@ pub fn update_presence(bot: bot.Bot, presence: Presence) -> Nil {
     ])
     |> json.to_string
 
-  process.send(bot.subject, bot.SendPacket(packet))
+  bot.send_packet(bot, packet)
 }
 
 pub fn to_json(presence: Presence) -> json.Json {

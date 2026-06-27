@@ -1,6 +1,5 @@
 import discord_gleam/bot
 import discord_gleam/discord/snowflake.{type Snowflake}
-import gleam/erlang/process
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -32,7 +31,7 @@ pub fn request_guild_members(
     json.object([#("op", json.int(8)), #("d", data_to_json(data))])
     |> json.to_string()
 
-  process.send(bot.subject, bot.SendPacket(packet))
+  bot.send_packet(bot, packet)
 }
 
 fn data_to_json(data: RequestGuildMembersData) -> json.Json {

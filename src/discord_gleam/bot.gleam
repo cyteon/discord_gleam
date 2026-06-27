@@ -67,3 +67,9 @@ pub fn new(token: String, client_id: String) -> Bot {
 pub fn with_intents(bot: Bot, intents: intents.Intents) -> Bot {
   Bot(..bot, intents: intents)
 }
+
+/// Used to send a packet on the websocket to discord \
+/// Primarily made to be used internally
+pub fn send_packet(bot: Bot, packet: String) -> Nil {
+  process.send(bot.subject, SendPacket(packet))
+}
