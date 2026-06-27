@@ -3,6 +3,7 @@
 //// But you can always implement stuff yourself using the low-level functions from the rest of the library.
 
 import booklet
+import discord_gleam/bot
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/event_handler
 import discord_gleam/http/applications
@@ -11,7 +12,6 @@ import discord_gleam/http/guilds
 import discord_gleam/http/interactions
 import discord_gleam/http/users
 import discord_gleam/internal/error
-import discord_gleam/types/bot
 import discord_gleam/types/channel
 import discord_gleam/types/message
 import discord_gleam/types/message_send_response

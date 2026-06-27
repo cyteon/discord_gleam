@@ -2,9 +2,9 @@
 //// Dispatches events to registered event handlers
 
 import booklet
+import discord_gleam/bot
 import discord_gleam/event_handler
 import discord_gleam/internal/error
-import discord_gleam/types/bot
 import discord_gleam/ws/gateway_state
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/hello

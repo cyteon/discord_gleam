@@ -1,4 +1,4 @@
-import discord_gleam/types/bot
+import discord_gleam/bot
 import gleam/erlang/process
 import gleam/json
 import gleam/option.{type Option, None, Some}

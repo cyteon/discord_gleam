@@ -1,6 +1,6 @@
 import booklet
+import discord_gleam/bot
 import discord_gleam/internal/error
-import discord_gleam/types/bot
 import discord_gleam/ws/gateway_state
 import gleam/erlang/process
 import gleam/option.{type Option}

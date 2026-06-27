@@ -1,5 +1,5 @@
+import discord_gleam/bot
 import discord_gleam/discord/snowflake.{type Snowflake}
-import discord_gleam/types/bot
 import gleam/erlang/process
 import gleam/json
 import gleam/list
