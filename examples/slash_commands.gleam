@@ -1,11 +1,12 @@
 import discord_gleam
-import discord_gleam/discord/intents
+import discord_gleam/bot
+import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
 import discord_gleam/types/slash_command
 import discord_gleam/ws/packets/interaction_create
 import gleam/erlang/process
 import gleam/list
-import gleam/option
+import gleam/option.{None, Some}
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
 import logging
@@ -14,7 +15,7 @@ pub fn main() {
   logging.configure()
   logging.set_level(logging.Info)
 
-  let bot = discord_gleam.bot("TOKEN", "CLIENT_ID", intents.default())
+  let bot = bot.new("TOKEN", "CLIENT ID")
 
   let test_cmd =
     slash_command.SlashCommand(
@@ -37,9 +38,13 @@ pub fn main() {
       options: [],
     )
 
-  discord_gleam.register_global_commands(bot, [test_cmd])
-
-  discord_gleam.register_guild_commands(bot, "GUILD_ID", [test_cmd2])
+  let _ = discord_gleam.register_global_commands(bot, [test_cmd])
+  let _ =
+    discord_gleam.register_guild_commands(
+      bot,
+      snowflake.from_string("GUILD ID"),
+      [test_cmd2],
+    )
 
   let bot =
     supervision.worker(fn() {
@@ -55,7 +60,7 @@ pub fn main() {
   process.sleep_forever()
 }
 
-fn simple_handler(bot, packet: event_handler.Packet) {
+fn simple_handler(_, packet: event_handler.Packet) {
   case packet {
     event_handler.ReadyPacket(ready) -> {
       logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
@@ -63,7 +68,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
       Nil
     }
 
-    event_handler.InteractionCreate(interaction) -> {
+    event_handler.InteractionCreatePacket(interaction) -> {
       logging.log(logging.Info, "Interaction: " <> interaction.d.data.name)
 
       case interaction.d.data.name {
@@ -77,35 +82,47 @@ fn simple_handler(bot, packet: event_handler.Packet) {
                     _ -> "unexpected value type"
                   }
 
-                  discord_gleam.interaction_reply_message(
-                    interaction,
-                    "pong: " <> value,
-                    False,
-                  )
+                  let _ =
+                    discord_gleam.interaction_reply_message(
+                      interaction,
+                      "pong: " <> value,
+                      False,
+                    )
+
+                  Nil
                 }
 
-                Error(_) ->
-                  discord_gleam.interaction_reply_message(
-                    interaction,
-                    "pong",
-                    False,
-                  )
+                Error(_) -> {
+                  let _ =
+                    discord_gleam.interaction_reply_message(
+                      interaction,
+                      "pong",
+                      False,
+                    )
+
+                  Nil
+                }
               }
             }
 
-            None ->
-              discord_gleam.interaction_reply_message(
-                interaction,
-                "pong",
-                False,
-              )
+            None -> {
+              let _ =
+                discord_gleam.interaction_reply_message(
+                  interaction,
+                  "pong",
+                  False,
+                )
+
+              Nil
+            }
           }
 
           Nil
         }
 
         "pong" -> {
-          discord_gleam.interaction_reply_message(interaction, "ping", False)
+          let _ =
+            discord_gleam.interaction_reply_message(interaction, "ping", False)
 
           Nil
         }

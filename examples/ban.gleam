@@ -1,11 +1,11 @@
 import discord_gleam
+import discord_gleam/bot
 import discord_gleam/discord/intents
+import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
-import discord_gleam/types/message
 import gleam/erlang/process
-import gleam/io
 import gleam/list
-import gleam/option
+import gleam/option.{Some}
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
 import gleam/string
@@ -13,9 +13,11 @@ import logging
 
 pub fn main() {
   logging.configure()
-  logging.set_level(logging.Info)
+  logging.set_level(logging.Debug)
 
-  let bot = discord_gleam.bot("TOKEN", "CLIENT ID", intents.default())
+  let bot =
+    bot.new("TOKEN", "CLIENT ID")
+    |> bot.with_intents(intents.default_with_message_intent())
 
   let bot =
     supervision.worker(fn() {
@@ -42,8 +44,8 @@ fn simple_handler(bot, packet: event_handler.Packet) {
     event_handler.MessagePacket(message) -> {
       logging.log(logging.Info, "Message: " <> message.d.content)
 
-      case string.starts_with(message.d.content, "!ban ") {
-        True -> {
+      case string.starts_with(message.d.content, "!ban "), message.d.guild_id {
+        True, Some(guild_id) -> {
           let args = string.split(message.d.content, " ")
 
           let args = list.drop(args, 1)
@@ -55,47 +57,36 @@ fn simple_handler(bot, packet: event_handler.Packet) {
 
           let args = list.drop(args, 1)
 
-          let user = string.replace(user, "<@", "")
-          let user = string.replace(user, ">", "")
+          let user =
+            string.replace(user, "<@", "")
+            |> string.replace(">", "")
+            |> snowflake.from_string
 
           let reason = string.join(args, " ")
 
-          case message.d.guild_id {
-            Some(id) -> {
-              let resp = discord_gleam.ban_member(bot, id, user, reason)
+          let resp = discord_gleam.ban_member(bot, guild_id, user, reason)
 
-              case resp {
-                Ok(_) -> {
-                  discord_gleam.send_message(
-                    bot,
-                    message.d.channel_id,
-                    "Banned user!",
-                    [],
-                  )
+          case resp {
+            Ok(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.d.channel_id,
+                  "Banned user!",
+                  [],
+                )
 
-                  Nil
-                }
-
-                Error(err) -> {
-                  discord_gleam.send_message(
-                    bot,
-                    message.d.channel_id,
-                    "Failed to ban user!",
-                    [],
-                  )
-
-                  Nil
-                }
-              }
+              Nil
             }
 
-            None -> {
-              discord_gleam.send_message(
-                bot,
-                message.d.channel_id,
-                "This command can only be used in a guild!",
-                [],
-              )
+            Error(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.d.channel_id,
+                  "Failed to ban user!",
+                  [],
+                )
 
               Nil
             }
@@ -104,9 +95,10 @@ fn simple_handler(bot, packet: event_handler.Packet) {
           Nil
         }
 
-        False -> Nil
+        _, _ -> Nil
       }
     }
+
     _ -> Nil
   }
 }

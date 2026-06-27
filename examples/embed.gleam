@@ -1,19 +1,20 @@
 import discord_gleam
+import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
 import discord_gleam/types/message
 import gleam/erlang/process
-import gleam/list
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
-import gleam/string
 import logging
 
 pub fn main() {
   logging.configure()
-  logging.set_level(logging.Info)
+  logging.set_level(logging.Debug)
 
-  let bot = discord_gleam.bot("token", "client id", intents.default())
+  let bot =
+    bot.new("TOKEN", "CLIENT ID")
+    |> bot.with_intents(intents.default_with_message_intent())
 
   let bot =
     supervision.worker(fn() {
@@ -40,12 +41,11 @@ fn simple_handler(bot, packet: event_handler.Packet) {
       logging.log(logging.Info, "Message: " <> message.d.content)
       case message.d.content {
         "!embed" -> {
-          let embed1 =
-            message.embed("Embed Title", "Embed Description", 0x00FF00)
-
-          discord_gleam.send_message(bot, message.d.channel_id, "Embed!", [
-            embed1,
-          ])
+          let _ =
+            discord_gleam.send_message(bot, message.d.channel_id, "Embed!", [
+              message.embed("Embed Title", "Embed Description", 0x00FF00)
+              |> message.set_url("https://example.com"),
+            ])
 
           Nil
         }

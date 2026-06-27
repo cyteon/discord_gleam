@@ -1,7 +1,7 @@
 import discord_gleam
+import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
-import discord_gleam/types/message
 import gleam/erlang/process
 import gleam/list
 import gleam/otp/static_supervisor as supervisor
@@ -11,9 +11,11 @@ import logging
 
 pub fn main() {
   logging.configure()
-  logging.set_level(logging.Info)
+  logging.set_level(logging.Debug)
 
-  let bot = discord_gleam.bot("token", "client id", intents.default())
+  let bot =
+    bot.new("TOKEN", "CLIENT ID")
+    |> bot.with_intents(intents.default_with_message_intent())
 
   let bot =
     supervision.worker(fn() {
@@ -46,12 +48,13 @@ fn simple_handler(bot, packet: event_handler.Packet) {
 
           let reason = string.join(args, " ")
 
-          discord_gleam.delete_message(
-            bot,
-            message.d.channel_id,
-            message.d.id,
-            reason,
-          )
+          let _ =
+            discord_gleam.delete_message(
+              bot,
+              message.d.channel_id,
+              message.d.id,
+              reason,
+            )
 
           Nil
         }
