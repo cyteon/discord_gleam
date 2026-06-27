@@ -1,7 +1,7 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option
+import gleam/option.{None}
 
 pub type MessageDeletePacketData {
   MessageDeletePacketData(
@@ -27,7 +27,7 @@ pub fn from_json_string(
       use id <- decode.field("id", snowflake.decoder())
       use guild_id <- decode.optional_field(
         "guild_id",
-        option.None,
+        None,
         decode.optional(snowflake.decoder()),
       )
       use channel_id <- decode.field("channel_id", snowflake.decoder())

@@ -3,7 +3,7 @@ import discord_gleam/types/bot
 import gleam/erlang/process
 import gleam/json
 import gleam/list
-import gleam/option.{type Option}
+import gleam/option.{type Option, None, Some}
 
 pub type RequestGuildMembersOption {
   Query(String, limit: Option(Int))
@@ -41,14 +41,14 @@ fn data_to_json(data: RequestGuildMembersData) -> json.Json {
   ]
 
   let fields = case data.presences {
-    option.Some(presences) ->
+    Some(presences) ->
       list.append(fields, [#("presences", json.bool(presences))])
-    option.None -> fields
+    None -> fields
   }
 
   let fields = case data.nonce {
-    option.Some(nonce) -> list.append(fields, [#("nonce", json.string(nonce))])
-    option.None -> fields
+    Some(nonce) -> list.append(fields, [#("nonce", json.string(nonce))])
+    None -> fields
   }
 
   case data.option {

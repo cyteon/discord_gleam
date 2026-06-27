@@ -61,7 +61,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
           let reason = string.join(args, " ")
 
           case message.d.guild_id {
-            option.Some(id) -> {
+            Some(id) -> {
               let resp = discord_gleam.ban_member(bot, id, user, reason)
 
               case resp {
@@ -91,7 +91,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
               }
             }
 
-            option.None -> {
+            None -> {
               discord_gleam.send_message(
                 bot,
                 message.d.channel_id,

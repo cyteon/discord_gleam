@@ -2,7 +2,7 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/internal/error
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option
+import gleam/option.{None}
 import gleam/result
 
 /// See https://discord.com/developers/docs/resources/channel#channel-object \
@@ -34,37 +34,33 @@ pub fn json_decoder() -> decode.Decoder(Channel) {
   use type_ <- decode.field("type", decode.int)
   use position <- decode.optional_field(
     "position",
-    option.None,
+    None,
     decode.optional(decode.int),
   )
   use guild_id <- decode.optional_field(
     "guild_id",
-    option.None,
+    None,
     decode.optional(snowflake.decoder()),
   )
   use parent_id <- decode.optional_field(
     "parent_id",
-    option.None,
+    None,
     decode.optional(snowflake.decoder()),
   )
   use name <- decode.optional_field(
     "name",
-    option.None,
+    None,
     decode.optional(decode.string),
   )
   use topic <- decode.optional_field(
     "topic",
-    option.None,
+    None,
     decode.optional(decode.string),
   )
-  use nsfw <- decode.optional_field(
-    "nsfw",
-    option.None,
-    decode.optional(decode.bool),
-  )
+  use nsfw <- decode.optional_field("nsfw", None, decode.optional(decode.bool))
   use last_message_id <- decode.optional_field(
     "last_message_id",
-    option.None,
+    None,
     decode.optional(snowflake.decoder()),
   )
 

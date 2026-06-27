@@ -26,7 +26,7 @@ import discord_gleam/ws/packets/interaction_create
 import gleam/dict
 import gleam/erlang/process
 import gleam/list
-import gleam/option
+import gleam/option.{None, Some}
 import gleam/otp/actor
 
 /// Create a new bot instance.
@@ -68,7 +68,7 @@ pub opaque type Next(user_state, user_message) {
 /// Continue processing with the updated state. Use `with_selector` to add a
 /// selector for custom user messages.
 pub fn continue(state: user_state) -> Next(user_state, user_message) {
-  Continue(state, option.None)
+  Continue(state, None)
 }
 
 /// Add a selector for custom user messages.
@@ -77,7 +77,7 @@ pub fn with_selector(
   selector: process.Selector(user_message),
 ) -> Next(user_state, user_message) {
   case state {
-    Continue(user_state, _) -> Continue(user_state, option.Some(selector))
+    Continue(user_state, _) -> Continue(user_state, Some(selector))
     _ -> state
   }
 }
@@ -129,7 +129,7 @@ pub fn simple(
   bot: bot.Bot,
   handlers: List(fn(bot.Bot, event_handler.Packet) -> Nil),
 ) -> Mode(Nil, Nil) {
-  Simple(bot, handlers, Continue(Nil, option.None), Nil)
+  Simple(bot, handlers, Continue(Nil, None), Nil)
 }
 
 /// Create a normal mode with a single handler

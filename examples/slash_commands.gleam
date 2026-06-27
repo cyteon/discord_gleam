@@ -69,7 +69,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
       case interaction.d.data.name {
         "ping" -> {
           case interaction.d.data.options {
-            option.Some(options) -> {
+            Some(options) -> {
               case list.first(options) {
                 Ok(option) -> {
                   let value = case option.value {
@@ -93,7 +93,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
               }
             }
 
-            option.None ->
+            None ->
               discord_gleam.interaction_reply_message(
                 interaction,
                 "pong",

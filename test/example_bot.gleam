@@ -149,9 +149,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         discord_gleam.request_guild_members(
           bot: bot,
           guild_id: id,
-          option: request_guild_members.Query("", option.None),
-          presences: option.Some(True),
-          nonce: option.Some("test_request"),
+          option: request_guild_members.Query("", None),
+          presences: Some(True),
+          nonce: Some("test_request"),
         )
       })
 
@@ -160,7 +160,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         update_presence.Presence(
           activities: [update_presence.playing("Gleam!")],
           afk: False,
-          since: option.None,
+          since: None,
           status: update_presence.Online,
         ),
       )
@@ -795,9 +795,9 @@ fn normal_handler(
             discord_gleam.request_guild_members(
               bot: bot,
               guild_id: id,
-              option: request_guild_members.Query("", option.None),
-              presences: option.Some(True),
-              nonce: option.Some("test_request"),
+              option: request_guild_members.Query("", None),
+              presences: Some(True),
+              nonce: Some("test_request"),
             )
           })
 

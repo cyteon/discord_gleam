@@ -2,7 +2,7 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/user
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option
+import gleam/option.{None, Some}
 
 pub type GuildBanAddPacketData {
   GuildBanAddPacketData(
@@ -29,8 +29,8 @@ pub fn from_json_string(
       use guild_id <- decode.field("guild_id", snowflake.decoder())
       use delete_message_secs <- decode.optional_field(
         "delete_message_seconds",
-        option.None,
-        decode.int |> decode.map(option.Some),
+        None,
+        decode.int |> decode.map(Some),
       )
       decode.success(GuildBanAddPacketData(
         user:,

@@ -2,7 +2,7 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/internal/error
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option
+import gleam/option.{None}
 import gleam/result
 
 /// See https://discord.com/developers/docs/topics/permissions#role-object \
@@ -32,20 +32,16 @@ pub fn from_json_string(encoded: String) -> Result(Role, error.DiscordError) {
 pub fn json_decoder() -> decode.Decoder(Role) {
   use id <- decode.field("id", snowflake.decoder())
   use name <- decode.field("name", decode.string)
-  use color <- decode.optional_field(
-    "color",
-    option.None,
-    decode.optional(decode.int),
-  )
+  use color <- decode.optional_field("color", None, decode.optional(decode.int))
   use hoist <- decode.field("hoist", decode.bool)
   use icon <- decode.optional_field(
     "icon",
-    option.None,
+    None,
     decode.optional(decode.string),
   )
   use unicode_emoji <- decode.optional_field(
     "unicode_emoji",
-    option.None,
+    None,
     decode.optional(decode.string),
   )
   use position <- decode.field("position", decode.int)

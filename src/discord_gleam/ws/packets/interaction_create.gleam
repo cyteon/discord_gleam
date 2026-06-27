@@ -2,7 +2,7 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/user
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option.{type Option}
+import gleam/option.{type Option, None}
 
 pub type InteractionCreateMember {
   InteractionCreateMember(user: user.User)
@@ -63,7 +63,7 @@ fn options_decoder() -> decode.Decoder(InteractionOption) {
 
   use options <- decode.optional_field(
     "options",
-    option.None,
+    None,
     decode.optional(decode.list(options_decoder())),
   )
 
@@ -82,7 +82,7 @@ pub fn from_json_string(
 
       use member <- decode.optional_field(
         "member",
-        option.None,
+        None,
         decode.optional({
           use user <- decode.field("user", user.json_decoder())
           decode.success(InteractionCreateMember(user:))
@@ -90,14 +90,14 @@ pub fn from_json_string(
       )
       use user <- decode.optional_field(
         "user",
-        option.None,
+        None,
         decode.optional(user.json_decoder()),
       )
 
       use id <- decode.field("id", snowflake.decoder())
       use guild_id <- decode.optional_field(
         "guild_id",
-        option.None,
+        None,
         decode.optional(snowflake.decoder()),
       )
 
@@ -108,7 +108,7 @@ pub fn from_json_string(
 
         use options <- decode.optional_field(
           "options",
-          option.None,
+          None,
           decode.optional(decode.list(options_decoder())),
         )
 
