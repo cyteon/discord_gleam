@@ -9,6 +9,7 @@ import discord_gleam/ws/gateway_state
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/hello
 import discord_gleam/ws/packets/identify
+import gleam/dynamic/decode
 import gleam/erlang/process
 import gleam/http
 import gleam/http/request
@@ -23,7 +24,7 @@ import stratus
 /// The message type for the event loop actor
 pub type EventLoopMessage {
   Start
-  Restart(host: String, session_id: String)
+  Restart(host: String, session_id: String, reconnect: Bool)
   Stop
 }
 
@@ -66,7 +67,7 @@ pub fn start_event_loop(
         }
       }
 
-      Restart(host, session_id) -> {
+      Restart(host, session_id, reconnect) -> {
         logging.log(logging.Debug, "Restarting discord websocket")
 
         let started =
@@ -74,9 +75,9 @@ pub fn start_event_loop(
             mode,
             subject,
             host,
+            reconnect,
             session_id,
             state_ets,
-            reconnect: True,
           )
 
         case started {
@@ -382,6 +383,7 @@ fn handle_text_message(
       case generic_packet.op {
         7 -> {
           logging.log(logging.Debug, "Received a reconnect request")
+
           case stratus.close_custom(conn, 4009, <<>>) {
             Ok(_) -> logging.log(logging.Debug, "Closed websocket")
             Error(_) -> logging.log(logging.Error, "Failed to close websocket")
@@ -390,11 +392,15 @@ fn handle_text_message(
           let host = booklet.get(state_ets).resume_gateway_url
           let session_id = booklet.get(state_ets).session_id
 
-          process.send(state.event_loop_subject, Restart(host:, session_id:))
+          process.send(
+            state.event_loop_subject,
+            Restart(host:, session_id:, reconnect: True),
+          )
         }
 
         9 -> {
           logging.log(logging.Debug, "Invalid session, reconnecting")
+
           case stratus.close_custom(conn, 4009, <<>>) {
             Ok(_) -> logging.log(logging.Debug, "Closed websocket")
             Error(_) -> logging.log(logging.Error, "Failed to close websocket")
@@ -403,7 +409,20 @@ fn handle_text_message(
           let host = booklet.get(state_ets).resume_gateway_url
           let session_id = booklet.get(state_ets).session_id
 
-          process.send(state.event_loop_subject, Restart(host:, session_id:))
+          let decoder = {
+            use d <- decode.field("d", decode.bool)
+            decode.success(d)
+          }
+
+          let decoded = case json.parse(from: msg, using: decoder) {
+            Ok(d) -> d
+            Error(_) -> False
+          }
+
+          process.send(
+            state.event_loop_subject,
+            Restart(host:, session_id:, reconnect: decoded),
+          )
         }
 
         _ -> Nil
@@ -444,10 +463,12 @@ fn handle_text_message(
             None -> next
           }
         }
+
         event_handler.Stop -> {
           logging.log(logging.Debug, "Stopping discord websocket connection")
           stratus.stop()
         }
+
         event_handler.StopAbnormal(reason) -> {
           logging.log(
             logging.Error,
@@ -510,7 +531,10 @@ fn on_close(
 
           let host = booklet.get(state_ets).resume_gateway_url
 
-          process.send(state.event_loop_subject, Restart(host:, session_id: ""))
+          process.send(
+            state.event_loop_subject,
+            Restart(host:, session_id: "", reconnect: False),
+          )
         }
 
         4008 -> {
@@ -526,7 +550,10 @@ fn on_close(
           let host = booklet.get(state_ets).resume_gateway_url
           let session_id = booklet.get(state_ets).session_id
 
-          process.send(state.event_loop_subject, Restart(host:, session_id:))
+          process.send(
+            state.event_loop_subject,
+            Restart(host:, session_id:, reconnect: True),
+          )
         }
 
         4010 -> {
