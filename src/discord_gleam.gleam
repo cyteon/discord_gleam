@@ -179,11 +179,11 @@ pub fn start(
   let state = booklet.new(gateway_state.new())
 
   event_loop.start_event_loop(
-    to_internal_mode(mode),
-    "gateway.discord.gg",
-    False,
-    "",
-    state,
+    mode: to_internal_mode(mode),
+    host: "gateway.discord.gg",
+    reconnect: False,
+    session_id: "",
+    state_ets: state,
   )
 }
 

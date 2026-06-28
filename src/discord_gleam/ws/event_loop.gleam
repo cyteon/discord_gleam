@@ -29,11 +29,11 @@ pub type EventLoopMessage {
 
 /// Start the event loop, with a set of event handlers.
 pub fn start_event_loop(
-  mode: event_handler.Mode(user_state, user_message),
-  host: String,
-  reconnect: Bool,
-  session_id: String,
-  state_ets: booklet.Booklet(gateway_state.GatewayState),
+  mode mode: event_handler.Mode(user_state, user_message),
+  host host: String,
+  reconnect reconnect: Bool,
+  session_id session_id: String,
+  state_ets state_ets: booklet.Booklet(gateway_state.GatewayState),
 ) {
   logging.log(logging.Debug, "Starting event loop")
 
@@ -65,16 +65,18 @@ pub fn start_event_loop(
             actor.stop_abnormal("failed to start discord websocket")
         }
       }
+
       Restart(host, session_id) -> {
         logging.log(logging.Debug, "Restarting discord websocket")
+
         let started =
           start_discord_websocket(
             mode,
             subject,
             host,
-            reconnect,
             session_id,
             state_ets,
+            reconnect: True,
           )
 
         case started {
@@ -83,6 +85,7 @@ pub fn start_event_loop(
             actor.stop_abnormal("failed to restart discord websocket")
         }
       }
+
       Stop -> actor.stop()
     }
   })
@@ -107,12 +110,12 @@ pub type WebsocketMessage(user_message) {
 }
 
 fn start_discord_websocket(
-  mode: event_handler.Mode(user_state, user_message),
-  event_loop_subject: process.Subject(EventLoopMessage),
-  host: String,
-  reconnect: Bool,
-  session_id: String,
-  state_ets: booklet.Booklet(gateway_state.GatewayState),
+  mode mode: event_handler.Mode(user_state, user_message),
+  event_loop_subject event_loop_subject: process.Subject(EventLoopMessage),
+  host host: String,
+  reconnect reconnect: Bool,
+  session_id session_id: String,
+  state_ets state_ets: booklet.Booklet(gateway_state.GatewayState),
 ) -> Result(Nil, actor.StartError) {
   let req =
     request.new()
