@@ -37,7 +37,7 @@ pub fn to_string(snowflake: Snowflake(kind)) -> String {
 }
 
 /// API should not give a int, but incase it does we will convert to string.
-pub fn decoder() {
+pub fn decoder() -> decode.Decoder(Snowflake(kind)) {
   decode.one_of(decode.string, [decode.int |> decode.map(int.to_string)])
   |> decode.map(Snowflake)
 }

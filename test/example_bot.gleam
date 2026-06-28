@@ -28,7 +28,7 @@ pub fn main(token: String, client_id: String, guild_id: String) {
 
   let bot =
     bot.new(token, client_id)
-    |> bot.with_intents(intents.all())
+    |> bot.with_intents(intents.default_with_message_intent())
 
   let test_cmd =
     slash_command.SlashCommand(

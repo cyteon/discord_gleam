@@ -3,7 +3,7 @@ import discord_gleam/bot
 import discord_gleam/internal/error
 import discord_gleam/ws/gateway_state
 import gleam/erlang/process
-import gleam/option.{type Option}
+import gleam/option.{type Option, None}
 
 import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
@@ -220,8 +220,20 @@ pub fn handle_event(
     }
 
     InternalUser(msg) -> {
-      let assert Normal(bot, _name, _on_init, handler) = mode
-      handler(bot, user_state, User(msg))
+      case mode {
+        Normal(bot, _name, _on_init, handler) -> {
+          handler(bot, user_state, User(msg))
+        }
+
+        _ -> {
+          logging.log(
+            logging.Error,
+            "Received user message in simple mode, ignoring",
+          )
+
+          Continue(user_state, None)
+        }
+      }
     }
   }
 }

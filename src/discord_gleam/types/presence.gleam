@@ -47,7 +47,7 @@ pub fn presence_user_decoder() -> decode.Decoder(PresenceUser) {
   decode.success(PresenceUser(id:))
 }
 
-pub fn client_status_decoder() {
+pub fn client_status_decoder() -> decode.Decoder(ClientStatus) {
   use desktop <- decode.optional_field(
     "desktop",
     None,

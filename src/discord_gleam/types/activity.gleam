@@ -160,13 +160,13 @@ pub fn json_decoder() -> decode.Decoder(Activity) {
   ))
 }
 
-fn activity_timestamp_decoder() {
+fn activity_timestamp_decoder() -> decode.Decoder(ActivityTimestamp) {
   use start <- decode.optional_field("start", None, decode.optional(decode.int))
   use end <- decode.optional_field("end", None, decode.optional(decode.int))
   decode.success(ActivityTimestamp(start:, end:))
 }
 
-fn activity_emoji_decoder() {
+fn activity_emoji_decoder() -> decode.Decoder(ActivityEmoji) {
   use name <- decode.field("name", decode.string)
   use id <- decode.optional_field(
     "id",
@@ -181,7 +181,7 @@ fn activity_emoji_decoder() {
   decode.success(ActivityEmoji(name:, id:, animated:))
 }
 
-fn activity_party_decoder() {
+fn activity_party_decoder() -> decode.Decoder(ActivityParty) {
   use id <- decode.optional_field("id", None, decode.optional(decode.string))
   use size <- decode.optional_field(
     "size",
@@ -201,7 +201,7 @@ fn activity_party_decoder() {
   }
 }
 
-fn activity_assets_decoder() {
+fn activity_assets_decoder() -> decode.Decoder(ActivityAssets) {
   use large_image <- decode.optional_field(
     "large_image",
     None,
@@ -242,7 +242,7 @@ fn activity_assets_decoder() {
   ))
 }
 
-fn activity_secrets_decoder() {
+fn activity_secrets_decoder() -> decode.Decoder(ActivitySecrets) {
   use join <- decode.optional_field(
     "join",
     None,
