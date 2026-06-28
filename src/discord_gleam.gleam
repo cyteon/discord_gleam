@@ -461,7 +461,7 @@ pub fn request_guild_members(
 }
 
 /// Used to update the bot's activity/presence
-/// Use with the bot passed from a handler, the normal bot object will not have the neccesary websocket data to send the packet
+/// Use with the bot passed from a handler, the normal bot object will not have the necessary websocket data to send the packet
 pub fn update_presence(
   bot: bot.Bot,
   presence: update_presence.Presence,

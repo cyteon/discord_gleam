@@ -456,7 +456,7 @@ fn on_close(
   state_ets: booklet.Booklet(gateway_state.GatewayState),
   close_reason: stratus.CloseReason,
 ) {
-  logging.log(logging.Debug, "The webhook was closed")
+  logging.log(logging.Debug, "The websocket was closed")
   let _ = option.map(state.heartbeat, repeatedly.stop)
 
   case close_reason {
