@@ -25,7 +25,6 @@ pub fn create_packet(token: String, intents: intents.Intents) -> String {
 
 pub fn create_resume_packet(
   token: String,
-  intents: intents.Intents,
   session_id: String,
   sequence: Int,
 ) -> String {
@@ -37,7 +36,6 @@ pub fn create_resume_packet(
         #("token", json.string(token)),
         #("session_id", json.string(session_id)),
         #("seq", json.int(sequence)),
-        #("intents", json.int(intents.intents_to_bitfield(intents))),
       ]),
     ),
   ])

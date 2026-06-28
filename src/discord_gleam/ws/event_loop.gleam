@@ -319,7 +319,6 @@ fn handle_text_message(
                 True ->
                   identify.create_resume_packet(
                     bot.token,
-                    bot.intents,
                     session_id,
                     booklet.get(state_ets).sequence,
                   )
@@ -497,7 +496,15 @@ fn on_close(
     stratus.Custom(custom_close_reason) -> {
       case stratus.get_custom_code(custom_close_reason) {
         4000 -> {
-          logging.log(logging.Error, "Unknown error, not reconnecting")
+          logging.log(logging.Error, "Unknown error, reconnecting")
+
+          let host = booklet.get(state_ets).resume_gateway_url
+          let session_id = booklet.get(state_ets).session_id
+
+          process.send(
+            state.event_loop_subject,
+            Restart(host:, session_id:, reconnect: True),
+          )
         }
 
         4001 -> {
@@ -505,9 +512,14 @@ fn on_close(
         }
 
         4002 -> {
-          logging.log(
-            logging.Error,
-            "Decode error, open a github issue, not reconnecting",
+          logging.log(logging.Error, "Decode error, reconnecting")
+
+          let host = booklet.get(state_ets).resume_gateway_url
+          let session_id = booklet.get(state_ets).session_id
+
+          process.send(
+            state.event_loop_subject,
+            Restart(host:, session_id:, reconnect: True),
           )
         }
 
@@ -593,6 +605,17 @@ fn on_close(
         }
       }
     }
-    _ -> Nil
+
+    _ -> {
+      let host = booklet.get(state_ets).resume_gateway_url
+      let session_id = booklet.get(state_ets).session_id
+
+      logging.log(logging.Debug, "Reconnecting to the gateway")
+
+      process.send(
+        state.event_loop_subject,
+        Restart(host:, session_id:, reconnect: True),
+      )
+    }
   }
 }
