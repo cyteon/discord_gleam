@@ -136,12 +136,12 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Logged in as "
-          <> ready.d.user.username
+          <> ready.user.username
           <> "#"
-          <> ready.d.user.discriminator,
+          <> ready.user.discriminator,
       )
 
-      list.each(ready.d.guilds, fn(guild) {
+      list.each(ready.guilds, fn(guild) {
         let assert guild.UnavailableGuild(id, ..) = guild
         logging.log(
           logging.Info,
@@ -221,6 +221,30 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
           <> snowflake.to_string(role.d.role.id)
           <> ")",
       )
+
+      Nil
+    }
+
+    event_handler.GuildCreatePacket(guild) -> {
+      case guild.d {
+        guild.Guild(id, name, ..) -> {
+          logging.log(
+            logging.Info,
+            "Guild created: "
+              <> name
+              <> " (ID: "
+              <> snowflake.to_string(id)
+              <> ")",
+          )
+        }
+
+        guild.UnavailableGuild(id, ..) -> {
+          logging.log(
+            logging.Info,
+            "Unavailable guild: " <> snowflake.to_string(id),
+          )
+        }
+      }
 
       Nil
     }
@@ -781,12 +805,12 @@ fn normal_handler(
           logging.log(
             logging.Info,
             "Logged in as "
-              <> ready.d.user.username
+              <> ready.user.username
               <> "#"
-              <> ready.d.user.discriminator,
+              <> ready.user.discriminator,
           )
 
-          list.each(ready.d.guilds, fn(guild) {
+          list.each(ready.guilds, fn(guild) {
             let assert guild.UnavailableGuild(id, ..) = guild
 
             logging.log(

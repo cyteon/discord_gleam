@@ -3,6 +3,7 @@ import discord_gleam/bot
 import discord_gleam/discord/snowflake
 import discord_gleam/internal/error
 import discord_gleam/ws/gateway_state
+import discord_gleam/ws/packets/guild_create
 import gleam/erlang/process
 import gleam/option.{type Option, None, Some}
 import gleam/string
@@ -107,7 +108,7 @@ pub fn set_bot(
 /// The supported discord packets
 pub type Packet {
   /// `READY` event
-  ReadyPacket(ready.ReadyPacket)
+  ReadyPacket(ready.ReadyData)
 
   /// `INTERACTION_CREATE` event
   InteractionCreatePacket(interaction_create.InteractionCreatePacket)
@@ -132,6 +133,9 @@ pub type Packet {
   GuildBanAddPacket(guild_ban_add.GuildBanAddPacket)
   /// `GUILD_BAN_REMOVE` event
   GuildBanRemovePacket(guild_ban_remove.GuildBanRemovePacket)
+
+  /// `GUILD_CREATE` event
+  GuildCreatePacket(guild_create.GuildCreatePacket)
 
   /// `GUILD_ROLE_CREATE` event
   GuildRoleCreatePacket(guild_role_create.GuildRoleCreatePacket)
@@ -211,8 +215,8 @@ fn internal_handler(
       booklet.update(state_ets, fn(state) {
         gateway_state.GatewayState(
           ..state,
-          session_id: ready.d.session_id,
-          resume_gateway_url: ready.d.resume_gateway_url,
+          session_id: ready.session_id,
+          resume_gateway_url: ready.resume_gateway_url,
         )
       })
 
@@ -276,7 +280,8 @@ fn decode_packet(msg: String) -> Packet {
       case t {
         "READY" ->
           case ready.from_json_string(msg) {
-            Ok(data) -> ReadyPacket(data)
+            Ok(packet) -> ReadyPacket(packet.d)
+
             Error(err) -> {
               logging.log(
                 logging.Error,
@@ -421,6 +426,21 @@ fn decode_packet(msg: String) -> Packet {
               logging.log(
                 logging.Error,
                 "Failed to decode GUILD_BAN_REMOVE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_CREATE" ->
+          case guild_create.from_json_string(msg) {
+            Ok(data) -> GuildCreatePacket(data)
+
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_CREATE packet: "
                   <> error.json_decode_error_to_string(err),
               )
 
