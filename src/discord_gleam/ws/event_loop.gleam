@@ -369,15 +369,15 @@ fn handle_text_message(
       let generic_packet = generic.from_json_string(msg)
 
       case generic_packet.s {
-        0 -> Nil
-
-        _ -> {
+        Some(s) -> {
           booklet.update(state_ets, fn(state) {
-            gateway_state.GatewayState(..state, sequence: generic_packet.s)
+            gateway_state.GatewayState(..state, sequence: s)
           })
 
           Nil
         }
+
+        _ -> Nil
       }
 
       case generic_packet.op {
@@ -431,7 +431,10 @@ fn handle_text_message(
       let new_state =
         State(
           has_received_hello: True,
-          s: generic_packet.s,
+          s: case generic_packet.s {
+            Some(s) -> s
+            None -> state.s
+          },
           event_loop_subject: state.event_loop_subject,
           user_state: state.user_state,
           bot: state.bot,

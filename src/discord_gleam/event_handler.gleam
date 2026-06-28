@@ -3,7 +3,7 @@ import discord_gleam/bot
 import discord_gleam/internal/error
 import discord_gleam/ws/gateway_state
 import gleam/erlang/process
-import gleam/option.{type Option, None}
+import gleam/option.{type Option, None, Some}
 
 import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
@@ -242,270 +242,276 @@ fn decode_packet(msg: String) -> Packet {
   let generic_packet = generic.from_json_string(msg)
 
   case generic_packet.t {
-    "READY" ->
-      case ready.from_json_string(msg) {
-        Ok(data) -> ReadyPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode READY packet: "
-              <> error.json_decode_error_to_string(err),
-          )
+    Some(t) -> {
+      case t {
+        "READY" ->
+          case ready.from_json_string(msg) {
+            Ok(data) -> ReadyPacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode READY packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
 
-          UnknownPacket(generic_packet)
-        }
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "MESSAGE_CREATE" ->
+          case message.from_json_string(msg) {
+            Ok(data) -> MessagePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode MESSAGE_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "MESSAGE_UPDATE" ->
+          case message_update.from_json_string(msg) {
+            Ok(data) -> MessageUpdatePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode MESSAGE_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "MESSAGE_DELETE" ->
+          case message_delete.from_json_string(msg) {
+            Ok(data) -> MessageDeletePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode MESSAGE_DELETE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "MESSAGE_DELETE_BULK" ->
+          case message_delete_bulk.from_json_string(msg) {
+            Ok(data) -> MessageDeleteBulkPacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode MESSAGE_DELETE_BULK packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "INTERACTION_CREATE" ->
+          case interaction_create.from_json_string(msg) {
+            Ok(data) -> InteractionCreatePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode INTERACTION_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "CHANNEL_CREATE" ->
+          case channel_create.from_json_string(msg) {
+            Ok(data) -> ChannelCreatePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode CHANNEL_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "CHANNEL_DELETE" ->
+          case channel_delete.from_json_string(msg) {
+            Ok(data) -> ChannelDeletePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode CHANNEL_DELETE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "CHANNEL_UPDATE" ->
+          case channel_update.from_json_string(msg) {
+            Ok(data) -> ChannelUpdatePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode CHANNEL_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_BAN_ADD" ->
+          case guild_ban_add.from_json_string(msg) {
+            Ok(data) -> GuildBanAddPacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_BAN_ADD packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_BAN_REMOVE" ->
+          case guild_ban_remove.from_json_string(msg) {
+            Ok(data) -> GuildBanRemovePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_BAN_REMOVE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_ROLE_CREATE" ->
+          case guild_role_create.from_json_string(msg) {
+            Ok(data) -> GuildRoleCreatePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_ROLE_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_ROLE_UPDATE" ->
+          case guild_role_update.from_json_string(msg) {
+            Ok(data) -> GuildRoleUpdatePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_ROLE_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_ROLE_DELETE" ->
+          case guild_role_delete.from_json_string(msg) {
+            Ok(data) -> GuildRoleDeletePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_ROLE_DELETE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_MEMBER_ADD" ->
+          case guild_member_add.from_json_string(msg) {
+            Ok(data) -> GuildMemberAddPacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_MEMBER_ADD packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_MEMBER_UPDATE" ->
+          case guild_member_update.from_json_string(msg) {
+            Ok(data) -> GuildMemberUpdatePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_MEMBER_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_MEMBER_REMOVE" ->
+          case guild_member_remove.from_json_string(msg) {
+            Ok(data) -> GuildMemberRemovePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_MEMBER_REMOVE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_MEMBERS_CHUNK" ->
+          case guild_members_chunk.from_json_string(msg) {
+            Ok(data) -> GuildMembersChunkPacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_MEMBERS_CHUNK packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "PRESENCE_UPDATE" ->
+          case presence_update.from_json_string(msg) {
+            Ok(data) -> PresenceUpdatePacket(data)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode PRESENCE_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        _ -> UnknownPacket(generic_packet)
       }
-
-    "MESSAGE_CREATE" ->
-      case message.from_json_string(msg) {
-        Ok(data) -> MessagePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode MESSAGE_CREATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "MESSAGE_UPDATE" ->
-      case message_update.from_json_string(msg) {
-        Ok(data) -> MessageUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode MESSAGE_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "MESSAGE_DELETE" ->
-      case message_delete.from_json_string(msg) {
-        Ok(data) -> MessageDeletePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode MESSAGE_DELETE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "MESSAGE_DELETE_BULK" ->
-      case message_delete_bulk.from_json_string(msg) {
-        Ok(data) -> MessageDeleteBulkPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode MESSAGE_DELETE_BULK packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "INTERACTION_CREATE" ->
-      case interaction_create.from_json_string(msg) {
-        Ok(data) -> InteractionCreatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode INTERACTION_CREATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "CHANNEL_CREATE" ->
-      case channel_create.from_json_string(msg) {
-        Ok(data) -> ChannelCreatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode CHANNEL_CREATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "CHANNEL_DELETE" ->
-      case channel_delete.from_json_string(msg) {
-        Ok(data) -> ChannelDeletePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode CHANNEL_DELETE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "CHANNEL_UPDATE" ->
-      case channel_update.from_json_string(msg) {
-        Ok(data) -> ChannelUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode CHANNEL_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_BAN_ADD" ->
-      case guild_ban_add.from_json_string(msg) {
-        Ok(data) -> GuildBanAddPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_BAN_ADD packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_BAN_REMOVE" ->
-      case guild_ban_remove.from_json_string(msg) {
-        Ok(data) -> GuildBanRemovePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_BAN_REMOVE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_ROLE_CREATE" ->
-      case guild_role_create.from_json_string(msg) {
-        Ok(data) -> GuildRoleCreatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_ROLE_CREATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_ROLE_UPDATE" ->
-      case guild_role_update.from_json_string(msg) {
-        Ok(data) -> GuildRoleUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_ROLE_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_ROLE_DELETE" ->
-      case guild_role_delete.from_json_string(msg) {
-        Ok(data) -> GuildRoleDeletePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_ROLE_DELETE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_MEMBER_ADD" ->
-      case guild_member_add.from_json_string(msg) {
-        Ok(data) -> GuildMemberAddPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_MEMBER_ADD packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_MEMBER_UPDATE" ->
-      case guild_member_update.from_json_string(msg) {
-        Ok(data) -> GuildMemberUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_MEMBER_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_MEMBER_REMOVE" ->
-      case guild_member_remove.from_json_string(msg) {
-        Ok(data) -> GuildMemberRemovePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_MEMBER_REMOVE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_MEMBERS_CHUNK" ->
-      case guild_members_chunk.from_json_string(msg) {
-        Ok(data) -> GuildMembersChunkPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_MEMBERS_CHUNK packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "PRESENCE_UPDATE" ->
-      case presence_update.from_json_string(msg) {
-        Ok(data) -> PresenceUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode PRESENCE_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
+    }
 
     _ -> UnknownPacket(generic_packet)
   }
