@@ -16,7 +16,7 @@ pub fn wipe_global_commands(
       http.Put,
       "/applications/" <> snowflake.to_string(client_id) <> "/commands",
       token,
-      "{}",
+      "[]",
     )
 
   case httpc.send(request) {
@@ -57,7 +57,7 @@ pub fn wipe_guild_commands(
         <> snowflake.to_string(guild_id)
         <> "/commands",
       token,
-      "{}",
+      "[]",
     )
 
   case httpc.send(request) {

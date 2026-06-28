@@ -146,27 +146,28 @@ pub fn with_name(
 /// ```gleam
 /// import discord_gleam/discord/intents
 /// import discord_gleam/event_handler
+/// import discord_gleam/bot
 /// import gleam/erlang/process
 ///
 /// fn main() {
-///  let bot = discord_gleam.bot("TOKEN", "CLIENT_ID", intents.default())
+///   let bot = bot.new("TOKEN", "CLIENT_ID")
 ///
-///  let assert Ok(_) =
-///    discord_gleam.simple(bot, [handler])
-///    |> discord_gleam.start()
+///   let assert Ok(_) =
+///     discord_gleam.simple(bot, [handler])
+///     |> discord_gleam.start()
 ///
-///  process.sleep_forever()
+///   process.sleep_forever()
 /// }
 ///
 /// fn handler(bot: bot.Bot, packet: event_handler.Packet) {
-///  case packet {
-///   event_handler.ReadyPacket(ready) -> {
-///     logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
-///   }
+///   case packet {
+///     event_handler.ReadyPacket(ready) -> {
+///       logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
+///     }
 ///
-///   _ -> Nil
-///  }
-/// }
+///     _ -> Nil
+///   }
+///   }
 /// ```
 ///
 pub fn start(
@@ -229,14 +230,14 @@ fn to_internal_next(
 /// import discord_gleam
 ///
 /// fn main() {
-///  ...
+///   ...
 ///
-///  let msg = discord_gleam.send_message(
-///   bot,
-///   "CHANNEL_ID",
-///   "Hello world!",
-///   [] // embeds
-///  )
+///   let msg = discord_gleam.send_message(
+///     bot,
+///     "CHANNEL_ID",
+///     "Hello world!",
+///     [] // embeds
+///   )
 /// }
 pub fn send_message(
   bot: bot.Bot,
@@ -282,9 +283,9 @@ pub fn send_direct_message(
 /// import discord_gleam
 ///
 /// fn main() {
-///  ...
+///   ...
 ///
-///  discord_gleam.reply(bot, "CHANNEL_ID", "MESSAGE_ID", "Hello world!", [])
+///   discord_gleam.reply(bot, "CHANNEL_ID", "MESSAGE_ID", "Hello world!", [])
 /// }
 /// ```
 pub fn reply(
@@ -309,9 +310,9 @@ pub fn reply(
 /// import discord_gleam
 ///
 /// fn main() {
-///  ...
+///   ...
 ///
-///  discord_gleam.kick_member(bot, "GUILD_ID", "USER_ID", "REASON")
+///   discord_gleam.kick_member(bot, "GUILD_ID", "USER_ID", "REASON")
 /// }
 ///
 /// For an full example, see the `examples/kick.gleam` file.
@@ -341,14 +342,14 @@ pub fn ban_member(
 /// import discord_gleam
 ///
 /// fn main() {
-///  ...
+///   ...
 ///
-///  discord_gleam.delete_message(
-///   bot,
-///  "CHANNEL_ID",
-///  "MESSAGE_ID",
-///  "REASON",
-///  )
+///   discord_gleam.delete_message(
+///     bot,
+///     "CHANNEL_ID",
+///     "MESSAGE_ID",
+///     "REASON",
+///   )
 /// }
 ///
 /// For an full example, see the `examples/delete_message.gleam` file.
