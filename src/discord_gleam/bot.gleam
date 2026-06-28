@@ -12,6 +12,7 @@ pub type Bot {
     client_id: Snowflake(snowflake.Application),
     intents: intents.Intents,
     cache: Cache,
+    message_cache_limit: Int,
     subject: process.Subject(BotMessage),
   )
 }
@@ -46,11 +47,12 @@ pub fn new(token: String, client_id: String) -> Bot {
     client_id: snowflake.from_string(client_id),
     intents: intents.default(),
     cache: Cache(messages: booklet.new(dict.new())),
+    message_cache_limit: 1000,
     subject: process.new_subject(),
   )
 }
 
-/// A part of building a bot, this sets the intents for the bot. \
+/// Sets the intents for the bot. \
 /// This can only be used before the bot is started, and is meant to use while building the bot
 ///
 /// Example:
@@ -66,6 +68,11 @@ pub fn new(token: String, client_id: String) -> Bot {
 /// ```
 pub fn with_intents(bot: Bot, intents: intents.Intents) -> Bot {
   Bot(..bot, intents: intents)
+}
+
+/// Sets the message cache size limit for the bot, default is 1000 messages.
+pub fn with_message_cache_limit(bot: Bot, limit: Int) -> Bot {
+  Bot(..bot, message_cache_limit: limit)
 }
 
 /// Used to send a packet on the websocket to discord \

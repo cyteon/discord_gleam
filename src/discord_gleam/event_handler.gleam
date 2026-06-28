@@ -1,9 +1,11 @@
 import booklet
 import discord_gleam/bot
+import discord_gleam/discord/snowflake
 import discord_gleam/internal/error
 import discord_gleam/ws/gateway_state
 import gleam/erlang/process
 import gleam/option.{type Option, None, Some}
+import gleam/string
 
 import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
@@ -163,7 +165,21 @@ fn internal_handler(
   case packet {
     MessagePacket(msg) -> {
       booklet.update(bot.cache.messages, fn(cache) {
-        dict.insert(cache, msg.d.id, msg.d)
+        let cache = dict.insert(cache, msg.d.id, msg.d)
+
+        case dict.size(cache) > bot.message_cache_limit {
+          True -> {
+            let oldest =
+              dict.keys(cache)
+              |> list.sort(fn(a, b) {
+                string.compare(snowflake.to_string(a), snowflake.to_string(b))
+              })
+              |> list.take(1)
+
+            dict.drop(cache, oldest)
+          }
+          False -> cache
+        }
       })
 
       Nil
@@ -171,7 +187,21 @@ fn internal_handler(
 
     MessageUpdatePacket(msg) -> {
       booklet.update(bot.cache.messages, fn(cache) {
-        dict.insert(cache, msg.d.id, msg.d)
+        let cache = dict.insert(cache, msg.d.id, msg.d)
+
+        case dict.size(cache) > bot.message_cache_limit {
+          True -> {
+            let oldest =
+              dict.keys(cache)
+              |> list.sort(fn(a, b) {
+                string.compare(snowflake.to_string(a), snowflake.to_string(b))
+              })
+              |> list.take(1)
+
+            dict.drop(cache, oldest)
+          }
+          False -> cache
+        }
       })
 
       Nil
