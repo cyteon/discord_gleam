@@ -139,11 +139,11 @@ pub type Packet {
   GuildRoleDeletePacket(guild_role_delete.GuildRoleDeletePacket)
 
   /// `GUILD_MEMBER_ADD` event
-  GuildMemberAddPacket(guild_member_add.GuildMemberAdd)
+  GuildMemberAddPacket(guild_member_add.GuildMemberAddPacket)
   /// `GUILD_MEMBER_UPDATE` event
-  GuildMemberUpdatePacket(guild_member_update.GuildMemberUpdate)
+  GuildMemberUpdatePacket(guild_member_update.GuildMemberUpdatePacket)
   /// GUILD_MEMBER_REMOVE event
-  GuildMemberRemovePacket(guild_member_remove.GuildMemberRemove)
+  GuildMemberRemovePacket(guild_member_remove.GuildMemberRemovePacket)
   /// `GUILD_MEMBERS_CHUNK` event
   GuildMembersChunkPacket(guild_members_chunk.GuildMembersChunkPacket)
 

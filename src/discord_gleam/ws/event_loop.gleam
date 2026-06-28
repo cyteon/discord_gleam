@@ -544,7 +544,7 @@ fn on_close(
         4014 -> {
           logging.log(
             logging.Error,
-            "Disallowed intents used, did you remember to enable any priveleged intents you used in the Discord Developer Portal (https://discord.dev)? Not reconnecting",
+            "Disallowed intents used, did you remember to enable any privileged intents you used in the Discord Developer Portal (https://discord.dev)? Not reconnecting",
           )
         }
 

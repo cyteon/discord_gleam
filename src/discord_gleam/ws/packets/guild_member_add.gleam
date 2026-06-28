@@ -3,21 +3,21 @@ import discord_gleam/types/guild_member
 import gleam/dynamic/decode
 import gleam/json
 
-pub type GuildMemberAddData {
-  GuildMemberAddData(
+pub type GuildMemberAddPacketData {
+  GuildMemberAddPacketData(
     guild_member: guild_member.GuildMember,
     guild_id: Snowflake(snowflake.Guild),
   )
 }
 
 /// Packet sent by Discord when a member is added to a guild
-pub type GuildMemberAdd {
-  GuildMemberAdd(t: String, s: Int, op: Int, d: GuildMemberAddData)
+pub type GuildMemberAddPacket {
+  GuildMemberAddPacket(t: String, s: Int, op: Int, d: GuildMemberAddPacketData)
 }
 
 pub fn from_json_string(
   encoded: String,
-) -> Result(GuildMemberAdd, json.DecodeError) {
+) -> Result(GuildMemberAddPacket, json.DecodeError) {
   let decoder = {
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
@@ -28,11 +28,11 @@ pub fn from_json_string(
       decode.success(guild_id)
     })
 
-    decode.success(GuildMemberAdd(
+    decode.success(GuildMemberAddPacket(
       t:,
       s:,
       op:,
-      d: GuildMemberAddData(guild_member:, guild_id:),
+      d: GuildMemberAddPacketData(guild_member:, guild_id:),
     ))
   }
 

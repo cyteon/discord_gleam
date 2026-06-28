@@ -133,7 +133,7 @@ pub fn delete_message(
   }
 }
 
-/// Edit an message by channel id and message id
+/// Edit a message by channel id and message id
 pub fn edit_message(
   token: String,
   channel_id: Snowflake(snowflake.Channel),

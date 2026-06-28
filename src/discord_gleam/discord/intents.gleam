@@ -66,7 +66,7 @@ pub fn intents_to_bitfield(intents: Intents) -> Int {
 }
 
 /// Enable a set of default intents, which are usually used by most bots. \
-/// Does not include `message_content` intent, as its a privileged intent.
+/// Does not include `message_content` intent, as it's a privileged intent.
 ///
 /// This enables the following intents:
 /// - `guilds`
@@ -119,7 +119,7 @@ pub fn all() -> Intents {
 }
 
 /// Disable all the intents, use this if you want to receive no events other than `interaction_create` or `ready`. \
-/// Useful if you have a bot with slash commands only, that dosen't need to listen to events.
+/// Useful if you have a bot with slash commands only, that doesn't need to listen to events.
 pub fn none() -> Intents {
   Intents(
     guilds: False,
