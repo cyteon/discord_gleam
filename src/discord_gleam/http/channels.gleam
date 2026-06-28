@@ -56,7 +56,7 @@ pub fn reply(
   token: String,
   channel_id: Snowflake(snowflake.Channel),
   message: reply.Reply,
-) -> Result(Nil, error.DiscordError) {
+) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let data = reply.to_string(message)
 
   logging.log(logging.Debug, "Replying: " <> data)
@@ -75,8 +75,9 @@ pub fn reply(
         200 -> {
           logging.log(logging.Debug, "Reply sent")
 
-          Ok(Nil)
+          message_send_response.from_json_string(resp.body)
         }
+
         _ -> {
           logging.log(logging.Error, "Failed to send reply")
 
@@ -84,6 +85,7 @@ pub fn reply(
         }
       }
     }
+
     Error(err) -> {
       logging.log(logging.Error, "Failed to send reply")
 
@@ -118,6 +120,7 @@ pub fn delete_message(
 
           Ok(Nil)
         }
+
         _ -> {
           logging.log(logging.Error, "Failed to delete message")
 
@@ -125,6 +128,7 @@ pub fn delete_message(
         }
       }
     }
+
     Error(err) -> {
       logging.log(logging.Error, "Failed to delete message")
 
@@ -163,6 +167,7 @@ pub fn edit_message(
 
           Ok(Nil)
         }
+
         _ -> {
           logging.log(logging.Error, "Failed to edit message")
 

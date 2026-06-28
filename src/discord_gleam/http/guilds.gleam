@@ -39,6 +39,7 @@ pub fn kick_member(
         }
       }
     }
+
     Error(err) -> {
       logging.log(logging.Error, "Failed to kick member")
 
@@ -73,6 +74,7 @@ pub fn ban_member(
 
           Ok(Nil)
         }
+
         _ -> {
           logging.log(logging.Error, "Failed to ban member")
 
@@ -80,6 +82,7 @@ pub fn ban_member(
         }
       }
     }
+
     Error(err) -> {
       logging.log(logging.Error, "Failed to ban member")
 

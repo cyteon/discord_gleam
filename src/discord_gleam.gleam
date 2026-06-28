@@ -294,7 +294,7 @@ pub fn reply(
   message_id: Snowflake(snowflake.Message),
   message: String,
   embeds: List(embed.Embed),
-) -> Result(Nil, error.DiscordError) {
+) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let msg =
     reply.Reply(content: message, message_id: message_id, embeds: embeds)
 
