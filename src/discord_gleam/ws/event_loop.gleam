@@ -287,71 +287,78 @@ fn handle_text_message(
 
   case state.has_received_hello {
     False -> {
-      let identify = case reconnect {
-        True ->
-          identify.create_resume_packet(
-            bot.token,
-            bot.intents,
-            session_id,
-            booklet.get(state_ets).sequence,
-          )
+      let generic = generic.from_json_string(msg)
 
-        False -> identify.create_packet(bot.token, bot.intents)
-      }
+      case generic.op {
+        10 -> {
+          case hello.from_json_string(msg) {
+            Ok(data) -> {
+              let repeater =
+                repeatedly.call(data.d.heartbeat_interval, Nil, fn(_, _) {
+                  let s = booklet.get(state_ets).sequence
 
-      let _ = option.map(state.heartbeat, repeatedly.stop)
+                  let packet =
+                    json.object([
+                      #("op", json.int(1)),
+                      #("d", case s {
+                        0 -> json.null()
+                        _ -> json.int(s)
+                      }),
+                    ])
+                    |> json.to_string()
 
-      let _ = stratus.send_text_message(conn, identify)
+                  logging.log(logging.Debug, "Sending heartbeat: " <> packet)
 
-      let new_state =
-        State(
-          has_received_hello: True,
-          s: 0,
-          event_loop_subject: state.event_loop_subject,
-          user_state: state.user_state,
-          bot: state.bot,
-          mode: state.mode,
-          heartbeat: None,
-        )
+                  let _ = stratus.send_text_message(conn, packet)
 
-      case hello.from_json_string(msg) {
-        Ok(data) -> {
-          let repeater =
-            repeatedly.call(data.d.heartbeat_interval, Nil, fn(_state, _count_) {
-              let s = booklet.get(state_ets).sequence
+                  Nil
+                })
 
-              let packet =
-                json.object([
-                  #("op", json.int(1)),
-                  #("d", case s {
-                    0 -> json.null()
-                    _ -> json.int(s)
-                  }),
-                ])
-                |> json.to_string()
+              let identify = case reconnect {
+                True ->
+                  identify.create_resume_packet(
+                    bot.token,
+                    bot.intents,
+                    session_id,
+                    booklet.get(state_ets).sequence,
+                  )
 
-              logging.log(logging.Debug, "Sending heartbeat: " <> packet)
+                False -> identify.create_packet(bot.token, bot.intents)
+              }
 
-              let _ = stratus.send_text_message(conn, packet)
+              let _ = option.map(state.heartbeat, repeatedly.stop)
+              let _ = stratus.send_text_message(conn, identify)
 
-              Nil
-            })
+              let new_state =
+                State(
+                  ..state,
+                  has_received_hello: True,
+                  s: 0,
+                  heartbeat: Some(repeater),
+                )
 
-          let new_state = State(..new_state, heartbeat: Some(repeater))
+              stratus.continue(new_state)
+            }
 
-          stratus.continue(new_state)
+            Error(err) -> {
+              logging.log(
+                logging.Critical,
+                "Failed to decode hello packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              let _ = stratus.close(conn, stratus.Normal(<<>>))
+              logging.log(
+                logging.Critical,
+                "Closing websocket due to fatal error",
+              )
+
+              stratus.continue(state)
+            }
+          }
         }
 
-        Error(err) -> {
-          logging.log(
-            logging.Critical,
-            "Failed to decode hello packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          let _ = stratus.close(conn, stratus.Normal(<<>>))
-          logging.log(logging.Critical, "Closing websocket due to fatal error")
-
+        _ -> {
           stratus.continue(state)
         }
       }
