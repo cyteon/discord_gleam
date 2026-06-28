@@ -4,8 +4,8 @@ import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
+import discord_gleam/types/embed
 import discord_gleam/types/guild
-import discord_gleam/types/message
 import discord_gleam/types/slash_command
 import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/commands/update_presence
@@ -505,12 +505,12 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
             }
 
             "!embed" -> {
-              let embed1 =
-                message.embed("Embed Title", "Embed Description", 0x00FF00)
+              let embed =
+                embed.new("Embed Title", "Embed Description", 0x00FF00)
 
               let _ =
                 discord_gleam.send_message(bot, message.d.channel_id, "Embed!", [
-                  embed1,
+                  embed,
                 ])
 
               Nil

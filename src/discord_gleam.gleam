@@ -13,6 +13,7 @@ import discord_gleam/http/interactions
 import discord_gleam/http/users
 import discord_gleam/internal/error
 import discord_gleam/types/channel
+import discord_gleam/types/embed
 import discord_gleam/types/message
 import discord_gleam/types/message_send_response
 import discord_gleam/types/reply
@@ -241,7 +242,7 @@ pub fn send_message(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
   message: String,
-  embeds: List(message.Embed),
+  embeds: List(embed.Embed),
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let msg = message.Message(content: message, embeds: embeds)
 
@@ -266,7 +267,7 @@ pub fn send_direct_message(
   bot: bot.Bot,
   user_id: Snowflake(snowflake.User),
   message: String,
-  embeds: List(message.Embed),
+  embeds: List(embed.Embed),
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let msg = message.Message(content: message, embeds: embeds)
 
@@ -291,7 +292,7 @@ pub fn reply(
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
   message: String,
-  embeds: List(message.Embed),
+  embeds: List(embed.Embed),
 ) -> Result(Nil, error.DiscordError) {
   let msg =
     reply.Reply(content: message, message_id: message_id, embeds: embeds)
@@ -367,7 +368,7 @@ pub fn edit_message(
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
   content: String,
-  embeds: List(message.Embed),
+  embeds: List(embed.Embed),
 ) -> Result(Nil, error.DiscordError) {
   let msg = message.Message(content: content, embeds: embeds)
 

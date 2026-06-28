@@ -2,15 +2,16 @@ import discord_gleam
 import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
-import discord_gleam/types/message
+import discord_gleam/types/embed
 import gleam/erlang/process
+import gleam/option.{None}
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
 import logging
 
 pub fn main() {
   logging.configure()
-  logging.set_level(logging.Debug)
+  logging.set_level(logging.Info)
 
   let bot =
     bot.new("TOKEN", "CLIENT ID")
@@ -41,10 +42,23 @@ fn simple_handler(bot, packet: event_handler.Packet) {
       logging.log(logging.Info, "Message: " <> message.d.content)
       case message.d.content {
         "!embed" -> {
+          let embed =
+            embed.new(
+              title: "Embed Title",
+              description: "Embed Description",
+              color: 0x00FF00,
+            )
+            |> embed.set_url("https://example.com")
+            |> embed.set_footer(text: "Footer Text", icon_url: None)
+            |> embed.add_field(
+              name: "Field 1",
+              value: "Field Value 1",
+              inline: True,
+            )
+
           let _ =
             discord_gleam.send_message(bot, message.d.channel_id, "Embed!", [
-              message.embed("Embed Title", "Embed Description", 0x00FF00)
-              |> message.set_url("https://example.com"),
+              embed,
             ])
 
           Nil
