@@ -4,7 +4,7 @@ import discord_gleam/internal/error
 import gleam/http
 import gleam/http/request
 import gleam/http/response
-import gleam/int
+import gleam/float
 import gleam/list
 
 /// Create a base request to discord
@@ -76,7 +76,7 @@ pub fn extract_ratelimit_error(
 
   case list.key_find(resp.headers, "retry-after") {
     Ok(retry_after) -> {
-      case int.parse(retry_after) {
+      case float.parse(retry_after) {
         Ok(retry_after) -> {
           error.RatelimitError(retry_after_secs: retry_after, global:)
         }
