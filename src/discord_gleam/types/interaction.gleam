@@ -49,7 +49,7 @@ pub fn callback_type_to_int(type_: InteractionCallbackType) -> Int {
   }
 }
 
-pub fn to_json_string(response: InteractionResponse) -> String {
+pub fn to_string(response: InteractionResponse) -> String {
   let data = case response.type_ {
     ChannelMessageWithSource -> {
       let embeds_json = case response.data.embeds {
@@ -117,5 +117,34 @@ pub fn send_message(
       ),
     )
 
-  interactions.send_response(interaction, to_json_string(response))
+  interactions.send_response(interaction, to_string(response))
+}
+
+pub fn defer_response(
+  interaction: interaction_create.InteractionCreatePacketData,
+  ephemeral ephemeral: Bool,
+) -> Result(Nil, error.DiscordError) {
+  let response =
+    InteractionResponse(
+      type_: DeferredChannelMessageWithSource,
+      data: InteractionCallbackData(
+        tts: None,
+        content: None,
+        embeds: None,
+        allowed_mentions: None,
+        flags: case ephemeral {
+          True -> Some(64)
+          False -> None
+        },
+      ),
+    )
+
+  interactions.send_response(interaction, to_string(response))
+}
+
+pub fn edit_response(
+  interaction: interaction_create.InteractionCreatePacketData,
+  message message: message.Message,
+) -> Result(Nil, error.DiscordError) {
+  interactions.edit_original(interaction, message.to_string(message))
 }

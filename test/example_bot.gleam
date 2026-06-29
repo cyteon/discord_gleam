@@ -759,11 +759,14 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
             }
 
             None -> {
+              let _ = interaction.defer_response(interaction, ephemeral: False)
+
+              process.sleep(2000)
+
               let _ =
-                interaction.send_message(
+                interaction.edit_response(
                   interaction,
                   message.Message(content: "test2: no options", embeds: []),
-                  ephemeral: False,
                 )
             }
           }

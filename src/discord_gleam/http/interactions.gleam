@@ -54,3 +54,54 @@ pub fn send_response(
     }
   }
 }
+
+/// Edit the initial response to an interaction. \
+/// For example used after deffering the response, to then send a reply
+pub fn edit_original(
+  interaction: interaction_create.InteractionCreatePacketData,
+  data: String,
+) -> Result(Nil, error.DiscordError) {
+  let request =
+    request.new_with_body(
+      http.Patch,
+      "/webhooks/"
+        <> snowflake.to_string(interaction.application_id)
+        <> "/"
+        <> interaction.token
+        <> "/messages/@original",
+      data,
+    )
+
+  case httpc.send(request) {
+    Ok(resp) -> {
+      case resp.status {
+        200 -> {
+          logging.log(logging.Debug, "Edited interaction response")
+
+          Ok(Nil)
+        }
+
+        429 -> {
+          logging.log(
+            logging.Error,
+            "Failed to edit interaction response: rate limited",
+          )
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
+        _ -> {
+          logging.log(logging.Error, "Failed to edit Interaction Response")
+
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
+        }
+      }
+    }
+
+    Error(err) -> {
+      logging.log(logging.Error, "Error when editing Interaction Response")
+
+      Error(error.HttpError(err))
+    }
+  }
+}
