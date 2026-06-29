@@ -1,3 +1,4 @@
+import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -177,4 +178,91 @@ pub fn embed_to_json(embed: Embed) -> json.Json {
   }
 
   json.object(with_fields)
+}
+
+pub fn json_decoder() -> decode.Decoder(Embed) {
+  use title <- decode.field("title", decode.string)
+  use description <- decode.field("description", decode.string)
+  use color <- decode.field("color", decode.int)
+
+  use url <- decode.optional_field("url", None, decode.optional(decode.string))
+
+  use image <- decode.optional_field(
+    "image",
+    None,
+    decode.optional({
+      use url <- decode.field("url", decode.string)
+
+      decode.success(EmbedImage(url: url))
+    }),
+  )
+
+  use thumbnail <- decode.optional_field(
+    "thumbnail",
+    None,
+    decode.optional({
+      use url <- decode.field("url", decode.string)
+
+      decode.success(EmbedThumbnail(url: url))
+    }),
+  )
+
+  use footer <- decode.optional_field(
+    "footer",
+    None,
+    decode.optional({
+      use text <- decode.field("text", decode.string)
+      use icon_url <- decode.optional_field(
+        "icon_url",
+        None,
+        decode.optional(decode.string),
+      )
+
+      decode.success(EmbedFooter(text: text, icon_url: icon_url))
+    }),
+  )
+
+  use author <- decode.optional_field(
+    "author",
+    None,
+    decode.optional({
+      use name <- decode.field("name", decode.string)
+      use url <- decode.optional_field(
+        "url",
+        None,
+        decode.optional(decode.string),
+      )
+      use icon_url <- decode.optional_field(
+        "icon_url",
+        None,
+        decode.optional(decode.string),
+      )
+
+      decode.success(EmbedAuthor(name: name, url: url, icon_url: icon_url))
+    }),
+  )
+
+  use fields <- decode.optional_field(
+    "fields",
+    [],
+    decode.list({
+      use name <- decode.field("name", decode.string)
+      use value <- decode.field("value", decode.string)
+      use inline <- decode.field("inline", decode.bool)
+
+      decode.success(EmbedField(name: name, value: value, inline: inline))
+    }),
+  )
+
+  decode.success(Embed(
+    title: title,
+    description: description,
+    color: color,
+    url: url,
+    image: image,
+    thumbnail: thumbnail,
+    footer: footer,
+    author: author,
+    fields: fields,
+  ))
 }

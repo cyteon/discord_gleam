@@ -28,6 +28,8 @@ pub type Emoji
 
 pub type Sku
 
+pub type Webhook
+
 pub fn from_string(value: String) -> Snowflake(kind) {
   Snowflake(value)
 }

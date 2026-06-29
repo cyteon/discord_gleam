@@ -5,6 +5,7 @@ import gleam/list
 import gleam/string
 
 pub type DiscordError {
+  /// When the API returns JSON we fail to decode
   JsonDecodeError(json.DecodeError)
   /// The HTTP request itself failed, e.g. due to a network error
   HttpError(httpc.HttpError)
