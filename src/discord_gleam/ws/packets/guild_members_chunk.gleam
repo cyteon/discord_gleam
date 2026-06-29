@@ -5,8 +5,8 @@ import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None}
 
-pub type GuildMembersChunkData {
-  GuildMembersChunkData(
+pub type GuildMembersChunkPacketData {
+  GuildMembersChunkPacketData(
     guild_id: Snowflake(snowflake.Guild),
     members: List(guild_member.GuildMember),
     chunk_index: Int,
@@ -18,7 +18,12 @@ pub type GuildMembersChunkData {
 }
 
 pub type GuildMembersChunkPacket {
-  GuildMembersChunkPacket(t: String, s: Int, op: Int, d: GuildMembersChunkData)
+  GuildMembersChunkPacket(
+    t: String,
+    s: Int,
+    op: Int,
+    d: GuildMembersChunkPacketData,
+  )
 }
 
 pub fn from_json_string(
@@ -52,7 +57,7 @@ pub fn from_json_string(
         decode.optional(decode.string),
       )
 
-      decode.success(GuildMembersChunkData(
+      decode.success(GuildMembersChunkPacketData(
         guild_id:,
         members:,
         chunk_index:,

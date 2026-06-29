@@ -9,7 +9,7 @@ import logging
 
 /// Send a basic text reply to an interaction
 pub fn interaction_send_text(
-  interaction: interaction_create.InteractionCreatePacket,
+  interaction: interaction_create.InteractionCreatePacketData,
   message: String,
   ephemeral: Bool,
 ) -> Result(Nil, error.DiscordError) {
@@ -17,9 +17,9 @@ pub fn interaction_send_text(
     request.new_with_body(
       http.Post,
       "/interactions/"
-        <> snowflake.to_string(interaction.d.id)
+        <> snowflake.to_string(interaction.id)
         <> "/"
-        <> interaction.d.token
+        <> interaction.token
         <> "/callback",
       slash_command.make_basic_text_reply(message, ephemeral),
     )

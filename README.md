@@ -47,18 +47,18 @@ fn simple_handler(bot, packet: event_handler.Packet) {
     event_handler.ReadyPacket(ready) -> {
       logging.log(
         logging.Info,
-        "Bot is ready! Logged in as: " <> ready.d.user.username,
+        "Bot is ready! Logged in as: " <> ready.user.username,
       )
       Nil
     }
 
     event_handler.MessagePacket(message) -> {
-      logging.log(logging.Info, "Got message: " <> message.d.content)
+      logging.log(logging.Info, "Got message: " <> message.content)
 
-      case message.d.content {
+      case message.content {
         "!ping" -> {
           let _ =
-            discord_gleam.send_message(bot, message.d.channel_id, "Pong!", [])
+            discord_gleam.send_message(bot, message.channel_id, "Pong!", [])
 
           Nil
         }

@@ -34,16 +34,16 @@ pub fn main() {
 fn simple_handler(bot, packet: event_handler.Packet) {
   case packet {
     event_handler.ReadyPacket(ready) -> {
-      logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
+      logging.log(logging.Info, "Logged in as " <> ready.user.username)
 
       Nil
     }
     event_handler.MessagePacket(message) -> {
-      logging.log(logging.Info, "Message: " <> message.d.content)
+      logging.log(logging.Info, "Message: " <> message.content)
 
-      case string.starts_with(message.d.content, "!delete") {
+      case string.starts_with(message.content, "!delete") {
         True -> {
-          let args = string.split(message.d.content, " ")
+          let args = string.split(message.content, " ")
           let args = list.drop(args, 1)
 
           let reason = string.join(args, " ")
@@ -51,8 +51,8 @@ fn simple_handler(bot, packet: event_handler.Packet) {
           let _ =
             discord_gleam.delete_message(
               bot,
-              message.d.channel_id,
-              message.d.id,
+              message.channel_id,
+              message.id,
               reason,
             )
 

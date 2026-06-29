@@ -32,12 +32,12 @@ pub fn main() {
 fn simple_handler(bot, packet: event_handler.Packet) {
   case packet {
     event_handler.MessagePacket(message) -> {
-      logging.log(logging.Info, "Message: " <> message.d.content)
+      logging.log(logging.Info, "Message: " <> message.content)
 
-      case message.d.content {
+      case message.content {
         "!ping" -> {
           let _ =
-            discord_gleam.send_message(bot, message.d.channel_id, "Pong!", [])
+            discord_gleam.send_message(bot, message.channel_id, "Pong!", [])
 
           Nil
         }

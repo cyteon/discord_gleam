@@ -26,8 +26,8 @@ pub type InteractionOption {
   )
 }
 
-pub type InteractionCreateData {
-  InteractionCreateData(
+pub type InteractionCreatePacketData {
+  InteractionCreatePacketData(
     token: String,
     member: Option(InteractionCreateMember),
     user: Option(user.User),
@@ -39,7 +39,12 @@ pub type InteractionCreateData {
 }
 
 pub type InteractionCreatePacket {
-  InteractionCreatePacket(t: String, s: Int, op: Int, d: InteractionCreateData)
+  InteractionCreatePacket(
+    t: String,
+    s: Int,
+    op: Int,
+    d: InteractionCreatePacketData,
+  )
 }
 
 pub type OptionValue {
@@ -116,7 +121,7 @@ pub fn from_json_string(
       })
 
       use channel_id <- decode.field("channel_id", snowflake.decoder())
-      decode.success(InteractionCreateData(
+      decode.success(InteractionCreatePacketData(
         token:,
         member:,
         user:,

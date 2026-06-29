@@ -34,13 +34,14 @@ pub fn main() {
 fn simple_handler(bot, packet: event_handler.Packet) {
   case packet {
     event_handler.ReadyPacket(ready) -> {
-      logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
+      logging.log(logging.Info, "Logged in as " <> ready.user.username)
 
       Nil
     }
     event_handler.MessagePacket(message) -> {
-      logging.log(logging.Info, "Message: " <> message.d.content)
-      case message.d.content {
+      logging.log(logging.Info, "Message: " <> message.content)
+
+      case message.content {
         "!embed" -> {
           let embed =
             embed.new(
@@ -57,7 +58,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
             )
 
           let _ =
-            discord_gleam.send_message(bot, message.d.channel_id, "Embed!", [
+            discord_gleam.send_message(bot, message.channel_id, "Embed!", [
               embed,
             ])
 

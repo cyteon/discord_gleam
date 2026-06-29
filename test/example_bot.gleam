@@ -173,7 +173,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     event_handler.MessageUpdatePacket(message_update) -> {
       logging.log(
         logging.Info,
-        "Message edited, new content: " <> message_update.d.content,
+        "Message edited, new content: " <> message_update.content,
       )
     }
 
@@ -181,9 +181,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "User banned: "
-          <> ban.d.user.username
+          <> ban.user.username
           <> " (ID: "
-          <> snowflake.to_string(ban.d.user.id)
+          <> snowflake.to_string(ban.user.id)
           <> ")",
       )
     }
@@ -192,9 +192,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "User unbanned: "
-          <> ban.d.user.username
+          <> ban.user.username
           <> " (ID: "
-          <> snowflake.to_string(ban.d.user.id)
+          <> snowflake.to_string(ban.user.id)
           <> ")",
       )
     }
@@ -203,9 +203,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Role created: "
-          <> role.d.role.name
+          <> role.role.name
           <> " (ID: "
-          <> snowflake.to_string(role.d.role.id)
+          <> snowflake.to_string(role.role.id)
           <> ")",
       )
 
@@ -216,9 +216,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Role updated: "
-          <> role.d.role.name
+          <> role.role.name
           <> " (ID: "
-          <> snowflake.to_string(role.d.role.id)
+          <> snowflake.to_string(role.role.id)
           <> ")",
       )
 
@@ -226,7 +226,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     }
 
     event_handler.GuildCreatePacket(guild) -> {
-      case guild.d {
+      case guild {
         guild.Guild(id, name, ..) -> {
           logging.log(
             logging.Info,
@@ -252,7 +252,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     event_handler.GuildRoleDeletePacket(role) -> {
       logging.log(
         logging.Info,
-        "Role deleted: " <> snowflake.to_string(role.d.role_id),
+        "Role deleted: " <> snowflake.to_string(role.role_id),
       )
 
       Nil
@@ -262,9 +262,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Member added: "
-          <> member_add.d.guild_member.user.username
+          <> member_add.guild_member.user.username
           <> " (ID: "
-          <> snowflake.to_string(member_add.d.guild_member.user.id)
+          <> snowflake.to_string(member_add.guild_member.user.id)
           <> ")",
       )
     }
@@ -273,9 +273,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Member removed: "
-          <> member_remove.d.user.username
+          <> member_remove.user.username
           <> " (ID: "
-          <> snowflake.to_string(member_remove.d.user.id)
+          <> snowflake.to_string(member_remove.user.id)
           <> ")",
       )
     }
@@ -284,9 +284,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Member updated: "
-          <> member_update.d.guild_member.user.username
+          <> member_update.guild_member.user.username
           <> " (ID: "
-          <> snowflake.to_string(member_update.d.guild_member.user.id)
+          <> snowflake.to_string(member_update.guild_member.user.id)
           <> ")",
       )
     }
@@ -294,41 +294,40 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     event_handler.GuildMembersChunkPacket(chunk) -> {
       logging.log(
         logging.Info,
-        "Guild members chunk received: "
-          <> snowflake.to_string(chunk.d.guild_id),
+        "Guild members chunk received: " <> snowflake.to_string(chunk.guild_id),
       )
     }
 
     event_handler.ChannelCreatePacket(channel) -> {
-      case channel.d.guild_id {
+      case channel.guild_id {
         // only create if channel in guild
         // aka not on DM channel create
         Some(_) -> {
           logging.log(
             logging.Info,
             "Channel created: "
-              <> case channel.d.name {
+              <> case channel.name {
               Some(name) -> name
               None -> "No name"
             }
               <> " (ID: "
-              <> snowflake.to_string(channel.d.id)
+              <> snowflake.to_string(channel.id)
               <> ")",
           )
 
           let _ =
             discord_gleam.send_message(
               bot,
-              channel.d.id,
+              channel.id,
               "Channel created: "
-                <> case channel.d.name {
+                <> case channel.name {
                 Some(name) -> name
                 None -> "No name"
               }
                 <> "\nID: "
-                <> snowflake.to_string(channel.d.id)
+                <> snowflake.to_string(channel.id)
                 <> "\nParent ID: "
-                <> case channel.d.parent_id {
+                <> case channel.parent_id {
                 Some(id) -> snowflake.to_string(id)
                 None -> "None"
               },
@@ -341,14 +340,14 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         None -> {
           logging.log(
             logging.Info,
-            "DM channel created: " <> snowflake.to_string(channel.d.id),
+            "DM channel created: " <> snowflake.to_string(channel.id),
           )
 
           let _ =
             discord_gleam.send_message(
               bot,
-              channel.d.id,
-              "DM channel created: " <> snowflake.to_string(channel.d.id),
+              channel.id,
+              "DM channel created: " <> snowflake.to_string(channel.id),
               [],
             )
 
@@ -361,12 +360,12 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Channel deleted: "
-          <> case channel.d.name {
+          <> case channel.name {
           Some(name) -> name
           None -> "No name"
         }
           <> " (ID: "
-          <> snowflake.to_string(channel.d.id)
+          <> snowflake.to_string(channel.id)
           <> ")",
       )
     }
@@ -375,33 +374,28 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Channel updated: "
-          <> case channel.d.name {
+          <> case channel.name {
           Some(name) -> name
           None -> "No name"
         }
           <> " (ID: "
-          <> snowflake.to_string(channel.d.id)
+          <> snowflake.to_string(channel.id)
           <> ")",
       )
     }
 
     event_handler.MessagePacket(message) -> {
       case
-        snowflake.to_string(message.d.author.id)
+        snowflake.to_string(message.author.id)
         != snowflake.to_string(bot.client_id)
       {
         True -> {
-          logging.log(logging.Info, "Got message: " <> message.d.content)
+          logging.log(logging.Info, "Got message: " <> message.content)
 
-          case message.d.content {
+          case message.content {
             "!ping" -> {
               let _ =
-                discord_gleam.send_message(
-                  bot,
-                  message.d.channel_id,
-                  "Pong!",
-                  [],
-                )
+                discord_gleam.send_message(bot, message.channel_id, "Pong!", [])
 
               Nil
             }
@@ -410,7 +404,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let msg =
                 discord_gleam.send_message(
                   bot,
-                  message.d.channel_id,
+                  message.channel_id,
                   "This message will be edited in 5 seconds!",
                   [],
                 )
@@ -422,7 +416,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   let _ =
                     discord_gleam.edit_message(
                       bot,
-                      message.d.channel_id,
+                      message.channel_id,
                       msg.id,
                       "This message has been edited!",
                       [],
@@ -435,7 +429,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   let _ =
                     discord_gleam.send_message(
                       bot,
-                      message.d.channel_id,
+                      message.channel_id,
                       "Failed to send message!",
                       [],
                     )
@@ -450,8 +444,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
             }
 
             "!dm_channel" -> {
-              let res =
-                discord_gleam.create_dm_channel(bot, message.d.author.id)
+              let res = discord_gleam.create_dm_channel(bot, message.author.id)
 
               let _ = echo res
 
@@ -460,7 +453,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   let _ =
                     discord_gleam.send_message(
                       bot,
-                      message.d.channel_id,
+                      message.channel_id,
                       "ID: "
                         <> snowflake.to_string(channel.id)
                         <> "\nLast message ID: "
@@ -478,7 +471,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   let _ =
                     discord_gleam.send_message(
                       bot,
-                      message.d.channel_id,
+                      message.channel_id,
                       "Failed to create DM channel!",
                       [],
                     )
@@ -494,7 +487,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let res =
                 discord_gleam.send_direct_message(
                   bot,
-                  message.d.author.id,
+                  message.author.id,
                   "DM!",
                   [],
                 )
@@ -504,7 +497,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   let _ =
                     discord_gleam.send_message(
                       bot,
-                      message.d.channel_id,
+                      message.channel_id,
                       "DM sent!",
                       [],
                     )
@@ -516,7 +509,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   let _ =
                     discord_gleam.send_message(
                       bot,
-                      message.d.channel_id,
+                      message.channel_id,
                       "Failed to send DM!",
                       [],
                     )
@@ -533,7 +526,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                 embed.new("Embed Title", "Embed Description", 0x00FF00)
 
               let _ =
-                discord_gleam.send_message(bot, message.d.channel_id, "Embed!", [
+                discord_gleam.send_message(bot, message.channel_id, "Embed!", [
                   embed,
                 ])
 
@@ -544,8 +537,8 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 discord_gleam.reply(
                   bot,
-                  message.d.channel_id,
-                  message.d.id,
+                  message.channel_id,
+                  message.id,
                   "Reply!",
                   [],
                 )
@@ -557,8 +550,8 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 discord_gleam.reply(
                   bot,
-                  message.d.channel_id,
-                  message.d.id,
+                  message.channel_id,
+                  message.id,
                   "hello",
                   [],
                 )
@@ -573,7 +566,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         False -> Nil
       }
 
-      case message.d.content, message.d.guild_id {
+      case message.content, message.guild_id {
         "!kick " <> args, Some(guild_id) -> {
           let args = string.split(args, " ")
           let #(user, args) = case args {
@@ -595,7 +588,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 discord_gleam.send_message(
                   bot,
-                  message.d.channel_id,
+                  message.channel_id,
                   "Kicked user!",
                   [],
                 )
@@ -607,7 +600,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 discord_gleam.send_message(
                   bot,
-                  message.d.channel_id,
+                  message.channel_id,
                   "Failed to kick user!",
                   [],
                 )
@@ -620,7 +613,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         _, _ -> Nil
       }
 
-      case message.d.content, message.d.guild_id {
+      case message.content, message.guild_id {
         "!ban " <> args, Some(guild_id) -> {
           let args = string.split(args, " ")
           let #(user, args) = case args {
@@ -642,7 +635,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 discord_gleam.send_message(
                   bot,
-                  message.d.channel_id,
+                  message.channel_id,
                   "Banned user!",
                   [],
                 )
@@ -654,7 +647,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 discord_gleam.send_message(
                   bot,
-                  message.d.channel_id,
+                  message.channel_id,
                   "Failed to ban user!",
                   [],
                 )
@@ -671,10 +664,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     event_handler.MessageDeletePacket(deleted) -> {
       logging.log(
         logging.Info,
-        "Deleted message: " <> snowflake.to_string(deleted.d.id),
+        "Deleted message: " <> snowflake.to_string(deleted.id),
       )
 
-      let msg = dict.get(booklet.get(bot.cache.messages), deleted.d.id)
+      let msg = dict.get(booklet.get(bot.cache.messages), deleted.id)
 
       case msg {
         Ok(msg) -> {
@@ -692,18 +685,18 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       logging.log(
         logging.Info,
         "Bulk deleted messages: "
-          <> list.fold(deleted_bulk.d.ids, "", fn(acc, id) {
+          <> list.fold(deleted_bulk.ids, "", fn(acc, id) {
           acc <> snowflake.to_string(id) <> ", "
         }),
       )
     }
 
     event_handler.InteractionCreatePacket(interaction) -> {
-      logging.log(logging.Info, "Interaction: " <> interaction.d.data.name)
+      logging.log(logging.Info, "Interaction: " <> interaction.data.name)
 
-      case interaction.d.data.name {
+      case interaction.data.name {
         "test" -> {
-          let _ = case interaction.d.data.options {
+          let _ = case interaction.data.options {
             Some(options) -> {
               let value = case list.first(options) {
                 Ok(option) ->
@@ -741,7 +734,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
         }
 
         "test2" -> {
-          let _ = case interaction.d.data.options {
+          let _ = case interaction.data.options {
             Some(options) -> {
               let value = case list.last(options) {
                 Ok(option) ->
@@ -784,7 +777,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     event_handler.PresenceUpdatePacket(presence) -> {
       logging.log(
         logging.Info,
-        "Presence updated for: " <> snowflake.to_string(presence.d.user.id),
+        "Presence updated for: " <> snowflake.to_string(presence.user.id),
       )
     }
 
@@ -831,17 +824,12 @@ fn normal_handler(
         }
 
         event_handler.MessagePacket(message) -> {
-          logging.log(logging.Info, "Got message: " <> message.d.content)
+          logging.log(logging.Info, "Got message: " <> message.content)
 
-          case message.d.content {
+          case message.content {
             "!ping" -> {
               let _ =
-                discord_gleam.send_message(
-                  bot,
-                  message.d.channel_id,
-                  "Pong!",
-                  [],
-                )
+                discord_gleam.send_message(bot, message.channel_id, "Pong!", [])
 
               discord_gleam.continue(state)
             }

@@ -63,17 +63,17 @@ pub fn main() {
 fn simple_handler(_, packet: event_handler.Packet) {
   case packet {
     event_handler.ReadyPacket(ready) -> {
-      logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
+      logging.log(logging.Info, "Logged in as " <> ready.user.username)
 
       Nil
     }
 
     event_handler.InteractionCreatePacket(interaction) -> {
-      logging.log(logging.Info, "Interaction: " <> interaction.d.data.name)
+      logging.log(logging.Info, "Interaction: " <> interaction.data.name)
 
-      case interaction.d.data.name {
+      case interaction.data.name {
         "ping" -> {
-          case interaction.d.data.options {
+          case interaction.data.options {
             Some(options) -> {
               case list.first(options) {
                 Ok(option) -> {
