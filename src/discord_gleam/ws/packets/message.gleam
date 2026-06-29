@@ -35,7 +35,7 @@ pub type MessagePacketData {
     flags: Option(Int),
     // todo: message_refrence: message reference object
     // todo: message_snapshots: array of message snapshot objects
-    refrenced_message: Option(MessagePacketData),
+    referenced_message: Option(MessagePacketData),
     // todo: interaction_metadata: message interaction metadata object
     // todo: interaction: message interaction object
     thread: Option(channel.Channel),
@@ -132,8 +132,8 @@ pub fn data_json_decoder() -> decode.Decoder(MessagePacketData) {
   // todo: message_refrence
   // todo: message_snapshots
 
-  use refrenced_message <- decode.optional_field(
-    "refrenced_message",
+  use referenced_message <- decode.optional_field(
+    "referenced_message",
     None,
     decode.optional(data_json_decoder()),
   )
@@ -189,7 +189,7 @@ pub fn data_json_decoder() -> decode.Decoder(MessagePacketData) {
     flags:,
     // todo: message_refrence
     // todo: message_snapshots
-    refrenced_message:,
+    referenced_message:,
     // todo: interaction_metadata
     // todo: interaction
     thread:,

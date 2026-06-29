@@ -219,7 +219,11 @@ fn internal_handler(
         gateway_state.GatewayState(
           ..state,
           session_id: ready.session_id,
-          resume_gateway_url: ready.resume_gateway_url,
+          resume_gateway_url: string.replace(
+            ready.resume_gateway_url,
+            "wss://",
+            "",
+          ),
         )
       })
 

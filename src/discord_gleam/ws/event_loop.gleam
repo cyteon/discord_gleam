@@ -50,6 +50,7 @@ pub fn start_event_loop(
     case msg {
       Start -> {
         logging.log(logging.Debug, "Received start message")
+
         let started =
           start_discord_websocket(
             mode,
@@ -69,6 +70,9 @@ pub fn start_event_loop(
 
       Restart(host, session_id, reconnect) -> {
         logging.log(logging.Debug, "Restarting discord websocket")
+
+        // wait a little bit before reconnecting
+        process.sleep(2000)
 
         let started =
           start_discord_websocket(
@@ -477,6 +481,7 @@ fn handle_text_message(
             "Stopping discord websocket connection with abnormal reason: "
               <> reason,
           )
+
           stratus.stop_abnormal(reason)
         }
       }
