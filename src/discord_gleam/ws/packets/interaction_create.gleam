@@ -1,12 +1,11 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
+import discord_gleam/types/channel
+import discord_gleam/types/guild_member
 import discord_gleam/types/user
+import discord_gleam/ws/packets/message
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None}
-
-pub type InteractionCreateMember {
-  InteractionCreateMember(user: user.User)
-}
 
 pub type InteractionCommand {
   InteractionCommand(
@@ -28,13 +27,19 @@ pub type InteractionOption {
 
 pub type InteractionCreatePacketData {
   InteractionCreatePacketData(
-    token: String,
-    member: Option(InteractionCreateMember),
-    user: Option(user.User),
     id: Snowflake(snowflake.Interaction),
-    guild_id: Option(Snowflake(snowflake.Guild)),
+    application_id: Snowflake(snowflake.Application),
+    type_: Int,
     data: InteractionCommand,
+    guild_id: Option(Snowflake(snowflake.Guild)),
+    channel: Option(channel.Channel),
     channel_id: Snowflake(snowflake.Channel),
+    member: Option(guild_member.GuildMember),
+    user: Option(user.User),
+    token: String,
+    message: Option(message.MessagePacketData),
+    app_permissions: String,
+    locale: Option(String),
   )
 }
 
@@ -83,28 +88,11 @@ pub fn from_json_string(
     use s <- decode.field("s", decode.int)
     use op <- decode.field("op", decode.int)
     use d <- decode.field("d", {
-      use token <- decode.field("token", decode.string)
-
-      use member <- decode.optional_field(
-        "member",
-        None,
-        decode.optional({
-          use user <- decode.field("user", user.json_decoder())
-          decode.success(InteractionCreateMember(user:))
-        }),
-      )
-      use user <- decode.optional_field(
-        "user",
-        None,
-        decode.optional(user.json_decoder()),
-      )
-
       use id <- decode.field("id", snowflake.decoder())
-      use guild_id <- decode.optional_field(
-        "guild_id",
-        None,
-        decode.optional(snowflake.decoder()),
-      )
+
+      use application_id <- decode.field("application_id", snowflake.decoder())
+
+      use type_ <- decode.field("type", decode.int)
 
       use data <- decode.field("data", {
         use type_ <- decode.field("type", decode.int)
@@ -120,17 +108,65 @@ pub fn from_json_string(
         decode.success(InteractionCommand(type_:, name:, id:, options:))
       })
 
+      use guild_id <- decode.optional_field(
+        "guild_id",
+        None,
+        decode.optional(snowflake.decoder()),
+      )
+
+      use channel <- decode.optional_field(
+        "channel",
+        None,
+        decode.optional(channel.json_decoder()),
+      )
+
       use channel_id <- decode.field("channel_id", snowflake.decoder())
+
+      use member <- decode.optional_field(
+        "member",
+        None,
+        decode.optional(guild_member.json_decoder()),
+      )
+
+      use user <- decode.optional_field(
+        "user",
+        None,
+        decode.optional(user.json_decoder()),
+      )
+
+      use token <- decode.field("token", decode.string)
+
+      use message <- decode.optional_field(
+        "message",
+        None,
+        decode.optional(message.data_json_decoder()),
+      )
+
+      use app_permissions <- decode.field("app_permissions", decode.string)
+
+      use locale <- decode.optional_field(
+        "locale",
+        None,
+        decode.optional(decode.string),
+      )
+
       decode.success(InteractionCreatePacketData(
-        token:,
+        id:,
+        application_id:,
+        type_:,
+        data:,
+        guild_id:,
+        channel:,
+        channel_id:,
         member:,
         user:,
-        id:,
-        guild_id:,
-        data:,
-        channel_id:,
+        token:,
+        message:,
+        app_permissions:,
+        locale:,
       ))
     })
+
     decode.success(InteractionCreatePacket(t:, s:, op:, d:))
   }
 
