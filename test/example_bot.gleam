@@ -6,6 +6,8 @@ import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
 import discord_gleam/types/embed
 import discord_gleam/types/guild
+import discord_gleam/types/interaction
+import discord_gleam/types/message
 import discord_gleam/types/slash_command
 import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/commands/update_presence
@@ -712,20 +714,19 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               }
 
               let _ =
-                discord_gleam.interaction_reply_message(
+                interaction.send_message(
                   interaction,
-                  "test: " <> value,
-                  True,
-                  // ephemeral
+                  message.Message(content: "test: " <> value, embeds: []),
+                  ephemeral: True,
                 )
             }
 
             None -> {
               let _ =
-                discord_gleam.interaction_reply_message(
+                interaction.send_message(
                   interaction,
-                  "test: No options",
-                  True,
+                  message.Message(content: "test: no options", embeds: []),
+                  ephemeral: True,
                 )
             }
           }
@@ -750,19 +751,19 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               }
 
               let _ =
-                discord_gleam.interaction_reply_message(
+                interaction.send_message(
                   interaction,
-                  "test2: " <> value,
-                  False,
+                  message.Message(content: "test2: " <> value, embeds: []),
+                  ephemeral: False,
                 )
             }
 
             None -> {
               let _ =
-                discord_gleam.interaction_reply_message(
+                interaction.send_message(
                   interaction,
-                  "test2: No options",
-                  False,
+                  message.Message(content: "test2: no options", embeds: []),
+                  ephemeral: False,
                 )
             }
           }

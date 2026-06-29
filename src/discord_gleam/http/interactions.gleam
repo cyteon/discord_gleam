@@ -1,17 +1,15 @@
 import discord_gleam/discord/snowflake
 import discord_gleam/http/request
 import discord_gleam/internal/error
-import discord_gleam/types/slash_command
 import discord_gleam/ws/packets/interaction_create
 import gleam/http
 import gleam/httpc
 import logging
 
 /// Send a basic text reply to an interaction
-pub fn interaction_send_text(
+pub fn send_response(
   interaction: interaction_create.InteractionCreatePacketData,
-  message: String,
-  ephemeral: Bool,
+  data: String,
 ) -> Result(Nil, error.DiscordError) {
   let request =
     request.new_with_body(
@@ -21,14 +19,14 @@ pub fn interaction_send_text(
         <> "/"
         <> interaction.token
         <> "/callback",
-      slash_command.make_basic_text_reply(message, ephemeral),
+      data,
     )
 
   case httpc.send(request) {
     Ok(resp) -> {
       case resp.status {
         204 -> {
-          logging.log(logging.Debug, "Sent Interaction Response")
+          logging.log(logging.Debug, "Sent interaction response")
 
           Ok(Nil)
         }
@@ -36,7 +34,7 @@ pub fn interaction_send_text(
         429 -> {
           logging.log(
             logging.Error,
-            "Failed to send Interaction Response: rate limited",
+            "Failed to send interaction response: rate limited",
           )
 
           Error(request.extract_ratelimit_error(resp))

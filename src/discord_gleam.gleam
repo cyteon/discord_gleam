@@ -9,7 +9,6 @@ import discord_gleam/event_handler
 import discord_gleam/http/applications
 import discord_gleam/http/channels
 import discord_gleam/http/guilds
-import discord_gleam/http/interactions
 import discord_gleam/http/users
 import discord_gleam/internal/error
 import discord_gleam/types/channel
@@ -22,7 +21,6 @@ import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/commands/update_presence
 import discord_gleam/ws/event_loop
 import discord_gleam/ws/gateway_state
-import discord_gleam/ws/packets/interaction_create
 import gleam/erlang/process
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -427,15 +425,6 @@ pub fn register_guild_commands(
       Error(err) -> Error(#(command, err))
     }
   })
-}
-
-/// Make a basic text reply to an interaction.
-pub fn interaction_reply_message(
-  interaction: interaction_create.InteractionCreatePacketData,
-  message: String,
-  ephemeral: Bool,
-) -> Result(Nil, error.DiscordError) {
-  interactions.interaction_send_text(interaction, message, ephemeral)
 }
 
 /// Used to request all members of a guild. The server will send
