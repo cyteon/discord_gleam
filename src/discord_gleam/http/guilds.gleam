@@ -32,6 +32,12 @@ pub fn kick_member(
           Ok(Nil)
         }
 
+        429 -> {
+          logging.log(logging.Error, "Failed to kick member: rate limited")
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
         _ -> {
           logging.log(logging.Error, "Failed to kick member")
 

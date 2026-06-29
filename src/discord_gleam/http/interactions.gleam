@@ -33,6 +33,15 @@ pub fn interaction_send_text(
           Ok(Nil)
         }
 
+        429 -> {
+          logging.log(
+            logging.Error,
+            "Failed to send Interaction Response: rate limited",
+          )
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
         _ -> {
           logging.log(logging.Error, "Failed to send Interaction Response")
 

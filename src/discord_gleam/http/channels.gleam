@@ -35,6 +35,12 @@ pub fn send_message(
           message_send_response.from_json_string(resp.body)
         }
 
+        429 -> {
+          logging.log(logging.Error, "Failed to send message: rate limited")
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
         _ -> {
           logging.log(logging.Error, "Failed to send message")
 
@@ -78,6 +84,12 @@ pub fn reply(
           message_send_response.from_json_string(resp.body)
         }
 
+        429 -> {
+          logging.log(logging.Error, "Failed to send reply: rate limited")
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
         _ -> {
           logging.log(logging.Error, "Failed to send reply")
 
@@ -119,6 +131,12 @@ pub fn delete_message(
           logging.log(logging.Debug, "Deleted Message")
 
           Ok(Nil)
+        }
+
+        429 -> {
+          logging.log(logging.Error, "Failed to delete message: rate limited")
+
+          Error(request.extract_ratelimit_error(resp))
         }
 
         _ -> {
@@ -166,6 +184,12 @@ pub fn edit_message(
           logging.log(logging.Debug, "Message edited")
 
           Ok(Nil)
+        }
+
+        429 -> {
+          logging.log(logging.Error, "Failed to edit message: rate limited")
+
+          Error(request.extract_ratelimit_error(resp))
         }
 
         _ -> {

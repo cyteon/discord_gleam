@@ -10,6 +10,8 @@ pub type DiscordError {
   HttpError(httpc.HttpError)
   /// When the API returns an error, but the request was successful
   ApiError(status_code: Int, body: String)
+  /// When the API returns a 429
+  RatelimitError(retry_after_secs: Int, global: Bool)
 }
 
 pub fn json_decode_error_to_string(error: json.DecodeError) -> String {

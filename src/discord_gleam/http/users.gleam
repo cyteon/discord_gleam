@@ -22,6 +22,12 @@ pub fn me(token: String) -> Result(user.User, error.DiscordError) {
           user.from_json_string(resp.body)
         }
 
+        429 -> {
+          logging.log(logging.Error, "Failed to get current user: rate limited")
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
         _ -> Error(error.ApiError(status_code: resp.status, body: resp.body))
       }
     }
@@ -73,8 +79,17 @@ pub fn create_dm_channel(
           }
         }
 
-        v -> {
-          Error(error.ApiError(status_code: v, body: resp.body))
+        429 -> {
+          logging.log(
+            logging.Error,
+            "Failed to create DM channel: rate limited",
+          )
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
+        _ -> {
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
         }
       }
     }

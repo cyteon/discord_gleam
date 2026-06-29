@@ -27,6 +27,16 @@ pub fn wipe_global_commands(
 
           Ok(Nil)
         }
+
+        429 -> {
+          logging.log(
+            logging.Error,
+            "Failed to wipe global commands: rate limited",
+          )
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
         _ -> {
           logging.log(logging.Error, "Failed to wipe global commands")
 
@@ -34,6 +44,7 @@ pub fn wipe_global_commands(
         }
       }
     }
+
     Error(err) -> {
       logging.log(logging.Error, "Failed to wipe global commands")
 
@@ -68,6 +79,16 @@ pub fn wipe_guild_commands(
 
           Ok(Nil)
         }
+
+        429 -> {
+          logging.log(
+            logging.Error,
+            "Failed to wipe guild commands: rate limited",
+          )
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
         _ -> {
           logging.log(logging.Error, "Failed to wipe guild commands")
 
@@ -110,6 +131,15 @@ pub fn register_global_command(
           logging.log(logging.Debug, "Updated global command " <> command.name)
 
           Ok(Nil)
+        }
+
+        429 -> {
+          logging.log(
+            logging.Error,
+            "Failed to add global command " <> command.name <> ": rate limited",
+          )
+
+          Error(request.extract_ratelimit_error(resp))
         }
 
         _ -> {
@@ -166,6 +196,15 @@ pub fn register_guild_command(
           logging.log(logging.Debug, "Updated guild command " <> command.name)
 
           Ok(Nil)
+        }
+
+        429 -> {
+          logging.log(
+            logging.Error,
+            "Failed to add guild command " <> command.name <> ": rate limited",
+          )
+
+          Error(request.extract_ratelimit_error(resp))
         }
 
         _ -> {
