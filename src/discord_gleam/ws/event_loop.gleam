@@ -100,7 +100,6 @@ pub fn start_event_loop(
 pub type WebsocketState(user_state, user_message) {
   State(
     has_received_hello: Bool,
-    s: Int,
     event_loop_subject: process.Subject(EventLoopMessage),
     user_state: user_state,
     bot: bot.Bot,
@@ -183,7 +182,6 @@ fn start_discord_websocket(
       let initial_state =
         State(
           has_received_hello: False,
-          s: 0,
           event_loop_subject:,
           user_state:,
           bot:,
@@ -337,7 +335,6 @@ fn handle_text_message(
                 State(
                   ..state,
                   has_received_hello: True,
-                  s: 0,
                   heartbeat: Some(repeater),
                 )
 
@@ -434,10 +431,6 @@ fn handle_text_message(
       let new_state =
         State(
           has_received_hello: True,
-          s: case generic_packet.s {
-            Some(s) -> s
-            None -> state.s
-          },
           event_loop_subject: state.event_loop_subject,
           user_state: state.user_state,
           bot: state.bot,

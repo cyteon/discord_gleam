@@ -4,6 +4,8 @@
 
 import gleam/dynamic/decode
 import gleam/int
+import gleam/order
+import gleam/string
 
 /// We are representing Discord's snowflake as a string
 pub opaque type Snowflake(kind) {
@@ -42,4 +44,11 @@ pub fn to_string(snowflake: Snowflake(kind)) -> String {
 pub fn decoder() -> decode.Decoder(Snowflake(kind)) {
   decode.one_of(decode.string, [decode.int |> decode.map(int.to_string)])
   |> decode.map(Snowflake)
+}
+
+pub fn compare(a: Snowflake(kind), b: Snowflake(kind)) -> order.Order {
+  case int.compare(string.length(a.value), string.length(b.value)) {
+    order.Eq -> string.compare(a.value, b.value)
+    other -> other
+  }
 }

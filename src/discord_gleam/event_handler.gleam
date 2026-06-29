@@ -1,4 +1,12 @@
 import booklet
+import gleam/erlang/process
+import gleam/option.{type Option, None, Some}
+import gleam/string
+import gleam/order
+import gleam/dict
+import gleam/list
+import logging
+
 import discord_gleam/bot
 import discord_gleam/discord/snowflake
 import discord_gleam/internal/error
@@ -7,10 +15,6 @@ import discord_gleam/types/guild
 import discord_gleam/types/presence
 import discord_gleam/ws/gateway_state
 import discord_gleam/ws/packets/guild_create
-import gleam/erlang/process
-import gleam/option.{type Option, None, Some}
-import gleam/string
-
 import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
 import discord_gleam/ws/packets/channel_update
@@ -31,9 +35,6 @@ import discord_gleam/ws/packets/message_delete_bulk
 import discord_gleam/ws/packets/message_update
 import discord_gleam/ws/packets/presence_update
 import discord_gleam/ws/packets/ready
-import gleam/dict
-import gleam/list
-import logging
 
 /// The message type for the event handler with custom user messages
 pub type HandlerMessage(user_message) {
@@ -163,6 +164,33 @@ pub type Packet {
   UnknownPacket(generic.GenericPacket)
 }
 
+fn cache_message(bot: bot.Bot, msg: message.MessagePacketData) -> Nil {
+  booklet.update(bot.cache.messages, fn(cache) {
+    let cache = dict.insert(cache, msg.id, msg)
+
+    case dict.size(cache) > bot.message_cache_limit {
+      True -> {
+        case
+          dict.keys(cache)
+          |> list.reduce(fn(a, b) {
+            case snowflake.compare(a, b) {
+              order.Lt -> a
+              _ -> b
+            }
+          })
+        {
+          Ok(oldest) -> dict.delete(cache, oldest)
+          Error(_) -> cache
+        }
+      }
+
+      False -> cache
+    }
+  })
+
+  Nil
+}
+
 /// For handling some events the library needs to handle, for functionality
 fn internal_handler(
   bot: bot.Bot,
@@ -171,47 +199,11 @@ fn internal_handler(
 ) -> Nil {
   case packet {
     MessagePacket(msg) -> {
-      booklet.update(bot.cache.messages, fn(cache) {
-        let cache = dict.insert(cache, msg.id, msg)
-
-        case dict.size(cache) > bot.message_cache_limit {
-          True -> {
-            let oldest =
-              dict.keys(cache)
-              |> list.sort(fn(a, b) {
-                string.compare(snowflake.to_string(a), snowflake.to_string(b))
-              })
-              |> list.take(1)
-
-            dict.drop(cache, oldest)
-          }
-          False -> cache
-        }
-      })
-
-      Nil
+      cache_message(bot, msg)
     }
 
     MessageUpdatePacket(msg) -> {
-      booklet.update(bot.cache.messages, fn(cache) {
-        let cache = dict.insert(cache, msg.id, msg)
-
-        case dict.size(cache) > bot.message_cache_limit {
-          True -> {
-            let oldest =
-              dict.keys(cache)
-              |> list.sort(fn(a, b) {
-                string.compare(snowflake.to_string(a), snowflake.to_string(b))
-              })
-              |> list.take(1)
-
-            dict.drop(cache, oldest)
-          }
-          False -> cache
-        }
-      })
-
-      Nil
+      cache_message(bot, msg)
     }
 
     ReadyPacket(ready) -> {
