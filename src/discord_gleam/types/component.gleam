@@ -259,12 +259,7 @@ pub type Component {
   )
 
   // 23
-  Checkbox(
-    value: String,
-    label: String,
-    description: Option(String),
-    default: Option(Bool),
-  )
+  Checkbox(id: Option(Int), custom_id: String, default: Option(Bool))
 }
 
 pub fn component_type_to_int(component: Component) -> Int {
@@ -306,6 +301,28 @@ pub fn partial_emoji_to_json(emoji: PartialEmoji) -> json.Json {
       None -> json.null()
     }),
   ])
+}
+
+pub fn default_select_value_to_json(value: DefaultSelectValue) -> json.Json {
+  case value {
+    DefaultUser(id) ->
+      json.object([
+        #("type", json.string("user")),
+        #("id", json.string(snowflake.to_string(id))),
+      ])
+
+    DefaultRole(id) ->
+      json.object([
+        #("type", json.string("role")),
+        #("id", json.string(snowflake.to_string(id))),
+      ])
+
+    DefaultChannel(id) ->
+      json.object([
+        #("type", json.string("channel")),
+        #("id", json.string(snowflake.to_string(id))),
+      ])
+  }
 }
 
 pub fn to_json(component: Component) -> json.Json {
@@ -377,6 +394,608 @@ pub fn to_json(component: Component) -> json.Json {
       ])
     }
 
-    _ -> json.null()
+    StringSelect(
+      id,
+      custom_id,
+      options,
+      placeholder,
+      min_values,
+      max_values,
+      required,
+      disabled,
+    ) -> {
+      json.object([
+        #("type", json.int(3)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #(
+          "options",
+          json.array(
+            list.map(options, fn(option) {
+              json.object([
+                #("label", json.string(option.label)),
+                #("value", json.string(option.value)),
+                #("description", case option.description {
+                  Some(description) -> json.string(description)
+                  None -> json.null()
+                }),
+                #("emoji", case option.emoji {
+                  Some(emoji) -> partial_emoji_to_json(emoji)
+                  None -> json.null()
+                }),
+                #("default", case option.default {
+                  Some(default) -> json.bool(default)
+                  None -> json.null()
+                }),
+              ])
+            }),
+            of: fn(x) { x },
+          ),
+        ),
+
+        #("placeholder", case placeholder {
+          Some(placeholder) -> json.string(placeholder)
+          None -> json.null()
+        }),
+
+        #("min_values", case min_values {
+          Some(min_values) -> json.int(min_values)
+          None -> json.null()
+        }),
+
+        #("max_values", case max_values {
+          Some(max_values) -> json.int(max_values)
+          None -> json.null()
+        }),
+
+        #("required", case required {
+          Some(required) -> json.bool(required)
+          None -> json.null()
+        }),
+
+        #("disabled", case disabled {
+          Some(disabled) -> json.bool(disabled)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    TextInput(
+      id,
+      custom_id,
+      style,
+      min_length,
+      max_length,
+      required,
+      value,
+      placeholder,
+    ) -> {
+      json.object([
+        #("type", json.int(4)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #(
+          "style",
+          json.int(case style {
+            Short -> 1
+            Paragraph -> 2
+          }),
+        ),
+
+        #("min_length", case min_length {
+          Some(min_length) -> json.int(min_length)
+          None -> json.null()
+        }),
+
+        #("max_length", case max_length {
+          Some(max_length) -> json.int(max_length)
+          None -> json.null()
+        }),
+
+        #("required", case required {
+          Some(required) -> json.bool(required)
+          None -> json.null()
+        }),
+
+        #("value", case value {
+          Some(value) -> json.string(value)
+          None -> json.null()
+        }),
+
+        #("placeholder", case placeholder {
+          Some(placeholder) -> json.string(placeholder)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    UserSelect(
+      id,
+      custom_id,
+      placeholder,
+      default_values,
+      min_values,
+      max_values,
+      required,
+      disabled,
+    ) -> {
+      json.object([
+        #("type", json.int(5)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #("placeholder", case placeholder {
+          Some(placeholder) -> json.string(placeholder)
+          None -> json.null()
+        }),
+
+        #("default_values", case default_values {
+          Some(default_values) ->
+            json.array(
+              list.map(default_values, default_select_value_to_json),
+              of: fn(x) { x },
+            )
+
+          None -> json.null()
+        }),
+
+        #("min_values", case min_values {
+          Some(min_values) -> json.int(min_values)
+          None -> json.null()
+        }),
+
+        #("max_values", case max_values {
+          Some(max_values) -> json.int(max_values)
+          None -> json.null()
+        }),
+
+        #("required", case required {
+          Some(required) -> json.bool(required)
+          None -> json.null()
+        }),
+
+        #("disabled", case disabled {
+          Some(disabled) -> json.bool(disabled)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    RoleSelect(
+      id,
+      custom_id,
+      placeholder,
+      default_values,
+      min_values,
+      max_values,
+      required,
+      disabled,
+    ) -> {
+      json.object([
+        #("type", json.int(6)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #("placeholder", case placeholder {
+          Some(placeholder) -> json.string(placeholder)
+          None -> json.null()
+        }),
+
+        #("default_values", case default_values {
+          Some(default_values) ->
+            json.array(
+              list.map(default_values, default_select_value_to_json),
+              of: fn(x) { x },
+            )
+
+          None -> json.null()
+        }),
+
+        #("min_values", case min_values {
+          Some(min_values) -> json.int(min_values)
+          None -> json.null()
+        }),
+
+        #("max_values", case max_values {
+          Some(max_values) -> json.int(max_values)
+          None -> json.null()
+        }),
+
+        #("required", case required {
+          Some(required) -> json.bool(required)
+          None -> json.null()
+        }),
+
+        #("disabled", case disabled {
+          Some(disabled) -> json.bool(disabled)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    MentionableSelect(
+      id,
+      custom_id,
+      placeholder,
+      default_values,
+      min_values,
+      max_values,
+      required,
+      disabled,
+    ) -> {
+      json.object([
+        #("type", json.int(7)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #("placeholder", case placeholder {
+          Some(placeholder) -> json.string(placeholder)
+          None -> json.null()
+        }),
+
+        #("default_values", case default_values {
+          Some(default_values) ->
+            json.array(
+              list.map(default_values, default_select_value_to_json),
+              of: fn(x) { x },
+            )
+
+          None -> json.null()
+        }),
+
+        #("min_values", case min_values {
+          Some(min_values) -> json.int(min_values)
+          None -> json.null()
+        }),
+
+        #("max_values", case max_values {
+          Some(max_values) -> json.int(max_values)
+          None -> json.null()
+        }),
+
+        #("required", case required {
+          Some(required) -> json.bool(required)
+          None -> json.null()
+        }),
+
+        #("disabled", case disabled {
+          Some(disabled) -> json.bool(disabled)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    ChannelSelect(
+      id,
+      custom_id,
+      channel_types,
+      placeholder,
+      default_values,
+      min_values,
+      max_values,
+      required,
+      disabled,
+    ) -> {
+      json.object([
+        #("type", json.int(8)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #("channel_types", case channel_types {
+          Some(channel_types) ->
+            json.array(list.map(channel_types, channel_type_to_int), of: fn(x) {
+              json.int(x)
+            })
+
+          None -> json.null()
+        }),
+
+        #("placeholder", case placeholder {
+          Some(placeholder) -> json.string(placeholder)
+          None -> json.null()
+        }),
+
+        #("default_values", case default_values {
+          Some(default_values) ->
+            json.array(
+              list.map(default_values, default_select_value_to_json),
+              of: fn(x) { x },
+            )
+
+          None -> json.null()
+        }),
+
+        #("min_values", case min_values {
+          Some(min_values) -> json.int(min_values)
+          None -> json.null()
+        }),
+
+        #("max_values", case max_values {
+          Some(max_values) -> json.int(max_values)
+          None -> json.null()
+        }),
+
+        #("required", case required {
+          Some(required) -> json.bool(required)
+          None -> json.null()
+        }),
+
+        #("disabled", case disabled {
+          Some(disabled) -> json.bool(disabled)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    Section(id, components, accessory) -> {
+      json.object([
+        #("type", json.int(9)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #(
+          "components",
+          json.array(list.map(components, to_json), of: fn(x) { x }),
+        ),
+
+        #("accessory", to_json(accessory)),
+      ])
+    }
+
+    TextDisplay(id, content) -> {
+      json.object([
+        #("type", json.int(10)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("content", json.string(content)),
+      ])
+    }
+
+    // todo Thumbnail, MediaGallery, File
+    Seperator(id, divider, spacing) -> {
+      json.object([
+        #("type", json.int(14)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("divider", case divider {
+          Some(divider) -> json.bool(divider)
+          None -> json.null()
+        }),
+
+        #("spacing", case spacing {
+          Some(spacing) -> json.int(spacing)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    Container(id, components, accent_color, spoiler) -> {
+      json.object([
+        #("type", json.int(17)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #(
+          "components",
+          json.array(list.map(components, to_json), of: fn(x) { x }),
+        ),
+
+        #("accent_color", case accent_color {
+          Some(accent_color) -> json.int(accent_color)
+          None -> json.null()
+        }),
+
+        #("spoiler", case spoiler {
+          Some(spoiler) -> json.bool(spoiler)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    Label(id, label, description, component) -> {
+      json.object([
+        #("type", json.int(18)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("label", json.string(label)),
+
+        #("description", case description {
+          Some(description) -> json.string(description)
+          None -> json.null()
+        }),
+
+        #("component", to_json(component)),
+      ])
+    }
+
+    FileUpload(id, custom_id, min_values, max_values, required) -> {
+      json.object([
+        #("type", json.int(19)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #("min_values", case min_values {
+          Some(min_values) -> json.int(min_values)
+          None -> json.null()
+        }),
+
+        #("max_values", case max_values {
+          Some(max_values) -> json.int(max_values)
+          None -> json.null()
+        }),
+
+        #("required", case required {
+          Some(required) -> json.bool(required)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    RadioGroup(id, custom_id, options, required) -> {
+      json.object([
+        #("type", json.int(21)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #(
+          "options",
+          json.array(
+            list.map(options, fn(option) {
+              json.object([
+                #("value", json.string(option.value)),
+
+                #("label", json.string(option.label)),
+
+                #("description", case option.description {
+                  Some(description) -> json.string(description)
+                  None -> json.null()
+                }),
+
+                #("default", case option.default {
+                  Some(default) -> json.bool(default)
+                  None -> json.null()
+                }),
+              ])
+            }),
+            of: fn(x) { x },
+          ),
+        ),
+
+        #("required", case required {
+          Some(required) -> json.bool(required)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    CheckboxGroup(id, custom_id, options, min_values, max_values, required) -> {
+      json.object([
+        #("type", json.int(22)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #(
+          "options",
+          json.array(
+            list.map(options, fn(options) {
+              json.object([
+                #("value", json.string(options.value)),
+
+                #("label", json.string(options.label)),
+
+                #("description", case options.description {
+                  Some(description) -> json.string(description)
+                  None -> json.null()
+                }),
+
+                #("default", case options.default {
+                  Some(default) -> json.bool(default)
+                  None -> json.null()
+                }),
+              ])
+            }),
+            of: fn(x) { x },
+          ),
+        ),
+
+        #("min_values", case min_values {
+          Some(min_values) -> json.int(min_values)
+          None -> json.null()
+        }),
+
+        #("max_values", case max_values {
+          Some(max_values) -> json.int(max_values)
+          None -> json.null()
+        }),
+
+        #("required", case required {
+          Some(required) -> json.bool(required)
+          None -> json.null()
+        }),
+      ])
+    }
+
+    Checkbox(id, custom_id, default) -> {
+      json.object([
+        #("type", json.int(23)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #("custom_id", json.string(custom_id)),
+
+        #("default", case default {
+          Some(default) -> json.bool(default)
+          None -> json.null()
+        }),
+      ])
+    }
   }
 }
