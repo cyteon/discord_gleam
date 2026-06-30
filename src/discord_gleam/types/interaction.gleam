@@ -1,5 +1,6 @@
 import discord_gleam/http/interactions
 import discord_gleam/internal/error
+import discord_gleam/types/component
 import discord_gleam/types/embed
 import discord_gleam/types/message
 import discord_gleam/ws/packets/interaction_create
@@ -29,7 +30,11 @@ pub type InteractionCallbackData {
     // todo: poll: poll request object
   )
   // todo: autocomplete
-  // todo: modal
+  ModalCallbackData(
+    custom_id: String,
+    title: String,
+    components: List(component.Component),
+  )
 }
 
 pub type InteractionResponse {
@@ -94,6 +99,20 @@ pub fn to_string(response: InteractionResponse) -> String {
           }),
         ])
       }
+    }
+
+    ModalCallbackData(custom_id, title, components) -> {
+      let components_json =
+        json.array(
+          list.map(components, fn(component) { component.to_json(component) }),
+          of: fn(x) { x },
+        )
+
+      json.object([
+        #("custom_id", json.string(custom_id)),
+        #("title", json.string(title)),
+        #("components", components_json),
+      ])
     }
 
     _ -> json.null()

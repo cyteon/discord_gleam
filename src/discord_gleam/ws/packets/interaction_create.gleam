@@ -1,19 +1,30 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/channel
+import discord_gleam/types/component_response
 import discord_gleam/types/guild_member
+import discord_gleam/types/role
 import discord_gleam/types/user
 import discord_gleam/ws/packets/message
+import gleam/dict
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None}
 
-pub type InteractionCommand {
+pub type InteractionData {
   InteractionCommand(
     type_: Int,
     name: String,
     id: Snowflake(snowflake.Interaction),
     options: Option(List(InteractionOption)),
   )
+
+  ModalSubmitData(
+    custom_id: String,
+    components: List(component_response.ComponentResponse),
+    resolved: Option(component_response.ResolvedData),
+  )
+
+  Empty
 }
 
 pub type InteractionOption {
@@ -25,12 +36,20 @@ pub type InteractionOption {
   )
 }
 
+pub type InteractionType {
+  Ping
+  ApplicationCommand
+  MessageComponent
+  ApplicationCommandAutocomplete
+  ModalSubmit
+}
+
 pub type InteractionCreatePacketData {
   InteractionCreatePacketData(
     id: Snowflake(snowflake.Interaction),
     application_id: Snowflake(snowflake.Application),
-    type_: Int,
-    data: InteractionCommand,
+    type_: InteractionType,
+    data: InteractionData,
     guild_id: Option(Snowflake(snowflake.Guild)),
     channel: Option(channel.Channel),
     channel_id: Snowflake(snowflake.Channel),
@@ -92,20 +111,37 @@ pub fn from_json_string(
 
       use application_id <- decode.field("application_id", snowflake.decoder())
 
-      use type_ <- decode.field("type", decode.int)
+      use type_int <- decode.field("type", decode.int)
+
+      let type_ = case type_int {
+        1 -> Ping
+        2 -> ApplicationCommand
+        3 -> MessageComponent
+        4 -> ApplicationCommandAutocomplete
+        5 -> ModalSubmit
+        _ -> Ping
+      }
 
       use data <- decode.field("data", {
-        use type_ <- decode.field("type", decode.int)
-        use name <- decode.field("name", decode.string)
-        use id <- decode.field("id", snowflake.decoder())
+        case type_ {
+          ApplicationCommand -> {
+            use type_ <- decode.field("type", decode.int)
+            use name <- decode.field("name", decode.string)
+            use id <- decode.field("id", snowflake.decoder())
 
-        use options <- decode.optional_field(
-          "options",
-          None,
-          decode.optional(decode.list(options_decoder())),
-        )
+            use options <- decode.optional_field(
+              "options",
+              None,
+              decode.optional(decode.list(options_decoder())),
+            )
 
-        decode.success(InteractionCommand(type_:, name:, id:, options:))
+            decode.success(InteractionCommand(type_:, name:, id:, options:))
+          }
+
+          _ -> {
+            decode.success(Empty)
+          }
+        }
       })
 
       use guild_id <- decode.optional_field(

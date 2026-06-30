@@ -31,8 +31,8 @@ pub type StringSelectOption {
 }
 
 pub type TextInputStyle {
-  Short
-  Paragraph
+  ShortText
+  ParagraphText
 }
 
 pub type DefaultSelectValue {
@@ -489,8 +489,8 @@ pub fn to_json(component: Component) -> json.Json {
         #(
           "style",
           json.int(case style {
-            Short -> 1
-            Paragraph -> 2
+            ShortText -> 1
+            ParagraphText -> 2
           }),
         ),
 

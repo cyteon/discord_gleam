@@ -32,6 +32,8 @@ pub type Sku
 
 pub type Webhook
 
+pub type Attachment
+
 pub fn from_string(value: String) -> Snowflake(kind) {
   Snowflake(value)
 }

@@ -73,8 +73,15 @@ pub fn main(token: String, client_id: String, guild_id: String) {
       ],
     )
 
+  let modal_cmd =
+    slash_command.SlashCommand(
+      name: "modal",
+      description: "Test modal command",
+      options: [],
+    )
+
   let _ = discord_gleam.wipe_global_commands(bot)
-  let _ = discord_gleam.register_global_commands(bot, [test_cmd])
+  let _ = discord_gleam.register_global_commands(bot, [test_cmd, modal_cmd])
 
   let _ =
     discord_gleam.wipe_guild_commands(bot, snowflake.from_string(guild_id))
@@ -703,84 +710,131 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
     }
 
     event_handler.InteractionCreatePacket(interaction) -> {
-      logging.log(logging.Info, "Interaction: " <> interaction.data.name)
+      case interaction.data {
+        interaction_create.InteractionCommand(id, name, type_, options) -> {
+          case name {
+            "test" -> {
+              let _ = case options {
+                Some(options) -> {
+                  let value = case list.first(options) {
+                    Ok(option) ->
+                      case option.value {
+                        interaction_create.StringValue(value) -> value
+                        interaction_create.IntValue(value) ->
+                          int.to_string(value)
+                        interaction_create.BoolValue(value) ->
+                          bool.to_string(value)
+                        interaction_create.FloatValue(value) ->
+                          float.to_string(value)
+                      }
 
-      case interaction.data.name {
-        "test" -> {
-          let _ = case interaction.data.options {
-            Some(options) -> {
-              let value = case list.first(options) {
-                Ok(option) ->
-                  case option.value {
-                    interaction_create.StringValue(value) -> value
-                    interaction_create.IntValue(value) -> int.to_string(value)
-                    interaction_create.BoolValue(value) -> bool.to_string(value)
-                    interaction_create.FloatValue(value) ->
-                      float.to_string(value)
+                    Error(_) -> "No value"
                   }
 
-                Error(_) -> "No value"
+                  let _ =
+                    interaction.send_message(
+                      interaction,
+                      message.new("test: " <> value),
+                      ephemeral: True,
+                    )
+                }
+
+                None -> {
+                  let _ =
+                    interaction.send_message(
+                      interaction,
+                      message.new("test: no options"),
+                      ephemeral: True,
+                    )
+                }
               }
 
-              let _ =
-                interaction.send_message(
-                  interaction,
-                  message.new("test: " <> value),
-                  ephemeral: True,
-                )
+              Nil
             }
 
-            None -> {
-              let _ =
-                interaction.send_message(
-                  interaction,
-                  message.new("test: no options"),
-                  ephemeral: True,
-                )
-            }
-          }
+            "test2" -> {
+              let _ = case options {
+                Some(options) -> {
+                  let value = case list.last(options) {
+                    Ok(option) ->
+                      case option.value {
+                        interaction_create.StringValue(value) -> value
+                        interaction_create.IntValue(value) ->
+                          int.to_string(value)
+                        interaction_create.BoolValue(value) ->
+                          bool.to_string(value)
+                        interaction_create.FloatValue(value) ->
+                          float.to_string(value)
+                      }
 
-          Nil
-        }
-
-        "test2" -> {
-          let _ = case interaction.data.options {
-            Some(options) -> {
-              let value = case list.last(options) {
-                Ok(option) ->
-                  case option.value {
-                    interaction_create.StringValue(value) -> value
-                    interaction_create.IntValue(value) -> int.to_string(value)
-                    interaction_create.BoolValue(value) -> bool.to_string(value)
-                    interaction_create.FloatValue(value) ->
-                      float.to_string(value)
+                    Error(_) -> "No value"
                   }
 
-                Error(_) -> "No value"
+                  let _ =
+                    interaction.send_message(
+                      interaction,
+                      message.new("test2: " <> value),
+                      ephemeral: False,
+                    )
+                }
+
+                None -> {
+                  let _ =
+                    interaction.defer_response(interaction, ephemeral: True)
+
+                  process.sleep(2000)
+
+                  let _ =
+                    interaction.edit_response(
+                      interaction,
+                      message.new("test2: no options"),
+                    )
+                }
               }
 
-              let _ =
-                interaction.send_message(
-                  interaction,
-                  message.new("test2: " <> value),
-                  ephemeral: False,
-                )
+              Nil
             }
 
-            None -> {
-              let _ = interaction.defer_response(interaction, ephemeral: True)
-
-              process.sleep(2000)
-
-              let _ =
-                interaction.edit_response(
-                  interaction,
-                  message.new("test2: no options"),
+            "modal" -> {
+              let modal =
+                interaction.ModalCallbackData(
+                  custom_id: "test_modal",
+                  title: "Modal :O",
+                  components: [
+                    component.Label(
+                      id: None,
+                      label: "Do you like potatoes?",
+                      description: None,
+                      component: component.TextInput(
+                        id: None,
+                        custom_id: "potato_input",
+                        style: component.ShortText,
+                        min_length: None,
+                        max_length: None,
+                        required: Some(True),
+                        value: None,
+                        placeholder: None,
+                      ),
+                    ),
+                  ],
                 )
+
+              let r =
+                interaction.custom_response(
+                  interaction,
+                  interaction.InteractionResponse(
+                    type_: interaction.Modal,
+                    data: modal,
+                  ),
+                )
+
+              echo r
+
+              Nil
             }
+
+            _ -> Nil
           }
-
-          Nil
         }
 
         _ -> Nil
