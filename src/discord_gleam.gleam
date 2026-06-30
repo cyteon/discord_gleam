@@ -240,12 +240,9 @@ fn to_internal_next(
 pub fn send_message(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
-  message: String,
-  embeds: List(embed.Embed),
+  message: message.Message,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
-  let msg = message.Message(content: message, embeds: embeds)
-
-  channels.send_message(bot.token, channel_id, msg)
+  channels.send_message(bot.token, channel_id, message)
 }
 
 /// Create a DM channel with a user. \
@@ -265,12 +262,9 @@ pub fn create_dm_channel(
 pub fn send_direct_message(
   bot: bot.Bot,
   user_id: Snowflake(snowflake.User),
-  message: String,
-  embeds: List(embed.Embed),
+  message: message.Message,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
-  let msg = message.Message(content: message, embeds: embeds)
-
-  users.send_direct_message(bot.token, user_id, msg)
+  users.send_direct_message(bot.token, user_id, message)
 }
 
 /// Reply to a message in a channel.
@@ -366,12 +360,9 @@ pub fn edit_message(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
-  content: String,
-  embeds: List(embed.Embed),
+  message: message.Message,
 ) -> Result(Nil, error.DiscordError) {
-  let msg = message.Message(content: content, embeds: embeds)
-
-  channels.edit_message(bot.token, channel_id, message_id, msg)
+  channels.edit_message(bot.token, channel_id, message_id, message)
 }
 
 /// Wipes all the global slash commands for the bot. \

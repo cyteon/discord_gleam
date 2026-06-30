@@ -1,10 +1,10 @@
 //// This module contains functions to create http requests to discord
 
 import discord_gleam/internal/error
+import gleam/float
 import gleam/http
 import gleam/http/request
 import gleam/http/response
-import gleam/float
 import gleam/list
 
 /// Create a base request to discord

@@ -1,10 +1,10 @@
 import booklet
-import gleam/erlang/process
-import gleam/option.{type Option, None, Some}
-import gleam/string
-import gleam/order
 import gleam/dict
+import gleam/erlang/process
 import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/order
+import gleam/string
 import logging
 
 import discord_gleam/bot
@@ -14,13 +14,13 @@ import discord_gleam/types/channel
 import discord_gleam/types/guild
 import discord_gleam/types/presence
 import discord_gleam/ws/gateway_state
-import discord_gleam/ws/packets/guild_create
 import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
 import discord_gleam/ws/packets/channel_update
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/guild_ban_add
 import discord_gleam/ws/packets/guild_ban_remove
+import discord_gleam/ws/packets/guild_create
 import discord_gleam/ws/packets/guild_member_add
 import discord_gleam/ws/packets/guild_member_remove
 import discord_gleam/ws/packets/guild_member_update

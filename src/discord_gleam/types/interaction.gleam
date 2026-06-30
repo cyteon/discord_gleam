@@ -18,7 +18,7 @@ pub type InteractionCallbackType {
 }
 
 pub type InteractionCallbackData {
-  InteractionCallbackData(
+  MessageCallbackData(
     tts: Option(Bool),
     content: Option(String),
     embeds: Option(List(embed.Embed)),
@@ -28,6 +28,8 @@ pub type InteractionCallbackData {
     // todo: attachments: list of attachments
     // todo: poll: poll request object
   )
+  // todo: autocomplete
+  // todo: modal
 }
 
 pub type InteractionResponse {
@@ -50,45 +52,51 @@ pub fn callback_type_to_int(type_: InteractionCallbackType) -> Int {
 }
 
 pub fn to_string(response: InteractionResponse) -> String {
-  let data = {
-    let embeds_json = case response.data.embeds {
-      Some(embeds) -> {
-        let embeds_json_list =
-          list.map(embeds, fn(embed) { embed.embed_to_json(embed) })
+  let data = case response.data {
+    MessageCallbackData(tts, content, embeds, allowed_mentions, flags) -> {
+      {
+        let embeds_json = case embeds {
+          Some(embeds) -> {
+            let embeds_json_list =
+              list.map(embeds, fn(embed) { embed.embed_to_json(embed) })
 
-        json.array(embeds_json_list, of: fn(x) { x })
+            json.array(embeds_json_list, of: fn(x) { x })
+          }
+
+          None -> json.null()
+        }
+
+        json.object([
+          #("tts", case tts {
+            Some(tts) -> json.bool(tts)
+            None -> json.null()
+          }),
+
+          #("content", case content {
+            Some(content) -> json.string(content)
+            None -> json.null()
+          }),
+
+          #("embeds", embeds_json),
+
+          #("allowed_mentions", case allowed_mentions {
+            Some(allowed_mentions) ->
+              json.array(
+                list.map(allowed_mentions, fn(x) { json.string(x) }),
+                of: fn(x) { x },
+              )
+            None -> json.null()
+          }),
+
+          #("flags", case flags {
+            Some(flags) -> json.int(flags)
+            None -> json.null()
+          }),
+        ])
       }
-
-      None -> json.null()
     }
 
-    json.object([
-      #("tts", case response.data.tts {
-        Some(tts) -> json.bool(tts)
-        None -> json.null()
-      }),
-
-      #("content", case response.data.content {
-        Some(content) -> json.string(content)
-        None -> json.null()
-      }),
-
-      #("embeds", embeds_json),
-
-      #("allowed_mentions", case response.data.allowed_mentions {
-        Some(allowed_mentions) ->
-          json.array(
-            list.map(allowed_mentions, fn(x) { json.string(x) }),
-            of: fn(x) { x },
-          )
-        None -> json.null()
-      }),
-
-      #("flags", case response.data.flags {
-        Some(flags) -> json.int(flags)
-        None -> json.null()
-      }),
-    ])
+    _ -> json.null()
   }
 
   json.object([
@@ -98,6 +106,8 @@ pub fn to_string(response: InteractionResponse) -> String {
   |> json.to_string()
 }
 
+/// Send a message as a response to a slash command interaction. \
+/// If ephemral is true, the response will only be shown to the executor.
 pub fn send_message(
   interaction: interaction_create.InteractionCreatePacketData,
   message message: message.Message,
@@ -106,7 +116,7 @@ pub fn send_message(
   let response =
     InteractionResponse(
       type_: ChannelMessageWithSource,
-      data: InteractionCallbackData(
+      data: MessageCallbackData(
         tts: None,
         content: Some(message.content),
         embeds: Some(message.embeds),
@@ -121,6 +131,16 @@ pub fn send_message(
   interactions.send_response(interaction, to_string(response))
 }
 
+/// Send a custom response to a slash command interaction. \
+/// You need to construct a response using InteractionResponse yourself.
+pub fn custom_response(
+  interaction: interaction_create.InteractionCreatePacketData,
+  response: InteractionResponse,
+) -> Result(Nil, error.DiscordError) {
+  interactions.send_response(interaction, to_string(response))
+}
+
+/// Used to defer a response to a interaction, will show as the bot is thinking to the user.
 pub fn defer_response(
   interaction: interaction_create.InteractionCreatePacketData,
   ephemeral ephemeral: Bool,
@@ -128,7 +148,7 @@ pub fn defer_response(
   let response =
     InteractionResponse(
       type_: DeferredChannelMessageWithSource,
-      data: InteractionCallbackData(
+      data: MessageCallbackData(
         tts: None,
         content: None,
         embeds: None,
@@ -143,6 +163,7 @@ pub fn defer_response(
   interactions.send_response(interaction, to_string(response))
 }
 
+/// Used to edit the original response to a interaction, for example after deferring the response.
 pub fn edit_response(
   interaction: interaction_create.InteractionCreatePacketData,
   message message: message.Message,

@@ -317,24 +317,23 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               <> ")",
           )
 
-          let _ =
-            discord_gleam.send_message(
-              bot,
-              channel.id,
+          let message =
+            message.new(
               "Channel created: "
-                <> case channel.name {
+              <> case channel.name {
                 Some(name) -> name
                 None -> "No name"
               }
-                <> "\nID: "
-                <> snowflake.to_string(channel.id)
-                <> "\nParent ID: "
-                <> case channel.parent_id {
+              <> "\nID: "
+              <> snowflake.to_string(channel.id)
+              <> "\nParent ID: "
+              <> case channel.parent_id {
                 Some(id) -> snowflake.to_string(id)
                 None -> "None"
               },
-              [],
             )
+
+          let _ = discord_gleam.send_message(bot, channel.id, message)
 
           Nil
         }
@@ -345,13 +344,12 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
             "DM channel created: " <> snowflake.to_string(channel.id),
           )
 
-          let _ =
-            discord_gleam.send_message(
-              bot,
-              channel.id,
+          let message =
+            message.new(
               "DM channel created: " <> snowflake.to_string(channel.id),
-              [],
             )
+
+          let _ = discord_gleam.send_message(bot, channel.id, message)
 
           Nil
         }
@@ -397,7 +395,11 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
           case message.content {
             "!ping" -> {
               let _ =
-                discord_gleam.send_message(bot, message.channel_id, "Pong!", [])
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Pong!"),
+                )
 
               Nil
             }
@@ -407,8 +409,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                 discord_gleam.send_message(
                   bot,
                   message.channel_id,
-                  "This message will be edited in 5 seconds!",
-                  [],
+                  message.new("This message will be edited in 5 seconds!"),
                 )
 
               case msg {
@@ -420,22 +421,13 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                       bot,
                       message.channel_id,
                       msg.id,
-                      "This message has been edited!",
-                      [],
+                      message.new("This message has been edited!"),
                     )
 
                   Nil
                 }
 
                 Error(err) -> {
-                  let _ =
-                    discord_gleam.send_message(
-                      bot,
-                      message.channel_id,
-                      "Failed to send message!",
-                      [],
-                    )
-
                   echo err
 
                   Nil
@@ -452,19 +444,19 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 
               case res {
                 Ok(channel) -> {
-                  let _ =
-                    discord_gleam.send_message(
-                      bot,
-                      message.channel_id,
-                      "ID: "
-                        <> snowflake.to_string(channel.id)
-                        <> "\nLast message ID: "
-                        <> case channel.last_message_id {
+                  let msg =
+                    message.new(
+                      "DM channel created: "
+                      <> snowflake.to_string(channel.id)
+                      <> "\nLast message ID: "
+                      <> case channel.last_message_id {
                         Some(id) -> snowflake.to_string(id)
                         None -> "None"
                       },
-                      [],
                     )
+
+                  let _ =
+                    discord_gleam.send_message(bot, message.channel_id, msg)
 
                   Nil
                 }
@@ -474,8 +466,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                     discord_gleam.send_message(
                       bot,
                       message.channel_id,
-                      "Failed to create DM channel!",
-                      [],
+                      message.new("Failed to create DM channel!"),
                     )
 
                   echo err
@@ -490,8 +481,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                 discord_gleam.send_direct_message(
                   bot,
                   message.author.id,
-                  "DM!",
-                  [],
+                  message.new("DM!"),
                 )
 
               case res {
@@ -500,8 +490,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                     discord_gleam.send_message(
                       bot,
                       message.channel_id,
-                      "DM sent!",
-                      [],
+                      message.new("DM sent!"),
                     )
 
                   Nil
@@ -512,8 +501,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                     discord_gleam.send_message(
                       bot,
                       message.channel_id,
-                      "Failed to send DM!",
-                      [],
+                      message.new("Failed to send DM!"),
                     )
 
                   echo err
@@ -527,10 +515,11 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let embed =
                 embed.new("Embed Title", "Embed Description", 0x00FF00)
 
-              let _ =
-                discord_gleam.send_message(bot, message.channel_id, "Embed!", [
-                  embed,
-                ])
+              let msg =
+                message.new("Embed")
+                |> message.add_embed(embed)
+
+              let _ = discord_gleam.send_message(bot, message.channel_id, msg)
 
               Nil
             }
@@ -591,8 +580,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                 discord_gleam.send_message(
                   bot,
                   message.channel_id,
-                  "Kicked user!",
-                  [],
+                  message.new("Kicked user!"),
                 )
 
               Nil
@@ -603,8 +591,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                 discord_gleam.send_message(
                   bot,
                   message.channel_id,
-                  "Failed to kick user!",
-                  [],
+                  message.new("Failed to kick user!"),
                 )
 
               Nil
@@ -638,8 +625,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                 discord_gleam.send_message(
                   bot,
                   message.channel_id,
-                  "Banned user!",
-                  [],
+                  message.new("Banned user!"),
                 )
 
               Nil
@@ -650,8 +636,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                 discord_gleam.send_message(
                   bot,
                   message.channel_id,
-                  "Failed to ban user!",
-                  [],
+                  message.new("Failed to ban user!"),
                 )
 
               Nil
@@ -716,7 +701,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 interaction.send_message(
                   interaction,
-                  message.Message(content: "test: " <> value, embeds: []),
+                  message.new("test: " <> value),
                   ephemeral: True,
                 )
             }
@@ -725,7 +710,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 interaction.send_message(
                   interaction,
-                  message.Message(content: "test: no options", embeds: []),
+                  message.new("test: no options"),
                   ephemeral: True,
                 )
             }
@@ -753,7 +738,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 interaction.send_message(
                   interaction,
-                  message.Message(content: "test2: " <> value, embeds: []),
+                  message.new("test2: " <> value),
                   ephemeral: False,
                 )
             }
@@ -766,7 +751,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ =
                 interaction.edit_response(
                   interaction,
-                  message.Message(content: "test2: no options", embeds: []),
+                  message.new("test2: no options"),
                 )
             }
           }
@@ -833,7 +818,11 @@ fn normal_handler(
           case message.content {
             "!ping" -> {
               let _ =
-                discord_gleam.send_message(bot, message.channel_id, "Pong!", [])
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Pong!"),
+                )
 
               discord_gleam.continue(state)
             }
