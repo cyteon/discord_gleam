@@ -4,6 +4,7 @@ import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
+import discord_gleam/types/component
 import discord_gleam/types/embed
 import discord_gleam/types/guild
 import discord_gleam/types/interaction
@@ -400,6 +401,29 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   message.channel_id,
                   message.new("Pong!"),
                 )
+
+              Nil
+            }
+
+            "!link" -> {
+              let msg =
+                message.new("Behold, a button link!")
+                |> message.add_component(
+                  component.ActionRow(id: None, components: [
+                    component.Button(
+                      id: None,
+                      style: component.ButtonLink,
+                      label: Some("Click me!"),
+                      url: Some("https://example.com"),
+                      custom_id: None,
+                      disabled: None,
+                      emoji: None,
+                      sku_id: None,
+                    ),
+                  ]),
+                )
+
+              let _ = discord_gleam.send_message(bot, message.channel_id, msg)
 
               Nil
             }

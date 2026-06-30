@@ -4,12 +4,12 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 
 pub type ButtonStyle {
-  Primary
-  Secondary
-  Success
-  Danger
-  Link
-  Premium
+  ButtonPrimary
+  ButtonSecondary
+  ButtonSuccess
+  ButtonDanger
+  ButtonLink
+  ButtonPremium
 }
 
 pub type PartialEmoji {
@@ -289,6 +289,25 @@ pub fn component_type_to_int(component: Component) -> Int {
   }
 }
 
+pub fn partial_emoji_to_json(emoji: PartialEmoji) -> json.Json {
+  json.object([
+    #("id", case emoji.id {
+      Some(id) -> json.string(snowflake.to_string(id))
+      None -> json.null()
+    }),
+
+    #("name", case emoji.name {
+      Some(name) -> json.string(name)
+      None -> json.null()
+    }),
+
+    #("animated", case emoji.animated {
+      Some(animated) -> json.bool(animated)
+      None -> json.null()
+    }),
+  ])
+}
+
 pub fn to_json(component: Component) -> json.Json {
   case component {
     ActionRow(id, components) -> {
@@ -302,6 +321,59 @@ pub fn to_json(component: Component) -> json.Json {
           "components",
           json.array(list.map(components, to_json), of: fn(x) { x }),
         ),
+      ])
+    }
+
+    Button(id, style, label, emoji, custom_id, sku_id, url, disabled) -> {
+      json.object([
+        #("type", json.int(2)),
+
+        #("id", case id {
+          Some(id) -> json.int(id)
+          None -> json.null()
+        }),
+
+        #(
+          "style",
+          json.int(case style {
+            ButtonPrimary -> 1
+            ButtonSecondary -> 2
+            ButtonSuccess -> 3
+            ButtonDanger -> 4
+            ButtonLink -> 5
+            ButtonPremium -> 6
+          }),
+        ),
+
+        #("label", case label {
+          Some(label) -> json.string(label)
+          None -> json.null()
+        }),
+
+        #("emoji", case emoji {
+          Some(emoji) -> partial_emoji_to_json(emoji)
+          None -> json.null()
+        }),
+
+        #("custom_id", case custom_id {
+          Some(custom_id) -> json.string(custom_id)
+          None -> json.null()
+        }),
+
+        #("sku_id", case sku_id {
+          Some(sku_id) -> json.string(snowflake.to_string(sku_id))
+          None -> json.null()
+        }),
+
+        #("url", case url {
+          Some(url) -> json.string(url)
+          None -> json.null()
+        }),
+
+        #("disabled", case disabled {
+          Some(disabled) -> json.bool(disabled)
+          None -> json.null()
+        }),
       ])
     }
 
