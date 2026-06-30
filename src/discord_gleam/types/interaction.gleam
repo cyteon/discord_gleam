@@ -22,7 +22,7 @@ pub type InteractionCallbackData {
     tts: Option(Bool),
     content: Option(String),
     embeds: Option(List(embed.Embed)),
-    allowed_mentions: Option(String),
+    allowed_mentions: Option(List(String)),
     flags: Option(Int),
     // todo: components: list of components
     // todo: attachments: list of attachments
@@ -76,7 +76,11 @@ pub fn to_string(response: InteractionResponse) -> String {
       #("embeds", embeds_json),
 
       #("allowed_mentions", case response.data.allowed_mentions {
-        Some(allowed_mentions) -> json.string(allowed_mentions)
+        Some(allowed_mentions) ->
+          json.array(
+            list.map(allowed_mentions, fn(x) { json.string(x) }),
+            of: fn(x) { x },
+          )
         None -> json.null()
       }),
 
