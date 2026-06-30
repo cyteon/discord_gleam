@@ -759,7 +759,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
             }
 
             None -> {
-              let _ = interaction.defer_response(interaction, ephemeral: False)
+              let _ = interaction.defer_response(interaction, ephemeral: True)
 
               process.sleep(2000)
 

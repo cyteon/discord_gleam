@@ -50,44 +50,41 @@ pub fn callback_type_to_int(type_: InteractionCallbackType) -> Int {
 }
 
 pub fn to_string(response: InteractionResponse) -> String {
-  let data = case response.type_ {
-    ChannelMessageWithSource -> {
-      let embeds_json = case response.data.embeds {
-        Some(embeds) -> {
-          let embeds_json_list =
-            list.map(embeds, fn(embed) { embed.embed_to_json(embed) })
+  let data = {
+    let embeds_json = case response.data.embeds {
+      Some(embeds) -> {
+        let embeds_json_list =
+          list.map(embeds, fn(embed) { embed.embed_to_json(embed) })
 
-          json.array(embeds_json_list, of: fn(x) { x })
-        }
-
-        None -> json.null()
+        json.array(embeds_json_list, of: fn(x) { x })
       }
 
-      json.object([
-        #("tts", case response.data.tts {
-          Some(tts) -> json.bool(tts)
-          None -> json.null()
-        }),
-
-        #("content", case response.data.content {
-          Some(content) -> json.string(content)
-          None -> json.null()
-        }),
-
-        #("embeds", embeds_json),
-
-        #("allowed_mentions", case response.data.allowed_mentions {
-          Some(allowed_mentions) -> json.string(allowed_mentions)
-          None -> json.null()
-        }),
-
-        #("flags", case response.data.flags {
-          Some(flags) -> json.int(flags)
-          None -> json.null()
-        }),
-      ])
+      None -> json.null()
     }
-    _ -> json.null()
+
+    json.object([
+      #("tts", case response.data.tts {
+        Some(tts) -> json.bool(tts)
+        None -> json.null()
+      }),
+
+      #("content", case response.data.content {
+        Some(content) -> json.string(content)
+        None -> json.null()
+      }),
+
+      #("embeds", embeds_json),
+
+      #("allowed_mentions", case response.data.allowed_mentions {
+        Some(allowed_mentions) -> json.string(allowed_mentions)
+        None -> json.null()
+      }),
+
+      #("flags", case response.data.flags {
+        Some(flags) -> json.int(flags)
+        None -> json.null()
+      }),
+    ])
   }
 
   json.object([
