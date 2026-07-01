@@ -12,7 +12,6 @@ import discord_gleam/http/guilds
 import discord_gleam/http/users
 import discord_gleam/internal/error
 import discord_gleam/types/channel
-import discord_gleam/types/embed
 import discord_gleam/types/message
 import discord_gleam/types/message_send_response
 import discord_gleam/types/reply

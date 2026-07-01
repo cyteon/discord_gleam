@@ -1,7 +1,7 @@
 import discord_gleam/types/component
 import discord_gleam/types/embed
 import discord_gleam/types/message
-import gleam/option.{None, Some}
+import gleam/option.{None}
 
 pub fn new_message_test() {
   let msg = message.new("Hello, world!")

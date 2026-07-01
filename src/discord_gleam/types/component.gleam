@@ -213,7 +213,7 @@ pub type Component {
   // 13
   // todo: File
   // 14
-  Seperator(id: Option(Int), divider: Option(Bool), spacing: Option(Int))
+  Separator(id: Option(Int), divider: Option(Bool), spacing: Option(Int))
 
   // 17
   Container(
@@ -274,7 +274,7 @@ pub fn component_type_to_int(component: Component) -> Int {
     ChannelSelect(..) -> 8
     Section(..) -> 9
     TextDisplay(..) -> 10
-    Seperator(..) -> 14
+    Separator(..) -> 14
     Container(..) -> 17
     Label(..) -> 18
     FileUpload(..) -> 19
@@ -791,7 +791,7 @@ pub fn to_json(component: Component) -> json.Json {
     }
 
     // todo Thumbnail, MediaGallery, File
-    Seperator(id, divider, spacing) -> {
+    Separator(id, divider, spacing) -> {
       json.object([
         #("type", json.int(14)),
 

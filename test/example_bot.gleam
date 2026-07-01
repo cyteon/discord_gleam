@@ -14,6 +14,8 @@ import discord_gleam/types/slash_command
 import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/commands/update_presence
 import discord_gleam/ws/packets/interaction_create
+import dot_env
+import envoy
 import gleam/bool
 import gleam/dict
 import gleam/erlang/process
@@ -26,7 +28,13 @@ import gleam/otp/supervision
 import gleam/string
 import logging
 
-pub fn main(token: String, client_id: String, guild_id: String) {
+pub fn main() {
+  dot_env.load_default()
+
+  let assert Ok(token) = envoy.get("TEST_BOT_TOKEN")
+  let assert Ok(client_id) = envoy.get("TEST_BOT_CLIENT_ID")
+  let assert Ok(guild_id) = envoy.get("TEST_BOT_GUILD_ID")
+
   logging.configure()
   logging.set_level(logging.Debug)
 

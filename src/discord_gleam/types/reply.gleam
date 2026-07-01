@@ -1,8 +1,6 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/component
-import discord_gleam/types/embed.{
-  type Embed, embed_to_json as message_embed_to_json,
-}
+import discord_gleam/types/embed.{embed_to_json as message_embed_to_json}
 import discord_gleam/types/message
 import gleam/json
 import gleam/list

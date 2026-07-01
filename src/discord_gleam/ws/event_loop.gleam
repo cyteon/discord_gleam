@@ -571,10 +571,20 @@ fn on_close(
 
         4010 -> {
           logging.log(logging.Error, "Invalid shard, not reconnecting")
+
+          logging.log(
+            logging.Error,
+            "discord_gleam does currently not support sharding",
+          )
         }
 
         4011 -> {
-          logging.log(logging.Error, "Sharding required, not reconnecting")
+          logging.log(logging.Error, "Sharding required, not reconnecting.")
+
+          logging.log(
+            logging.Error,
+            "discord_gleam does currently not support sharding",
+          )
         }
 
         4012 -> {
