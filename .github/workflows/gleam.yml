@@ -1,0 +1,31 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "29.0.1"
+          gleam-version: "1.17.0"
+          rebar3-version: "3.27.0"
+      - run: gleam deps download
+      - run: gleam test
+      - run: gleam format --check src test examples
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "29.0.1"
+          gleam-version: "1.17.0"
+          rebar3-version: "3.27.0"
+      - run: gleam deps download
+      - run: gleam test

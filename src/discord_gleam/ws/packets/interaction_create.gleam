@@ -47,6 +47,7 @@ pub type InteractionType {
   MessageComponentType
   ApplicationCommandAutocompleteType
   ModalSubmitType
+  UnknownType
 }
 
 pub type InteractionCreatePacketData {
@@ -124,7 +125,7 @@ pub fn from_json_string(
         3 -> MessageComponentType
         4 -> ApplicationCommandAutocompleteType
         5 -> ModalSubmitType
-        _ -> PingType
+        _ -> UnknownType
       }
 
       use data <- decode.field("data", {
