@@ -5,7 +5,7 @@ import gleam/string
 import gleeunit
 import simplifile
 
-const run_test_bot = False
+const run_test_bot = True
 
 fn load_dotenv() -> Nil {
   case simplifile.read(".env") {

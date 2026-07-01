@@ -284,11 +284,9 @@ pub fn reply(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
-  message: String,
-  embeds: List(embed.Embed),
+  message: message.Message,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
-  let msg =
-    reply.Reply(content: message, message_id: message_id, embeds: embeds)
+  let msg = reply.Reply(message_id: message_id, reply: message)
 
   channels.reply(bot.token, channel_id, msg)
 }

@@ -562,8 +562,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   bot,
                   message.channel_id,
                   message.id,
-                  "Reply!",
-                  [],
+                  message.new("reply"),
                 )
 
               Nil
@@ -575,8 +574,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   bot,
                   message.channel_id,
                   message.id,
-                  "hello",
-                  [],
+                  message.new("hello"),
                 )
 
               Nil
