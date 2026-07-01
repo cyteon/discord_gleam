@@ -114,8 +114,6 @@ pub fn to_string(response: InteractionResponse) -> String {
         #("components", components_json),
       ])
     }
-
-    _ -> json.null()
   }
 
   json.object([

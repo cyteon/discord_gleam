@@ -2,10 +2,8 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/channel
 import discord_gleam/types/component_response
 import discord_gleam/types/guild_member
-import discord_gleam/types/role
 import discord_gleam/types/user
 import discord_gleam/ws/packets/message
-import gleam/dict
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None}
@@ -18,7 +16,7 @@ pub type InteractionData {
     options: Option(List(InteractionOption)),
   )
 
-  ModalSubmitData(
+  ModalSubmit(
     custom_id: String,
     components: List(component_response.ComponentResponse),
     resolved: Option(component_response.ResolvedData),
@@ -41,7 +39,7 @@ pub type InteractionType {
   ApplicationCommand
   MessageComponent
   ApplicationCommandAutocomplete
-  ModalSubmit
+  ModalSubmitType
 }
 
 pub type InteractionCreatePacketData {
@@ -118,7 +116,7 @@ pub fn from_json_string(
         2 -> ApplicationCommand
         3 -> MessageComponent
         4 -> ApplicationCommandAutocomplete
-        5 -> ModalSubmit
+        5 -> ModalSubmitType
         _ -> Ping
       }
 
@@ -136,6 +134,22 @@ pub fn from_json_string(
             )
 
             decode.success(InteractionCommand(type_:, name:, id:, options:))
+          }
+
+          ModalSubmitType -> {
+            use custom_id <- decode.field("custom_id", decode.string)
+            use components <- decode.field(
+              "components",
+              decode.list(component_response.json_decoder()),
+            )
+
+            use resolved <- decode.optional_field(
+              "resolved",
+              None,
+              decode.optional(component_response.resolved_data_decoder()),
+            )
+
+            decode.success(ModalSubmit(custom_id:, components:, resolved:))
           }
 
           _ -> {

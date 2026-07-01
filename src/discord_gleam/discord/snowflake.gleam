@@ -54,3 +54,9 @@ pub fn compare(a: Snowflake(kind), b: Snowflake(kind)) -> order.Order {
     other -> other
   }
 }
+
+pub fn coerce(s: Snowflake(a)) -> Snowflake(b) {
+  case s {
+    Snowflake(value) -> Snowflake(value)
+  }
+}

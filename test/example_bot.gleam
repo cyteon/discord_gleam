@@ -5,6 +5,7 @@ import discord_gleam/discord/intents
 import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
 import discord_gleam/types/component
+import discord_gleam/types/component_response
 import discord_gleam/types/embed
 import discord_gleam/types/guild
 import discord_gleam/types/interaction
@@ -819,7 +820,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   ],
                 )
 
-              let r =
+              let _ =
                 interaction.custom_response(
                   interaction,
                   interaction.InteractionResponse(
@@ -828,13 +829,37 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   ),
                 )
 
-              echo r
-
               Nil
             }
 
             _ -> Nil
           }
+        }
+
+        interaction_create.ModalSubmit(custom_id, components, resolved) -> {
+          logging.log(logging.Info, "Modal submitted: " <> custom_id)
+
+          let value = case list.first(components) {
+            Ok(component_response.LabelResponse(component_response.TextInputResponse(
+              value: value,
+              ..,
+            ))) -> {
+              value
+            }
+
+            _ -> "No value"
+          }
+
+          let _ =
+            interaction.send_message(
+              interaction,
+              message.new(
+                "Modal submitted: " <> custom_id <> ", value: " <> value,
+              ),
+              ephemeral: True,
+            )
+
+          Nil
         }
 
         _ -> Nil
