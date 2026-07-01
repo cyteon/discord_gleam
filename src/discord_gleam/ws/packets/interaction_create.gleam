@@ -9,11 +9,18 @@ import gleam/json
 import gleam/option.{type Option, None}
 
 pub type InteractionData {
-  InteractionCommand(
+  ApplicationCommand(
     type_: Int,
     name: String,
     id: Snowflake(snowflake.Interaction),
     options: Option(List(InteractionOption)),
+  )
+
+  MessageComponent(
+    custom_id: String,
+    component_type: Int,
+    values: Option(List(String)),
+    resolved: Option(component_response.ResolvedData),
   )
 
   ModalSubmit(
@@ -35,10 +42,10 @@ pub type InteractionOption {
 }
 
 pub type InteractionType {
-  Ping
-  ApplicationCommand
-  MessageComponent
-  ApplicationCommandAutocomplete
+  PingType
+  ApplicationCommandType
+  MessageComponentType
+  ApplicationCommandAutocompleteType
   ModalSubmitType
 }
 
@@ -112,17 +119,17 @@ pub fn from_json_string(
       use type_int <- decode.field("type", decode.int)
 
       let type_ = case type_int {
-        1 -> Ping
-        2 -> ApplicationCommand
-        3 -> MessageComponent
-        4 -> ApplicationCommandAutocomplete
+        1 -> PingType
+        2 -> ApplicationCommandType
+        3 -> MessageComponentType
+        4 -> ApplicationCommandAutocompleteType
         5 -> ModalSubmitType
-        _ -> Ping
+        _ -> PingType
       }
 
       use data <- decode.field("data", {
         case type_ {
-          ApplicationCommand -> {
+          ApplicationCommandType -> {
             use type_ <- decode.field("type", decode.int)
             use name <- decode.field("name", decode.string)
             use id <- decode.field("id", snowflake.decoder())
@@ -133,11 +140,36 @@ pub fn from_json_string(
               decode.optional(decode.list(options_decoder())),
             )
 
-            decode.success(InteractionCommand(type_:, name:, id:, options:))
+            decode.success(ApplicationCommand(type_:, name:, id:, options:))
+          }
+
+          MessageComponentType -> {
+            use custom_id <- decode.field("custom_id", decode.string)
+            use component_type <- decode.field("component_type", decode.int)
+
+            use values <- decode.optional_field(
+              "values",
+              None,
+              decode.optional(decode.list(decode.string)),
+            )
+
+            use resolved <- decode.optional_field(
+              "resolved",
+              None,
+              decode.optional(component_response.resolved_data_decoder()),
+            )
+
+            decode.success(MessageComponent(
+              custom_id:,
+              component_type:,
+              values:,
+              resolved:,
+            ))
           }
 
           ModalSubmitType -> {
             use custom_id <- decode.field("custom_id", decode.string)
+
             use components <- decode.field(
               "components",
               decode.list(component_response.json_decoder()),

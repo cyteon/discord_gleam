@@ -413,17 +413,17 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               Nil
             }
 
-            "!link" -> {
+            "!btn" -> {
               let msg =
-                message.new("Behold, a button link!")
+                message.new("Behold, a button!")
                 |> message.add_component(
                   component.ActionRow(id: None, components: [
                     component.Button(
                       id: None,
-                      style: component.ButtonLink,
+                      style: component.ButtonPrimary,
                       label: Some("Click me!"),
-                      url: Some("https://example.com"),
-                      custom_id: None,
+                      url: None,
+                      custom_id: Some("click_me"),
                       disabled: None,
                       emoji: None,
                       sku_id: None,
@@ -712,7 +712,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 
     event_handler.InteractionCreatePacket(interaction) -> {
       case interaction.data {
-        interaction_create.InteractionCommand(id, name, type_, options) -> {
+        interaction_create.ApplicationCommand(id, name, type_, options) -> {
           case name {
             "test" -> {
               let _ = case options {
@@ -834,6 +834,24 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 
             _ -> Nil
           }
+        }
+
+        interaction_create.MessageComponent(
+          custom_id,
+          component_type,
+          values,
+          resolved,
+        ) -> {
+          logging.log(logging.Info, "Button clicked: " <> custom_id)
+
+          let _ =
+            interaction.send_message(
+              interaction,
+              message.new("Button clicked: " <> custom_id),
+              ephemeral: True,
+            )
+
+          Nil
         }
 
         interaction_create.ModalSubmit(custom_id, components, resolved) -> {
