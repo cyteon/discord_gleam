@@ -712,7 +712,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 
     event_handler.InteractionCreatePacket(interaction) -> {
       case interaction.data {
-        interaction_create.ApplicationCommand(id, name, type_, options) -> {
+        interaction_create.ApplicationCommand(_id, name, _type_, options) -> {
           case name {
             "test" -> {
               let _ = case options {
@@ -838,9 +838,9 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 
         interaction_create.MessageComponent(
           custom_id,
-          component_type,
-          values,
-          resolved,
+          _component_type,
+          _values,
+          _resolved,
         ) -> {
           logging.log(logging.Info, "Button clicked: " <> custom_id)
 
@@ -854,7 +854,7 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
           Nil
         }
 
-        interaction_create.ModalSubmit(custom_id, components, resolved) -> {
+        interaction_create.ModalSubmit(custom_id, components, _resolved) -> {
           logging.log(logging.Info, "Modal submitted: " <> custom_id)
 
           let value = case list.first(components) {

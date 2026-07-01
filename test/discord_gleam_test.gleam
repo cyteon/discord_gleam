@@ -2,7 +2,10 @@ import envoy
 import example_bot
 import gleam/result
 import gleam/string
+import gleeunit
 import simplifile
+
+const run_test_bot = False
 
 fn load_dotenv() -> Nil {
   case simplifile.read(".env") {
@@ -46,30 +49,38 @@ fn list_each(list: List(a), f: fn(a) -> Nil) -> Nil {
 }
 
 pub fn main() {
-  load_dotenv()
+  case run_test_bot {
+    True -> {
+      load_dotenv()
 
-  case
-    {
-      use token <- result.try(
-        envoy.get("TEST_BOT_TOKEN")
-        |> result.map_error(fn(_) { "TEST_BOT_TOKEN not set" }),
-      )
-      use client_id <- result.try(
-        envoy.get("TEST_BOT_CLIENT_ID")
-        |> result.map_error(fn(_) { "TEST_BOT_CLIENT_ID not set" }),
-      )
-      use guild_id <- result.try(
-        envoy.get("TEST_BOT_GUILD_ID")
-        |> result.map_error(fn(_) { "TEST_BOT_GUILD_ID not set" }),
-      )
+      case
+        {
+          use token <- result.try(
+            envoy.get("TEST_BOT_TOKEN")
+            |> result.map_error(fn(_) { "TEST_BOT_TOKEN not set" }),
+          )
+          use client_id <- result.try(
+            envoy.get("TEST_BOT_CLIENT_ID")
+            |> result.map_error(fn(_) { "TEST_BOT_CLIENT_ID not set" }),
+          )
+          use guild_id <- result.try(
+            envoy.get("TEST_BOT_GUILD_ID")
+            |> result.map_error(fn(_) { "TEST_BOT_GUILD_ID not set" }),
+          )
 
-      Ok(example_bot.main(token, client_id, guild_id))
+          Ok(example_bot.main(token, client_id, guild_id))
+        }
+      {
+        Ok(_) -> Nil
+        Error(msg) -> {
+          echo msg
+          Nil
+        }
+      }
     }
-  {
-    Ok(_) -> Nil
-    Error(msg) -> {
-      echo msg
-      Nil
+
+    False -> {
+      gleeunit.main()
     }
   }
 }
