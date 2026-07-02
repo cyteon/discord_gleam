@@ -3,6 +3,7 @@ import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
 import discord_gleam/types/embed
+import discord_gleam/types/message
 import gleam/erlang/process
 import gleam/option.{None}
 import gleam/otp/static_supervisor as supervisor
@@ -14,7 +15,7 @@ pub fn main() {
   logging.set_level(logging.Info)
 
   let bot =
-    bot.new("TOKEN", "CLIENT ID")
+    bot.new("TOKEN ID", "CLIENT ID")
     |> bot.with_intents(intents.default_with_message_intent())
 
   let bot =
@@ -58,9 +59,12 @@ fn simple_handler(bot, packet: event_handler.Packet) {
             )
 
           let _ =
-            discord_gleam.send_message(bot, message.channel_id, "Embed!", [
-              embed,
-            ])
+            discord_gleam.send_message(
+              bot,
+              message.channel_id,
+              message.new("Embed!")
+                |> message.add_embed(embed),
+            )
 
           Nil
         }

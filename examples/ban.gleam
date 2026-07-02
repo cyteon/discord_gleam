@@ -3,6 +3,7 @@ import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
+import discord_gleam/types/message
 import gleam/erlang/process
 import gleam/list
 import gleam/option.{Some}
@@ -72,8 +73,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
                 discord_gleam.send_message(
                   bot,
                   message.channel_id,
-                  "Banned user!",
-                  [],
+                  message.new("Banned user!"),
                 )
 
               Nil
@@ -84,8 +84,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
                 discord_gleam.send_message(
                   bot,
                   message.channel_id,
-                  "Failed to ban user!",
-                  [],
+                  message.new("Failed to ban user!"),
                 )
 
               Nil

@@ -2,6 +2,7 @@ import discord_gleam
 import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
+import discord_gleam/types/message
 import gleam/erlang/process
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
@@ -37,13 +38,19 @@ fn simple_handler(bot, packet: event_handler.Packet) {
       case message.content {
         "!ping" -> {
           let _ =
-            discord_gleam.send_message(bot, message.channel_id, "Pong!", [])
+            discord_gleam.send_message(
+              bot,
+              message.channel_id,
+              message.new("Pong!"),
+            )
 
           Nil
         }
+
         _ -> Nil
       }
     }
+
     _ -> Nil
   }
 }

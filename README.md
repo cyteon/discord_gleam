@@ -12,7 +12,9 @@ gleam add discord_gleam
 ```gleam
 import discord_gleam
 import discord_gleam/bot
+import discord_gleam/discord/intents
 import discord_gleam/event_handler
+import discord_gleam/types/message
 import gleam/erlang/process
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
@@ -27,6 +29,7 @@ pub fn main() {
       "TOKEN",
       "CLIENT ID",
     )
+    |> bot.with_intents(intents.default_with_message_intent())
 
   let bot =
     supervision.worker(fn() {
@@ -58,7 +61,11 @@ fn simple_handler(bot, packet: event_handler.Packet) {
       case message.content {
         "!ping" -> {
           let _ =
-            discord_gleam.send_message(bot, message.channel_id, "Pong!", [])
+            discord_gleam.send_message(
+              bot,
+              message.channel_id,
+              message.new("Pong!"),
+            )
 
           Nil
         }
