@@ -8,7 +8,11 @@ pub type ActivityTimestamp {
 }
 
 pub type ActivityEmoji {
-  ActivityEmoji(name: String, id: Option(Snowflake), animated: Option(Bool))
+  ActivityEmoji(
+    name: String,
+    id: Option(Snowflake(snowflake.Emoji)),
+    animated: Option(Bool),
+  )
 }
 
 pub type ActivityParty {
@@ -46,7 +50,7 @@ pub type Activity {
     url: Option(String),
     created_at: Int,
     timestamps: Option(ActivityTimestamp),
-    application_id: Option(Snowflake),
+    application_id: Option(Snowflake(snowflake.Application)),
     status_display_type: Option(Int),
     details: Option(String),
     details_url: Option(String),
@@ -62,7 +66,7 @@ pub type Activity {
   )
 }
 
-pub fn from_json_decoder() -> decode.Decoder(Activity) {
+pub fn json_decoder() -> decode.Decoder(Activity) {
   use name <- decode.field("name", decode.string)
   use type_ <- decode.field("type", decode.int)
   use url <- decode.optional_field("url", None, decode.optional(decode.string))
@@ -156,13 +160,13 @@ pub fn from_json_decoder() -> decode.Decoder(Activity) {
   ))
 }
 
-fn activity_timestamp_decoder() {
+fn activity_timestamp_decoder() -> decode.Decoder(ActivityTimestamp) {
   use start <- decode.optional_field("start", None, decode.optional(decode.int))
   use end <- decode.optional_field("end", None, decode.optional(decode.int))
   decode.success(ActivityTimestamp(start:, end:))
 }
 
-fn activity_emoji_decoder() {
+fn activity_emoji_decoder() -> decode.Decoder(ActivityEmoji) {
   use name <- decode.field("name", decode.string)
   use id <- decode.optional_field(
     "id",
@@ -177,7 +181,7 @@ fn activity_emoji_decoder() {
   decode.success(ActivityEmoji(name:, id:, animated:))
 }
 
-fn activity_party_decoder() {
+fn activity_party_decoder() -> decode.Decoder(ActivityParty) {
   use id <- decode.optional_field("id", None, decode.optional(decode.string))
   use size <- decode.optional_field(
     "size",
@@ -197,7 +201,7 @@ fn activity_party_decoder() {
   }
 }
 
-fn activity_assets_decoder() {
+fn activity_assets_decoder() -> decode.Decoder(ActivityAssets) {
   use large_image <- decode.optional_field(
     "large_image",
     None,
@@ -238,7 +242,7 @@ fn activity_assets_decoder() {
   ))
 }
 
-fn activity_secrets_decoder() {
+fn activity_secrets_decoder() -> decode.Decoder(ActivitySecrets) {
   use join <- decode.optional_field(
     "join",
     None,

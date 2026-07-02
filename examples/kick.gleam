@@ -1,10 +1,12 @@
 import discord_gleam
+import discord_gleam/bot
 import discord_gleam/discord/intents
+import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
 import discord_gleam/types/message
 import gleam/erlang/process
 import gleam/list
-import gleam/option.{None, Some}
+import gleam/option.{Some}
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
 import gleam/string
@@ -14,7 +16,9 @@ pub fn main() {
   logging.configure()
   logging.set_level(logging.Info)
 
-  let bot = discord_gleam.bot("token", "client id", intents.default())
+  let bot =
+    bot.new("TOKEN", "CLIENT ID")
+    |> bot.with_intents(intents.default_with_message_intent())
 
   let bot =
     supervision.worker(fn() {
@@ -33,16 +37,16 @@ pub fn main() {
 fn simple_handler(bot, packet: event_handler.Packet) {
   case packet {
     event_handler.ReadyPacket(ready) -> {
-      logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
+      logging.log(logging.Info, "Logged in as " <> ready.user.username)
 
       Nil
     }
     event_handler.MessagePacket(message) -> {
-      logging.log(logging.Info, "Message: " <> message.d.content)
+      logging.log(logging.Info, "Message: " <> message.content)
 
-      case string.starts_with(message.d.content, "!kick "), message.d.guild_id {
+      case string.starts_with(message.content, "!kick "), message.guild_id {
         True, Some(guild_id) -> {
-          let args = string.split(message.d.content, " ")
+          let args = string.split(message.content, " ")
           let args = list.drop(args, 1)
 
           let user = case list.first(args) {
@@ -52,52 +56,40 @@ fn simple_handler(bot, packet: event_handler.Packet) {
 
           let args = list.drop(args, 1)
 
-          let user = string.replace(user, "<@", "")
-          let user = string.replace(user, ">", "")
+          let user =
+            string.replace(user, "<@", "")
+            |> string.replace(">", "")
+            |> snowflake.from_string
 
           let reason = string.join(args, " ")
 
-          case message.d.guild_id {
-            Some(guild_id) -> {
-              let result =
-                discord_gleam.kick_member(bot, guild_id, user, reason)
+          let result = discord_gleam.kick_member(bot, guild_id, user, reason)
 
-              case result {
-                Ok(_) -> {
-                  discord_gleam.send_message(
-                    bot,
-                    message.d.channel_id,
-                    "Kicked user!",
-                    [],
-                  )
+          case result {
+            Ok(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Kicked user!"),
+                )
 
-                  Nil
-                }
-
-                Error(_) -> {
-                  discord_gleam.send_message(
-                    bot,
-                    message.d.channel_id,
-                    "Failed to kick user",
-                    [],
-                  )
-
-                  Nil
-                }
-              }
+              Nil
             }
-            None -> {
-              discord_gleam.send_message(
-                bot,
-                message.d.channel_id,
-                "This command can only be used in a guild.",
-                [],
-              )
+
+            Error(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Failed to kick user!"),
+                )
 
               Nil
             }
           }
         }
+
         _, _ -> Nil
       }
     }

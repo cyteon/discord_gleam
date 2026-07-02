@@ -1,4 +1,4 @@
-import discord_gleam/discord/snowflake
+import discord_gleam/discord/snowflake.{type Snowflake}
 import gleam/dynamic/decode
 import gleam/json
 
@@ -14,12 +14,12 @@ pub type GuildRoleDeletePacket {
 
 pub type GuildRoleDeletePacketData {
   GuildRoleDeletePacketData(
-    guild_id: snowflake.Snowflake,
-    role_id: snowflake.Snowflake,
+    guild_id: Snowflake(snowflake.Guild),
+    role_id: Snowflake(snowflake.Role),
   )
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(GuildRoleDeletePacket, json.DecodeError) {
   let decoder = {

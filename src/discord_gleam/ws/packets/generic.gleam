@@ -1,15 +1,16 @@
 import gleam/dynamic/decode
 import gleam/json
+import gleam/option.{type Option, None, Some}
 
-/// And packet excluding the data object d: json
+/// Any packet excluding the data object d: json
 pub type GenericPacket {
-  GenericPacket(t: String, s: Int, op: Int)
+  GenericPacket(t: Option(String), s: Option(Int), op: Int)
 }
 
-pub fn string_to_data(encoded: String) -> GenericPacket {
+pub fn from_json_string(encoded: String) -> GenericPacket {
   let decoder = {
-    use t <- decode.field("t", decode.string)
-    use s <- decode.field("s", decode.int)
+    use t <- decode.optional_field("t", None, decode.optional(decode.string))
+    use s <- decode.optional_field("s", None, decode.optional(decode.int))
     use op <- decode.field("op", decode.int)
     decode.success(GenericPacket(t:, s:, op:))
   }
@@ -18,6 +19,7 @@ pub fn string_to_data(encoded: String) -> GenericPacket {
 
   case data {
     Ok(decoded) -> decoded
-    Error(_) -> GenericPacket("error", 0, 0)
+    // yes i know this is fucking stupid, idfk why i did this but im too lazy to change it so live with it
+    Error(_) -> GenericPacket(Some("error"), None, 0)
   }
 }

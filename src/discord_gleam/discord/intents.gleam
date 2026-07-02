@@ -66,59 +66,29 @@ pub fn intents_to_bitfield(intents: Intents) -> Int {
 }
 
 /// Enable a set of default intents, which are usually used by most bots. \
-/// Does not include `message_content` intent, as its a privileged intent
+/// Does not include `message_content` intent, as it's a privileged intent.
+///
+/// This enables the following intents:
+/// - `guilds`
+/// - `guild_messages`
+/// - `guild_message_reactions`
+/// - `direct_messages`
+/// - `direct_message_reactions`
 pub fn default() -> Intents {
   Intents(
+    ..none(),
     guilds: True,
-    guild_members: False,
-    guild_moderation: False,
-    guild_expressions: False,
-    guild_integrations: False,
-    guild_webhooks: False,
-    guild_invites: False,
-    guild_voice_states: False,
-    guild_presences: False,
     guild_messages: True,
     guild_message_reactions: True,
-    guild_message_typing: False,
     direct_messages: True,
     direct_message_reactions: True,
-    direct_message_typing: False,
-    message_content: True,
-    guild_scheduled_events: False,
-    auto_moderation_configuration: False,
-    auto_moderation_execution: False,
-    guild_message_polls: False,
-    direct_message_polls: False,
   )
 }
 
 /// Enable a set of default intents, which are usually used by most bots. \
-/// But also includes all intents relevant to messages
-pub fn default_with_message_intents() -> Intents {
-  Intents(
-    guilds: True,
-    guild_members: False,
-    guild_moderation: False,
-    guild_expressions: False,
-    guild_integrations: False,
-    guild_webhooks: False,
-    guild_invites: False,
-    guild_voice_states: False,
-    guild_presences: False,
-    guild_messages: True,
-    guild_message_reactions: True,
-    guild_message_typing: True,
-    direct_messages: True,
-    direct_message_reactions: True,
-    direct_message_typing: True,
-    message_content: True,
-    guild_scheduled_events: False,
-    auto_moderation_configuration: False,
-    auto_moderation_execution: False,
-    guild_message_polls: True,
-    direct_message_polls: True,
-  )
+/// But also includes the `message_content` intent (privileged).
+pub fn default_with_message_intent() -> Intents {
+  Intents(..default(), message_content: True)
 }
 
 /// Enable all the intents, use this if you want to receive all supported events.
@@ -148,8 +118,8 @@ pub fn all() -> Intents {
   )
 }
 
-/// Disable all the intents, use this if you want to receive no events other than `interaction_create or ready. \ 
-/// Useful if you have a bot with slash commands only, that dosen't need to listen to events.
+/// Disable all the intents, use this if you want to receive no events other than `interaction_create` or `ready`. \
+/// Useful if you have a bot with slash commands only, that doesn't need to listen to events.
 pub fn none() -> Intents {
   Intents(
     guilds: False,

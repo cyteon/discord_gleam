@@ -10,7 +10,7 @@ pub type HelloPacket {
   HelloPacket(op: Int, d: HelloPacketData)
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(HelloPacket, json.DecodeError) {
   let decoder = {

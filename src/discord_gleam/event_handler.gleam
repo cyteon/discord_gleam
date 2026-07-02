@@ -1,15 +1,26 @@
 import booklet
-import discord_gleam/internal/error
-import discord_gleam/types/bot
+import gleam/dict
 import gleam/erlang/process
-import gleam/option
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/order
+import gleam/string
+import logging
 
+import discord_gleam/bot
+import discord_gleam/discord/snowflake
+import discord_gleam/internal/error
+import discord_gleam/types/channel
+import discord_gleam/types/guild
+import discord_gleam/types/presence
+import discord_gleam/ws/gateway_state
 import discord_gleam/ws/packets/channel_create
 import discord_gleam/ws/packets/channel_delete
 import discord_gleam/ws/packets/channel_update
 import discord_gleam/ws/packets/generic
 import discord_gleam/ws/packets/guild_ban_add
 import discord_gleam/ws/packets/guild_ban_remove
+import discord_gleam/ws/packets/guild_create
 import discord_gleam/ws/packets/guild_member_add
 import discord_gleam/ws/packets/guild_member_remove
 import discord_gleam/ws/packets/guild_member_update
@@ -24,9 +35,6 @@ import discord_gleam/ws/packets/message_delete_bulk
 import discord_gleam/ws/packets/message_update
 import discord_gleam/ws/packets/presence_update
 import discord_gleam/ws/packets/ready
-import gleam/dict
-import gleam/list
-import logging
 
 /// The message type for the event handler with custom user messages
 pub type HandlerMessage(user_message) {
@@ -42,19 +50,19 @@ pub type InternalMessage(user_message) {
 
 /// Instruction on how event loop actor should proceed after handling an event
 pub type Next(new_state, user_message) {
-  Continue(new_state, option.Option(process.Selector(user_message)))
+  Continue(new_state, Option(process.Selector(user_message)))
   Stop
   StopAbnormal(reason: String)
 }
 
 /// The mode of the event handler
-/// 
-/// Simple mode is used for simple bots that don't need to handle custom user 
-/// state and messages. `default_next` and `nil_state` fields are required for 
-/// proper type inference. Recommended to use `Nil` state and continue with no 
+///
+/// Simple mode is used for simple bots that don't need to handle custom user
+/// state and messages. `default_next` and `nil_state` fields are required for
+/// proper type inference. Recommended to use `Nil` state and continue with no
 /// selector.
-/// 
-/// Normal mode is used for bots that need to handle custom user state 
+///
+/// Normal mode is used for bots that need to handle custom user state
 /// and messages.
 pub type Mode(user_state, user_message) {
   Simple(
@@ -104,83 +112,111 @@ pub fn set_bot(
 /// The supported discord packets
 pub type Packet {
   /// `READY` event
-  ReadyPacket(ready.ReadyPacket)
+  ReadyPacket(ready.ReadyData)
 
   /// `INTERACTION_CREATE` event
-  InteractionCreatePacket(interaction_create.InteractionCreatePacket)
+  InteractionCreatePacket(interaction_create.InteractionCreatePacketData)
 
   /// `MESSAGE_DELETE` event
-  MessageDeletePacket(message_delete.MessageDeletePacket)
+  MessageDeletePacket(message_delete.MessageDeletePacketData)
   /// `MESSAGE_CREATE` event
-  MessagePacket(message.MessagePacket)
+  MessagePacket(message.MessagePacketData)
   /// `MESSAGE_UPDATE` event
-  MessageUpdatePacket(message_update.MessageUpdatePacket)
+  MessageUpdatePacket(message.MessagePacketData)
   /// `MESSAGE_DELETE_BULK` event
-  MessageDeleteBulkPacket(message_delete_bulk.MessageDeleteBulkPacket)
+  MessageDeleteBulkPacket(message_delete_bulk.MessageDeleteBulkPacketData)
 
   /// `CHANNEL_CREATE` event
-  ChannelCreatePacket(channel_create.ChannelCreatePacket)
+  ChannelCreatePacket(channel.Channel)
   /// `CHANNEL_DELETE` event
-  ChannelDeletePacket(channel_delete.ChannelDeletePacket)
+  ChannelDeletePacket(channel.Channel)
   /// `CHANNEL_UPDATE` event
-  ChannelUpdatePacket(channel_update.ChannelUpdatePacket)
+  ChannelUpdatePacket(channel.Channel)
 
   /// `GUILD_BAN_ADD` event
-  GuildBanAddPacket(guild_ban_add.GuildBanAddPacket)
+  GuildBanAddPacket(guild_ban_add.GuildBanAddPacketData)
   /// `GUILD_BAN_REMOVE` event
-  GuildBanRemovePacket(guild_ban_remove.GuildBanRemovePacket)
+  GuildBanRemovePacket(guild_ban_remove.GuildBanRemovePacketData)
+
+  /// `GUILD_CREATE` event
+  GuildCreatePacket(guild.Guild)
 
   /// `GUILD_ROLE_CREATE` event
-  GuildRoleCreatePacket(guild_role_create.GuildRoleCreatePacket)
+  GuildRoleCreatePacket(guild_role_create.GuildRoleCreatePacketData)
   /// `GUILD_ROLE_UPDATE` event
-  GuildRoleUpdatePacket(guild_role_update.GuildRoleUpdatePacket)
+  GuildRoleUpdatePacket(guild_role_update.GuildRoleUpdatePacketData)
   /// `GUILD_ROLE_DELETE` event
-  GuildRoleDeletePacket(guild_role_delete.GuildRoleDeletePacket)
+  GuildRoleDeletePacket(guild_role_delete.GuildRoleDeletePacketData)
 
   /// `GUILD_MEMBER_ADD` event
-  GuildMemberAddPacket(guild_member_add.GuildMemberAdd)
+  GuildMemberAddPacket(guild_member_add.GuildMemberAddPacketData)
   /// `GUILD_MEMBER_UPDATE` event
-  GuildMemberUpdatePacket(guild_member_update.GuildMemberUpdate)
+  GuildMemberUpdatePacket(guild_member_update.GuildMemberUpdatePacketData)
   /// GUILD_MEMBER_REMOVE event
-  GuildMemberRemovePacket(guild_member_remove.GuildMemberRemove)
+  GuildMemberRemovePacket(guild_member_remove.GuildMemberRemovePacketData)
   /// `GUILD_MEMBERS_CHUNK` event
-  GuildMembersChunkPacket(guild_members_chunk.GuildMembersChunkPacket)
+  GuildMembersChunkPacket(guild_members_chunk.GuildMembersChunkPacketData)
 
   /// `PRESENCE_UPDATE` event
-  PresenceUpdatePacket(presence_update.PresenceUpdatePacket)
+  PresenceUpdatePacket(presence.Presence)
 
   /// When we receive a packet that we don't know how to handle
   UnknownPacket(generic.GenericPacket)
+}
+
+fn cache_message(bot: bot.Bot, msg: message.MessagePacketData) -> Nil {
+  booklet.update(bot.cache.messages, fn(cache) {
+    let cache = dict.insert(cache, msg.id, msg)
+
+    case dict.size(cache) > bot.message_cache_limit {
+      True -> {
+        case
+          dict.keys(cache)
+          |> list.reduce(fn(a, b) {
+            case snowflake.compare(a, b) {
+              order.Lt -> a
+              _ -> b
+            }
+          })
+        {
+          Ok(oldest) -> dict.delete(cache, oldest)
+          Error(_) -> cache
+        }
+      }
+
+      False -> cache
+    }
+  })
+
+  Nil
 }
 
 /// For handling some events the library needs to handle, for functionality
 fn internal_handler(
   bot: bot.Bot,
   packet: Packet,
-  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
 ) -> Nil {
   case packet {
     MessagePacket(msg) -> {
-      booklet.update(bot.cache.messages, fn(cache) {
-        dict.insert(cache, msg.d.id, msg.d)
-      })
-
-      Nil
+      cache_message(bot, msg)
     }
 
     MessageUpdatePacket(msg) -> {
-      booklet.update(bot.cache.messages, fn(cache) {
-        dict.insert(cache, msg.d.id, msg.d)
-      })
-
-      Nil
+      cache_message(bot, msg)
     }
 
     ReadyPacket(ready) -> {
-      booklet.update(state_ets, fn(cache) {
-        let cache = dict.insert(cache, "session_id", ready.d.session_id)
-
-        dict.insert(cache, "resume_gateway_url", ready.d.resume_gateway_url)
+      booklet.update(state_ets, fn(state) {
+        gateway_state.GatewayState(
+          ..state,
+          session_id: ready.session_id,
+          resume_gateway_url: string.replace(
+            ready.resume_gateway_url,
+            "wss://",
+            "",
+          ),
+        )
       })
 
       Nil
@@ -197,7 +233,7 @@ pub fn handle_event(
   user_state: user_state,
   msg: InternalMessage(user_message),
   mode: Mode(user_state, user_message),
-  state_ets: booklet.Booklet(dict.Dict(String, String)),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
 ) -> Next(user_state, user_message) {
   case msg {
     InternalPacket(packet) -> {
@@ -209,286 +245,322 @@ pub fn handle_event(
           list.each(handlers, fn(handler) { handler(bot, packet) })
           next
         }
+
         Normal(bot, _name, _on_init, handler) -> {
           handler(bot, user_state, DiscordPacket(packet))
         }
       }
     }
+
     InternalUser(msg) -> {
-      let assert Normal(bot, _name, _on_init, handler) = mode
-      handler(bot, user_state, User(msg))
+      case mode {
+        Normal(bot, _name, _on_init, handler) -> {
+          handler(bot, user_state, User(msg))
+        }
+
+        _ -> {
+          logging.log(
+            logging.Error,
+            "Received user message in simple mode, ignoring",
+          )
+
+          Continue(user_state, None)
+        }
+      }
     }
   }
 }
 
 fn decode_packet(msg: String) -> Packet {
-  let generic_packet = generic.string_to_data(msg)
+  let generic_packet = generic.from_json_string(msg)
 
   case generic_packet.t {
-    "READY" ->
-      case ready.string_to_data(msg) {
-        Ok(data) -> ReadyPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode READY packet: "
-              <> error.json_decode_error_to_string(err),
-          )
+    Some(t) -> {
+      case t {
+        "READY" ->
+          case ready.from_json_string(msg) {
+            Ok(packet) -> ReadyPacket(packet.d)
 
-          UnknownPacket(generic_packet)
-        }
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode READY packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "MESSAGE_CREATE" ->
+          case message.from_json_string(msg) {
+            Ok(packet) -> MessagePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode MESSAGE_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "MESSAGE_UPDATE" ->
+          case message_update.from_json_string(msg) {
+            Ok(packet) -> MessageUpdatePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode MESSAGE_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "MESSAGE_DELETE" ->
+          case message_delete.from_json_string(msg) {
+            Ok(packet) -> MessageDeletePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode MESSAGE_DELETE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "MESSAGE_DELETE_BULK" ->
+          case message_delete_bulk.from_json_string(msg) {
+            Ok(packet) -> MessageDeleteBulkPacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode MESSAGE_DELETE_BULK packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "INTERACTION_CREATE" ->
+          case interaction_create.from_json_string(msg) {
+            Ok(packet) -> InteractionCreatePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode INTERACTION_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "CHANNEL_CREATE" ->
+          case channel_create.from_json_string(msg) {
+            Ok(packet) -> ChannelCreatePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode CHANNEL_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "CHANNEL_DELETE" ->
+          case channel_delete.from_json_string(msg) {
+            Ok(packet) -> ChannelDeletePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode CHANNEL_DELETE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "CHANNEL_UPDATE" ->
+          case channel_update.from_json_string(msg) {
+            Ok(packet) -> ChannelUpdatePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode CHANNEL_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_BAN_ADD" ->
+          case guild_ban_add.from_json_string(msg) {
+            Ok(packet) -> GuildBanAddPacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_BAN_ADD packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_BAN_REMOVE" ->
+          case guild_ban_remove.from_json_string(msg) {
+            Ok(packet) -> GuildBanRemovePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_BAN_REMOVE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_CREATE" ->
+          case guild_create.from_json_string(msg) {
+            Ok(packet) -> GuildCreatePacket(packet.d)
+
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_ROLE_CREATE" ->
+          case guild_role_create.from_json_string(msg) {
+            Ok(packet) -> GuildRoleCreatePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_ROLE_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_ROLE_UPDATE" ->
+          case guild_role_update.from_json_string(msg) {
+            Ok(packet) -> GuildRoleUpdatePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_ROLE_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_ROLE_DELETE" ->
+          case guild_role_delete.from_json_string(msg) {
+            Ok(packet) -> GuildRoleDeletePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_ROLE_DELETE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_MEMBER_ADD" ->
+          case guild_member_add.from_json_string(msg) {
+            Ok(packet) -> GuildMemberAddPacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_MEMBER_ADD packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_MEMBER_UPDATE" ->
+          case guild_member_update.from_json_string(msg) {
+            Ok(packet) -> GuildMemberUpdatePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_MEMBER_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_MEMBER_REMOVE" ->
+          case guild_member_remove.from_json_string(msg) {
+            Ok(packet) -> GuildMemberRemovePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_MEMBER_REMOVE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_MEMBERS_CHUNK" ->
+          case guild_members_chunk.from_json_string(msg) {
+            Ok(packet) -> GuildMembersChunkPacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_MEMBERS_CHUNK packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "PRESENCE_UPDATE" ->
+          case presence_update.from_json_string(msg) {
+            Ok(packet) -> PresenceUpdatePacket(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode PRESENCE_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        _ -> UnknownPacket(generic_packet)
       }
-
-    "MESSAGE_CREATE" ->
-      case message.string_to_data(msg) {
-        Ok(data) -> MessagePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode MESSAGE_CREATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "MESSAGE_UPDATE" ->
-      case message_update.string_to_data(msg) {
-        Ok(data) -> MessageUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode MESSAGE_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "MESSAGE_DELETE" ->
-      case message_delete.string_to_data(msg) {
-        Ok(data) -> MessageDeletePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode MESSAGE_DELETE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "MESSAGE_DELETE_BULK" ->
-      case message_delete_bulk.string_to_data(msg) {
-        Ok(data) -> MessageDeleteBulkPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode MESSAGE_DELETE_BULK packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "INTERACTION_CREATE" ->
-      case interaction_create.string_to_data(msg) {
-        Ok(data) -> InteractionCreatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode INTERACTION_CREATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "CHANNEL_CREATE" ->
-      case channel_create.string_to_data(msg) {
-        Ok(data) -> ChannelCreatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode CHANNEL_CREATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "CHANNEL_DELETE" ->
-      case channel_delete.string_to_data(msg) {
-        Ok(data) -> ChannelDeletePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode CHANNEL_DELETE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "CHANNEL_UPDATE" ->
-      case channel_update.string_to_data(msg) {
-        Ok(data) -> ChannelUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode CHANNEL_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_BAN_ADD" ->
-      case guild_ban_add.string_to_data(msg) {
-        Ok(data) -> GuildBanAddPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_BAN_ADD packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_BAN_REMOVE" ->
-      case guild_ban_remove.string_to_data(msg) {
-        Ok(data) -> GuildBanRemovePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_BAN_REMOVE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_ROLE_CREATE" ->
-      case guild_role_create.string_to_data(msg) {
-        Ok(data) -> GuildRoleCreatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_ROLE_CREATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_ROLE_UPDATE" ->
-      case guild_role_update.string_to_data(msg) {
-        Ok(data) -> GuildRoleUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_ROLE_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_ROLE_DELETE" ->
-      case guild_role_delete.string_to_data(msg) {
-        Ok(data) -> GuildRoleDeletePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_ROLE_DELETE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_MEMBER_ADD" ->
-      case guild_member_add.string_to_data(msg) {
-        Ok(data) -> GuildMemberAddPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_MEMBER_ADD packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_MEMBER_UPDATE" ->
-      case guild_member_update.string_to_data(msg) {
-        Ok(data) -> GuildMemberUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_MEMBER_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_MEMBER_REMOVE" ->
-      case guild_member_remove.string_to_data(msg) {
-        Ok(data) -> GuildMemberRemovePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_MEMBER_REMOVE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "GUILD_MEMBERS_CHUNK" ->
-      case guild_members_chunk.string_to_data(msg) {
-        Ok(data) -> GuildMembersChunkPacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode GUILD_MEMBERS_CHUNK packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-          UnknownPacket(generic_packet)
-        }
-      }
-
-    "PRESENCE_UPDATE" ->
-      case presence_update.string_to_data(msg) {
-        Ok(data) -> PresenceUpdatePacket(data)
-        Error(err) -> {
-          logging.log(
-            logging.Error,
-            "Failed to decode PRESENCE_UPDATE packet: "
-              <> error.json_decode_error_to_string(err),
-          )
-
-          UnknownPacket(generic_packet)
-        }
-      }
+    }
 
     _ -> UnknownPacket(generic_packet)
   }

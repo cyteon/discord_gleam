@@ -5,23 +5,28 @@ import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None}
 
-pub type GuildMembersChunkData {
-  GuildMembersChunkData(
-    guild_id: Snowflake,
+pub type GuildMembersChunkPacketData {
+  GuildMembersChunkPacketData(
+    guild_id: Snowflake(snowflake.Guild),
     members: List(guild_member.GuildMember),
     chunk_index: Int,
     chunk_count: Int,
-    not_found: Option(List(Snowflake)),
+    not_found: Option(List(Snowflake(snowflake.User))),
     presences: Option(List(presence.Presence)),
     nonce: Option(String),
   )
 }
 
 pub type GuildMembersChunkPacket {
-  GuildMembersChunkPacket(t: String, s: Int, op: Int, d: GuildMembersChunkData)
+  GuildMembersChunkPacket(
+    t: String,
+    s: Int,
+    op: Int,
+    d: GuildMembersChunkPacketData,
+  )
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(GuildMembersChunkPacket, json.DecodeError) {
   let decoder = {
@@ -32,7 +37,7 @@ pub fn string_to_data(
       use guild_id <- decode.field("guild_id", snowflake.decoder())
       use members <- decode.field(
         "members",
-        decode.list(of: guild_member.from_json_decoder()),
+        decode.list(of: guild_member.json_decoder()),
       )
       use chunk_index <- decode.field("chunk_index", decode.int)
       use chunk_count <- decode.field("chunk_count", decode.int)
@@ -44,7 +49,7 @@ pub fn string_to_data(
       use presences <- decode.optional_field(
         "presences",
         None,
-        decode.optional(decode.list(of: presence.from_json_decoder())),
+        decode.optional(decode.list(of: presence.json_decoder())),
       )
       use nonce <- decode.optional_field(
         "nonce",
@@ -52,7 +57,7 @@ pub fn string_to_data(
         decode.optional(decode.string),
       )
 
-      decode.success(GuildMembersChunkData(
+      decode.success(GuildMembersChunkPacketData(
         guild_id:,
         members:,
         chunk_index:,

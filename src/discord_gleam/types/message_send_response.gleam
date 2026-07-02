@@ -8,8 +8,8 @@ import gleam/result
 /// Data returned by discord when you send a message
 pub type MessageSendResponse {
   MessageSendResponse(
-    id: Snowflake,
-    channel_id: Snowflake,
+    id: Snowflake(snowflake.Message),
+    channel_id: Snowflake(snowflake.Channel),
     content: String,
     timestamp: String,
     author: user.User,
@@ -20,21 +20,22 @@ pub type MessageSendResponse {
 pub fn from_json_string(
   encoded: String,
 ) -> Result(MessageSendResponse, error.DiscordError) {
-  let decoder = {
-    use id <- decode.field("id", snowflake.decoder())
-    use channel_id <- decode.field("channel_id", snowflake.decoder())
-    use content <- decode.field("content", decode.string)
-    use timestamp <- decode.field("timestamp", decode.string)
-    use author <- decode.field("author", user.from_json_decoder())
-    decode.success(MessageSendResponse(
-      id:,
-      channel_id:,
-      content:,
-      timestamp:,
-      author:,
-    ))
-  }
-
-  json.parse(from: encoded, using: decoder)
+  json.parse(from: encoded, using: json_decoder())
   |> result.map_error(error.JsonDecodeError)
+}
+
+pub fn json_decoder() -> decode.Decoder(MessageSendResponse) {
+  use id <- decode.field("id", snowflake.decoder())
+  use channel_id <- decode.field("channel_id", snowflake.decoder())
+  use content <- decode.field("content", decode.string)
+  use timestamp <- decode.field("timestamp", decode.string)
+  use author <- decode.field("author", user.json_decoder())
+
+  decode.success(MessageSendResponse(
+    id:,
+    channel_id:,
+    content:,
+    timestamp:,
+    author:,
+  ))
 }

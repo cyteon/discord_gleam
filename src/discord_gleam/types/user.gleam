@@ -4,19 +4,18 @@ import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option}
 import gleam/result
-import gleam/string
 
 /// User object containing PartialUser and FullUser
 /// FullUser is currently not implemented
 pub type User {
   PartialUser(
-    id: Snowflake,
+    id: Snowflake(snowflake.User),
     username: String,
     discriminator: String,
     avatar: Option(String),
   )
   FullUser(
-    id: Snowflake,
+    id: Snowflake(snowflake.User),
     username: String,
     discriminator: String,
     avatar: Option(String),
@@ -34,7 +33,7 @@ pub type User {
 }
 
 pub type AvatarDecoration {
-  AvatarDecoration(asset: String, sku_id: Snowflake)
+  AvatarDecoration(asset: String, sku_id: Snowflake(snowflake.Sku))
 }
 
 pub fn avatar_decoration_decoder() -> decode.Decoder(AvatarDecoration) {
@@ -44,19 +43,12 @@ pub fn avatar_decoration_decoder() -> decode.Decoder(AvatarDecoration) {
 }
 
 /// Decode a string to a PartialUser
-pub fn string_to_data(encoded: String) -> Result(User, error.DiscordError) {
-  case string.contains(encoded, "401: Unauthorized") {
-    True -> {
-      Error(error.Unauthorized("Error, 401, Unauthorized :c, is token correct?"))
-    }
-    False -> {
-      json.parse(from: encoded, using: from_json_decoder())
-      |> result.map_error(error.JsonDecodeError)
-    }
-  }
+pub fn from_json_string(encoded: String) -> Result(User, error.DiscordError) {
+  json.parse(from: encoded, using: json_decoder())
+  |> result.map_error(error.JsonDecodeError)
 }
 
-pub fn from_json_decoder() -> decode.Decoder(User) {
+pub fn json_decoder() -> decode.Decoder(User) {
   use id <- decode.field("id", snowflake.decoder())
   use username <- decode.field("username", decode.string)
   use discriminator <- decode.field("discriminator", decode.string)

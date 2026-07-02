@@ -9,7 +9,7 @@ pub type GuildMember {
     nick: Option(String),
     avatar: Option(String),
     banner: Option(String),
-    roles: List(Snowflake),
+    roles: List(Snowflake(snowflake.Role)),
     // ISO8601 timestamp?
     joined_at: String,
     premium_since: Option(String),
@@ -19,12 +19,12 @@ pub type GuildMember {
     pending: Option(Bool),
     permissions: Option(String),
     communication_disabled_until: Option(String),
-    avatar_decoration: Option(user.AvatarDecoration),
+    avatar_decoration_data: Option(user.AvatarDecoration),
   )
 }
 
-pub fn from_json_decoder() -> decode.Decoder(GuildMember) {
-  use user <- decode.field("user", user.from_json_decoder())
+pub fn json_decoder() -> decode.Decoder(GuildMember) {
+  use user <- decode.field("user", user.json_decoder())
   use nick <- decode.optional_field(
     "nick",
     None,
@@ -65,8 +65,8 @@ pub fn from_json_decoder() -> decode.Decoder(GuildMember) {
     None,
     decode.optional(decode.string),
   )
-  use avatar_decoration <- decode.optional_field(
-    "avatar_decoration",
+  use avatar_decoration_data <- decode.optional_field(
+    "avatar_decoration_data",
     None,
     decode.optional(user.avatar_decoration_decoder()),
   )
@@ -85,6 +85,6 @@ pub fn from_json_decoder() -> decode.Decoder(GuildMember) {
     pending:,
     permissions:,
     communication_disabled_until:,
-    avatar_decoration:,
+    avatar_decoration_data:,
   ))
 }

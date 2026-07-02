@@ -14,10 +14,13 @@ pub type GuildRoleCreatePacket {
 }
 
 pub type GuildRoleCreatePacketData {
-  GuildRoleCreatePacketData(guild_id: snowflake.Snowflake, role: role.Role)
+  GuildRoleCreatePacketData(
+    guild_id: snowflake.Snowflake(snowflake.Guild),
+    role: role.Role,
+  )
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(GuildRoleCreatePacket, json.DecodeError) {
   let decoder = {
@@ -27,7 +30,7 @@ pub fn string_to_data(
 
     use d <- decode.field("d", {
       use guild_id <- decode.field("guild_id", snowflake.decoder())
-      use role <- decode.field("role", role.from_json_decoder())
+      use role <- decode.field("role", role.json_decoder())
 
       decode.success(GuildRoleCreatePacketData(guild_id:, role:))
     })

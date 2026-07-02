@@ -1,4 +1,4 @@
-import discord_gleam/discord/snowflake
+import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/role
 import gleam/dynamic/decode
 import gleam/json
@@ -14,10 +14,13 @@ pub type GuildRoleUpdatePacket {
 }
 
 pub type GuildRoleUpdatePacketData {
-  GuildRoleUpdatePacketData(guild_id: snowflake.Snowflake, role: role.Role)
+  GuildRoleUpdatePacketData(
+    guild_id: Snowflake(snowflake.Guild),
+    role: role.Role,
+  )
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(GuildRoleUpdatePacket, json.DecodeError) {
   let decoder = {
@@ -27,7 +30,7 @@ pub fn string_to_data(
 
     use d <- decode.field("d", {
       use guild_id <- decode.field("guild_id", snowflake.decoder())
-      use role <- decode.field("role", role.from_json_decoder())
+      use role <- decode.field("role", role.json_decoder())
 
       decode.success(GuildRoleUpdatePacketData(guild_id:, role:))
     })

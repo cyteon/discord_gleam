@@ -11,8 +11,10 @@ gleam add discord_gleam
 
 ```gleam
 import discord_gleam
+import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
+import discord_gleam/types/message
 import gleam/erlang/process
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
@@ -23,11 +25,11 @@ pub fn main() {
   logging.set_level(logging.Info)
 
   let bot =
-    discord_gleam.bot(
+    bot.new(
       "TOKEN",
-      "CLIENT_ID",
-      intents.default(),
+      "CLIENT ID",
     )
+    |> bot.with_intents(intents.default_with_message_intent())
 
   let bot =
     supervision.worker(fn() {
@@ -48,18 +50,22 @@ fn simple_handler(bot, packet: event_handler.Packet) {
     event_handler.ReadyPacket(ready) -> {
       logging.log(
         logging.Info,
-        "Bot is ready! Logged in as: " <> ready.d.user.username,
+        "Bot is ready! Logged in as: " <> ready.user.username,
       )
       Nil
     }
 
     event_handler.MessagePacket(message) -> {
-      logging.log(logging.Info, "Got message: " <> message.d.content)
+      logging.log(logging.Info, "Got message: " <> message.content)
 
-      case message.d.content {
+      case message.content {
         "!ping" -> {
           let _ =
-            discord_gleam.send_message(bot, message.d.channel_id, "Pong!", [])
+            discord_gleam.send_message(
+              bot,
+              message.channel_id,
+              message.new("Pong!"),
+            )
 
           Nil
         }
@@ -73,7 +79,7 @@ fn simple_handler(bot, packet: event_handler.Packet) {
 }
 ```
 
-Further documentation can be found at <https://hexdocs.pm/discord_gleam>.
+Further documentation can be found at <https://hexdocs.pm/discord_gleam>. And more examples can be found in the `examples/` folder.
 
 ## Development
 
@@ -109,7 +115,7 @@ Intent: guild_messages/direct_messages (optional: message_content)
 - [x] MESSAGE_DELETE_BULK
 
 Intent: guilds
-- [ ] GUILD_CREATE
+- [x] GUILD_CREATE
 - [ ] GUILD_UPDATE
 - [ ] GUILD_DELETE
 - [x] CHANNEL_CREATE

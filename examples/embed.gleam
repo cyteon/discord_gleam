@@ -1,19 +1,22 @@
 import discord_gleam
+import discord_gleam/bot
 import discord_gleam/discord/intents
 import discord_gleam/event_handler
+import discord_gleam/types/embed
 import discord_gleam/types/message
 import gleam/erlang/process
-import gleam/list
+import gleam/option.{None}
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
-import gleam/string
 import logging
 
 pub fn main() {
   logging.configure()
   logging.set_level(logging.Info)
 
-  let bot = discord_gleam.bot("token", "client id", intents.default())
+  let bot =
+    bot.new("TOKEN ID", "CLIENT ID")
+    |> bot.with_intents(intents.default_with_message_intent())
 
   let bot =
     supervision.worker(fn() {
@@ -32,24 +35,36 @@ pub fn main() {
 fn simple_handler(bot, packet: event_handler.Packet) {
   case packet {
     event_handler.ReadyPacket(ready) -> {
-      logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
+      logging.log(logging.Info, "Logged in as " <> ready.user.username)
 
       Nil
     }
     event_handler.MessagePacket(message) -> {
-      logging.log(logging.Info, "Message: " <> message.d.content)
-      case message.d.content {
+      logging.log(logging.Info, "Message: " <> message.content)
+
+      case message.content {
         "!embed" -> {
-          let embed1 =
-            message.Embed(
+          let embed =
+            embed.new(
               title: "Embed Title",
               description: "Embed Description",
               color: 0x00FF00,
             )
+            |> embed.set_url("https://example.com")
+            |> embed.set_footer(text: "Footer Text", icon_url: None)
+            |> embed.add_field(
+              name: "Field 1",
+              value: "Field Value 1",
+              inline: True,
+            )
 
-          discord_gleam.send_message(bot, message.d.channel_id, "Embed!", [
-            embed1,
-          ])
+          let _ =
+            discord_gleam.send_message(
+              bot,
+              message.channel_id,
+              message.new("Embed!")
+                |> message.add_embed(embed),
+            )
 
           Nil
         }

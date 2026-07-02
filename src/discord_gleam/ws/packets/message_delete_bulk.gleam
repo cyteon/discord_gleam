@@ -1,12 +1,13 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
 import gleam/dynamic/decode
 import gleam/json
+import gleam/option.{type Option, None}
 
 pub type MessageDeleteBulkPacketData {
   MessageDeleteBulkPacketData(
-    ids: List(Snowflake),
-    guild_id: Snowflake,
-    channel_id: Snowflake,
+    ids: List(Snowflake(snowflake.Message)),
+    guild_id: Option(Snowflake(snowflake.Guild)),
+    channel_id: Snowflake(snowflake.Channel),
   )
 }
 
@@ -20,7 +21,7 @@ pub type MessageDeleteBulkPacket {
   )
 }
 
-pub fn string_to_data(
+pub fn from_json_string(
   encoded: String,
 ) -> Result(MessageDeleteBulkPacket, json.DecodeError) {
   let decoder = {
@@ -29,8 +30,13 @@ pub fn string_to_data(
     use op <- decode.field("op", decode.int)
     use d <- decode.field("d", {
       use ids <- decode.field("ids", decode.list(snowflake.decoder()))
-      use guild_id <- decode.field("guild_id", snowflake.decoder())
+      use guild_id <- decode.optional_field(
+        "guild_id",
+        None,
+        decode.optional(snowflake.decoder()),
+      )
       use channel_id <- decode.field("channel_id", snowflake.decoder())
+
       decode.success(MessageDeleteBulkPacketData(ids:, guild_id:, channel_id:))
     })
     decode.success(MessageDeleteBulkPacket(t:, s:, op:, d:))

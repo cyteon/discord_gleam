@@ -1,11 +1,14 @@
 import discord_gleam
-import discord_gleam/discord/intents
+import discord_gleam/bot
+import discord_gleam/discord/snowflake
 import discord_gleam/event_handler
+import discord_gleam/types/interaction
+import discord_gleam/types/message
 import discord_gleam/types/slash_command
 import discord_gleam/ws/packets/interaction_create
 import gleam/erlang/process
 import gleam/list
-import gleam/option
+import gleam/option.{None, Some}
 import gleam/otp/static_supervisor as supervisor
 import gleam/otp/supervision
 import logging
@@ -14,7 +17,7 @@ pub fn main() {
   logging.configure()
   logging.set_level(logging.Info)
 
-  let bot = discord_gleam.bot("TOKEN", "CLIENT_ID", intents.default())
+  let bot = bot.new("TOKEN", "CLIENT ID")
 
   let test_cmd =
     slash_command.SlashCommand(
@@ -37,9 +40,13 @@ pub fn main() {
       options: [],
     )
 
-  discord_gleam.register_global_commands(bot, [test_cmd])
-
-  discord_gleam.register_guild_commands(bot, "GUILD_ID", [test_cmd2])
+  let _ = discord_gleam.register_global_commands(bot, [test_cmd])
+  let _ =
+    discord_gleam.register_guild_commands(
+      bot,
+      snowflake.from_string("GUILD ID"),
+      [test_cmd2],
+    )
 
   let bot =
     supervision.worker(fn() {
@@ -55,60 +62,80 @@ pub fn main() {
   process.sleep_forever()
 }
 
-fn simple_handler(bot, packet: event_handler.Packet) {
+fn simple_handler(_, packet: event_handler.Packet) {
   case packet {
     event_handler.ReadyPacket(ready) -> {
-      logging.log(logging.Info, "Logged in as " <> ready.d.user.username)
+      logging.log(logging.Info, "Logged in as " <> ready.user.username)
 
       Nil
     }
 
-    event_handler.InteractionCreate(interaction) -> {
-      logging.log(logging.Info, "Interaction: " <> interaction.d.data.name)
+    event_handler.InteractionCreatePacket(interaction) -> {
+      case interaction.data {
+        interaction_create.ApplicationCommand(_id, name, _type_, options) -> {
+          case name {
+            "ping" -> {
+              case options {
+                Some(options) -> {
+                  case list.first(options) {
+                    Ok(option) -> {
+                      let value = case option.value {
+                        interaction_create.StringValue(value) -> value
+                        _ -> "unexpected value type"
+                      }
 
-      case interaction.d.data.name {
-        "ping" -> {
-          case interaction.d.data.options {
-            option.Some(options) -> {
-              case list.first(options) {
-                Ok(option) -> {
-                  let value = case option.value {
-                    interaction_create.StringValue(value) -> value
-                    _ -> "unexpected value type"
+                      let _ =
+                        interaction.send_message(
+                          interaction,
+                          message.new("pong: " <> value),
+                          ephemeral: False,
+                        )
+
+                      Nil
+                    }
+
+                    Error(_) -> {
+                      let _ =
+                        interaction.send_message(
+                          interaction,
+                          message.new("pong"),
+                          ephemeral: False,
+                        )
+
+                      Nil
+                    }
                   }
-
-                  discord_gleam.interaction_reply_message(
-                    interaction,
-                    "pong: " <> value,
-                    False,
-                  )
                 }
 
-                Error(_) ->
-                  discord_gleam.interaction_reply_message(
-                    interaction,
-                    "pong",
-                    False,
-                  )
+                None -> {
+                  let _ =
+                    interaction.send_message(
+                      interaction,
+                      message.new("pong"),
+                      ephemeral: False,
+                    )
+
+                  Nil
+                }
               }
+
+              Nil
             }
 
-            option.None ->
-              discord_gleam.interaction_reply_message(
-                interaction,
-                "pong",
-                False,
-              )
+            "pong" -> {
+              let _ =
+                interaction.send_message(
+                  interaction,
+                  message.new("ping"),
+                  ephemeral: False,
+                )
+
+              Nil
+            }
+            _ -> Nil
           }
-
-          Nil
         }
 
-        "pong" -> {
-          discord_gleam.interaction_reply_message(interaction, "ping", False)
-
-          Nil
-        }
         _ -> Nil
       }
     }
