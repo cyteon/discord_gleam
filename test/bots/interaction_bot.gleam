@@ -83,8 +83,16 @@ pub fn main() {
       options: [],
     )
 
+  let followups =
+    slash_command.SlashCommand(
+      name: "followups",
+      description: "Test followup command",
+      options: [],
+    )
+
   let _ = discord_gleam.wipe_global_commands(bot)
-  let _ = discord_gleam.register_global_commands(bot, [test_cmd, modal_cmd])
+  let _ =
+    discord_gleam.register_global_commands(bot, [test_cmd, modal_cmd, followups])
 
   let _ =
     discord_gleam.wipe_guild_commands(bot, snowflake.from_string(guild_id))
@@ -249,6 +257,84 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                     data: modal,
                   ),
                 )
+
+              Nil
+            }
+
+            "followups" -> {
+              let _ =
+                interaction.send_message(
+                  interaction,
+                  message.new("First response"),
+                  ephemeral: False,
+                )
+
+              process.sleep(1000)
+
+              let _ =
+                interaction.edit_response(
+                  interaction,
+                  message.new("Edited response"),
+                )
+
+              process.sleep(1000)
+
+              let followup1 =
+                interaction.send_followup(
+                  interaction,
+                  message.new("Followup message"),
+                )
+
+              process.sleep(1000)
+
+              let followup2 =
+                interaction.send_followup(
+                  interaction,
+                  message.new("Followup message 2"),
+                )
+
+              process.sleep(1000)
+
+              let _ = interaction.delete_response(interaction)
+
+              process.sleep(1000)
+
+              case followup1 {
+                Ok(followup1) -> {
+                  let _ =
+                    interaction.edit_followup(
+                      interaction,
+                      followup1.id,
+                      message.new("Edited followup message"),
+                    )
+
+                  Nil
+                }
+
+                Error(_) -> Nil
+              }
+
+              process.sleep(1000)
+
+              case followup1 {
+                Ok(followup1) -> {
+                  let _ = interaction.delete_followup(interaction, followup1.id)
+
+                  Nil
+                }
+
+                Error(_) -> Nil
+              }
+
+              case followup2 {
+                Ok(followup2) -> {
+                  let _ = interaction.delete_followup(interaction, followup2.id)
+
+                  Nil
+                }
+
+                Error(_) -> Nil
+              }
 
               Nil
             }
