@@ -976,6 +976,7 @@ fn normal_handler(
             _ -> discord_gleam.continue(state)
           }
         }
+
         _ -> discord_gleam.continue(state)
       }
     }

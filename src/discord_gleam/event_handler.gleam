@@ -1,6 +1,7 @@
 import booklet
 import discord_gleam/ws/packets/guild_delete
 import discord_gleam/ws/packets/message_reaction_add
+import discord_gleam/ws/packets/message_reaction_remove
 import gleam/dict
 import gleam/erlang/process
 import gleam/list
@@ -130,6 +131,8 @@ pub type Packet {
 
   /// `MESSAGE_REACTION_ADD` event
   MessageReactionAdd(message_reaction_add.MessageReactionAddPacketData)
+  /// `MESSAGE_REACTION_REMOVE` event
+  MessageReactionRemove(message_reaction_remove.MessageReactionRemovePacketData)
 
   /// `CHANNEL_CREATE` event
   ChannelCreatePacket(channel.Channel)
@@ -364,6 +367,20 @@ fn decode_packet(msg: String) -> Packet {
               logging.log(
                 logging.Error,
                 "Failed to decode MESSAGE_REACTION_ADD packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "MESSAGE_REACTION_REMOVE" ->
+          case message_reaction_remove.from_json_string(msg) {
+            Ok(packet) -> MessageReactionRemove(packet.d)
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode MESSAGE_REACTION_REMOVE packet: "
                   <> error.json_decode_error_to_string(err),
               )
 
