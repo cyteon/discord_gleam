@@ -176,8 +176,8 @@ Intent: guild_presences
 - [x] PRESENCE_UPDATE
 
 Intent: guild_message_reactions/direct_message_reactions
-- [ ] MESSAGE_REACTION_ADD
-- [ ] MESSAGE_REACTION_REMOVE
+- [x] MESSAGE_REACTION_ADD
+- [x] MESSAGE_REACTION_REMOVE
 - [ ] MESSAGE_REACTION_REMOVE_ALL
 - [ ] MESSAGE_REACTION_REMOVE_EMOJI
 
