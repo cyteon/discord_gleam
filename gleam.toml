@@ -1,5 +1,5 @@
 name = "discord_gleam"
-version = "3.0.0"
+version = "3.1.0"
 
 # Fill out these fields if you intend to generate HTML documentation or publish
 # your project to the Hex package manager.
@@ -12,7 +12,7 @@ repository = { type = "github", user = "cyteon", repo = "discord_gleam" }
 # For a full reference of all the available options, you can have a look at
 # https://gleam.run/writing-gleam/gleam-toml/.
 
-gleam = ">= 1.11.0"
+gleam = ">= 1.16.0"
 
 [dependencies]
 gleam_stdlib = ">= 1.0.0 and < 2.0.0"

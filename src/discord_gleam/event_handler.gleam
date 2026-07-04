@@ -140,6 +140,8 @@ pub type Packet {
 
   /// `GUILD_CREATE` event
   GuildCreatePacket(guild.Guild)
+  /// `GUILD_UPDATE` event
+  GuildUpdatePacket(guild.Guild)
 
   /// `GUILD_ROLE_CREATE` event
   GuildRoleCreatePacket(guild_role_create.GuildRoleCreatePacketData)
@@ -440,6 +442,36 @@ fn decode_packet(msg: String) -> Packet {
               logging.log(
                 logging.Error,
                 "Failed to decode GUILD_CREATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_UPDATE" ->
+          case guild_create.from_json_string(msg) {
+            Ok(packet) -> GuildUpdatePacket(packet.d)
+
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_UPDATE packet: "
+                  <> error.json_decode_error_to_string(err),
+              )
+
+              UnknownPacket(generic_packet)
+            }
+          }
+
+        "GUILD_DELETE" ->
+          case guild_create.from_json_string(msg) {
+            Ok(packet) -> GuildUpdatePacket(packet.d)
+
+            Error(err) -> {
+              logging.log(
+                logging.Error,
+                "Failed to decode GUILD_DELETE packet: "
                   <> error.json_decode_error_to_string(err),
               )
 

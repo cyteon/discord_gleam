@@ -116,8 +116,8 @@ Intent: guild_messages/direct_messages (optional: message_content)
 
 Intent: guilds
 - [x] GUILD_CREATE
-- [ ] GUILD_UPDATE
-- [ ] GUILD_DELETE
+- [x] GUILD_UPDATE
+- [x] GUILD_DELETE
 - [x] CHANNEL_CREATE
 - [x] CHANNEL_UPDATE
 - [x] CHANNEL_DELETE
