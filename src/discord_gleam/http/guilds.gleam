@@ -96,3 +96,52 @@ pub fn ban_member(
     }
   }
 }
+
+/// Unban a member from a server
+pub fn unban_member(
+  token: String,
+  guild_id: Snowflake(snowflake.Guild),
+  user_id: Snowflake(snowflake.User),
+  reason: String,
+) -> Result(Nil, error.DiscordError) {
+  let request =
+    request.new_auth_with_header(
+      http.Delete,
+      "/guilds/"
+        <> snowflake.to_string(guild_id)
+        <> "/bans/"
+        <> snowflake.to_string(user_id),
+      token,
+      #("X-Audit-Log-Reason", reason),
+    )
+
+  case httpc.send(request) {
+    Ok(resp) -> {
+      case resp.status {
+        204 -> {
+          logging.log(logging.Debug, "Unbanned member")
+
+          Ok(Nil)
+        }
+
+        429 -> {
+          logging.log(logging.Error, "Failed to unban member: rate limited")
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
+        _ -> {
+          logging.log(logging.Error, "Failed to unban member")
+
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
+        }
+      }
+    }
+
+    Error(err) -> {
+      logging.log(logging.Error, "Failed to unban member")
+
+      Error(error.HttpError(err))
+    }
+  }
+}

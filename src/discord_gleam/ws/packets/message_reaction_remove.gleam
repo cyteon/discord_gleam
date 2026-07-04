@@ -1,9 +1,8 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/emoji
-import discord_gleam/types/guild_member
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option.{type Option, None, Some}
+import gleam/option.{type Option, None}
 
 pub type MessageReactionRemovePacketData {
   MessageReactionRemovePacketData(
