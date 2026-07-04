@@ -637,10 +637,6 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
           }
         }
 
-        _, _ -> Nil
-      }
-
-      case message.content, message.guild_id {
         "!ban " <> args, Some(guild_id) -> {
           let args = string.split(args, " ")
           let #(user, args) = case args {
@@ -675,6 +671,47 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                   bot,
                   message.channel_id,
                   message.new("Failed to ban user!"),
+                )
+
+              Nil
+            }
+          }
+        }
+
+        "!unban " <> args, Some(guild_id) -> {
+          let args = string.split(args, " ")
+          let #(user, args) = case args {
+            [user, ..args] -> #(user, args)
+            _ -> #("", [])
+          }
+
+          let user =
+            string.replace(user, "<@", "")
+            |> string.replace(">", "")
+            |> snowflake.from_string
+
+          let reason = string.join(args, " ")
+
+          let resp = discord_gleam.unban_member(bot, guild_id, user, reason)
+
+          case resp {
+            Ok(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Unbanned user!"),
+                )
+
+              Nil
+            }
+
+            Error(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Failed to unban user!"),
                 )
 
               Nil

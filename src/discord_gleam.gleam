@@ -290,7 +290,7 @@ pub fn reply(
   channels.reply(bot.token, channel_id, msg)
 }
 
-/// Kicks an member from an server. \
+/// Kick a member from the server. \
 /// The reason will be what is shown in the audit log.
 ///
 /// Example:
@@ -304,7 +304,7 @@ pub fn reply(
 ///   discord_gleam.kick_member(bot, "GUILD_ID", "USER_ID", "REASON")
 /// }
 ///
-/// For an full example, see the `examples/kick.gleam` file.
+/// For a full example, see the `examples/kick.gleam` file.
 pub fn kick_member(
   bot: bot.Bot,
   guild_id: Snowflake(snowflake.Guild),
@@ -314,6 +314,21 @@ pub fn kick_member(
   guilds.kick_member(bot.token, guild_id, user_id, reason)
 }
 
+/// Ban a member from the server. \
+/// The reason will be what is shown in the audit log.
+///
+/// Example:
+///
+/// ```gleam
+/// import discord_gleam
+///
+/// fn main() {
+///   ...
+///
+///   discord_gleam.ban_member(bot, "GUILD_ID", "USER_ID", "REASON")
+/// }
+///
+/// For a full example, see the `examples/ban.gleam` file.
 pub fn ban_member(
   bot: bot.Bot,
   guild_id: Snowflake(snowflake.Guild),
@@ -323,7 +338,29 @@ pub fn ban_member(
   guilds.ban_member(bot.token, guild_id, user_id, reason)
 }
 
-/// Deletes an message from a channel. \
+/// Unban a member from the server. \
+/// The reason will be what is shown in the audit log.
+///
+/// Example:
+///
+/// ```gleam
+/// import discord_gleam
+///
+/// fn main() {
+///   ...
+///
+///   discord_gleam.unban_member(bot, "GUILD_ID", "USER_ID", "REASON")
+/// }
+pub fn unban_member(
+  bot: bot.Bot,
+  guild_id: Snowflake(snowflake.Guild),
+  user_id: Snowflake(snowflake.User),
+  reason: String,
+) -> Result(Nil, error.DiscordError) {
+  guilds.unban_member(bot.token, guild_id, user_id, reason)
+}
+
+/// Delete a message from a channel. \
 /// The reason will be what is shown in the audit log.
 ///
 /// Example:
@@ -341,7 +378,7 @@ pub fn ban_member(
 ///   )
 /// }
 ///
-/// For an full example, see the `examples/delete_message.gleam` file.
+/// For a full example, see the `examples/delete_message.gleam` file.
 pub fn delete_message(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
