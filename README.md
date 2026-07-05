@@ -116,8 +116,8 @@ Intent: guild_messages/direct_messages (optional: message_content)
 
 Intent: guilds
 - [x] GUILD_CREATE
-- [ ] GUILD_UPDATE
-- [ ] GUILD_DELETE
+- [x] GUILD_UPDATE
+- [x] GUILD_DELETE
 - [x] CHANNEL_CREATE
 - [x] CHANNEL_UPDATE
 - [x] CHANNEL_DELETE
@@ -176,8 +176,8 @@ Intent: guild_presences
 - [x] PRESENCE_UPDATE
 
 Intent: guild_message_reactions/direct_message_reactions
-- [ ] MESSAGE_REACTION_ADD
-- [ ] MESSAGE_REACTION_REMOVE
+- [x] MESSAGE_REACTION_ADD
+- [x] MESSAGE_REACTION_REMOVE
 - [ ] MESSAGE_REACTION_REMOVE_ALL
 - [ ] MESSAGE_REACTION_REMOVE_EMOJI
 

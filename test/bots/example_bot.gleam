@@ -99,52 +99,16 @@ pub fn main() {
       test_cmd2,
     ])
 
-  // putting this here so i dont have to comment out like 20 lines to test one or the other
-  let use_simple = True
+  let bot =
+    supervision.worker(fn() {
+      discord_gleam.simple(bot, [simple_handler])
+      |> discord_gleam.start()
+    })
 
-  let _ = case use_simple {
-    True -> {
-      let bot =
-        supervision.worker(fn() {
-          discord_gleam.simple(bot, [simple_handler])
-          |> discord_gleam.start()
-        })
-
-      let assert Ok(_) =
-        supervisor.new(supervisor.OneForOne)
-        |> supervisor.add(bot)
-        |> supervisor.start()
-    }
-
-    False -> {
-      let name = process.new_name("user_message_subject")
-      let bot =
-        supervision.worker(fn() {
-          discord_gleam.new(
-            bot,
-            fn(selector) {
-              let subject = process.new_subject()
-
-              process.send_after(
-                process.named_subject(name),
-                1000,
-                "named subject message",
-              )
-
-              #(subject, process.select(selector, subject))
-            },
-            fn(bot, state, msg) { normal_handler(bot, state, name, msg) },
-          )
-          |> discord_gleam.with_name(name)
-          |> discord_gleam.start()
-        })
-
-      let assert Ok(_) =
-        supervisor.new(supervisor.OneForOne)
-        |> supervisor.add(bot)
-        |> supervisor.start()
-    }
-  }
+  let assert Ok(_) =
+    supervisor.new(supervisor.OneForOne)
+    |> supervisor.add(bot)
+    |> supervisor.start()
 
   process.sleep_forever()
 }
@@ -637,10 +601,6 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
           }
         }
 
-        _, _ -> Nil
-      }
-
-      case message.content, message.guild_id {
         "!ban " <> args, Some(guild_id) -> {
           let args = string.split(args, " ")
           let #(user, args) = case args {
@@ -680,6 +640,84 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               Nil
             }
           }
+        }
+
+        "!unban " <> args, Some(guild_id) -> {
+          let args = string.split(args, " ")
+          let #(user, args) = case args {
+            [user, ..args] -> #(user, args)
+            _ -> #("", [])
+          }
+
+          let user =
+            string.replace(user, "<@", "")
+            |> string.replace(">", "")
+            |> snowflake.from_string
+
+          let reason = string.join(args, " ")
+
+          let resp = discord_gleam.unban_member(bot, guild_id, user, reason)
+
+          case resp {
+            Ok(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Unbanned user!"),
+                )
+
+              Nil
+            }
+
+            Error(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Failed to unban user!"),
+                )
+
+              Nil
+            }
+          }
+        }
+
+        "!find " <> args, Some(_) -> {
+          let args = string.split(args, " ")
+          let message_id = case list.first(args) {
+            Ok(id) -> snowflake.from_string(id)
+            Error(_) -> snowflake.from_string("0")
+          }
+
+          let resp =
+            discord_gleam.get_message(bot, message.channel_id, message_id)
+
+          case resp {
+            Ok(msg) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Found message: " <> msg.content),
+                )
+
+              Nil
+            }
+
+            Error(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Failed to find message!"),
+                )
+
+              Nil
+            }
+          }
+
+          Nil
         }
 
         _, _ -> Nil
@@ -897,92 +935,36 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
       )
     }
 
+    event_handler.MessageReactionAdd(reaction) -> {
+      logging.log(
+        logging.Info,
+        "Reaction added: "
+          <> snowflake.to_string(reaction.user_id)
+          <> " reacted with "
+          <> case reaction.emoji.name {
+          Some(name) -> name
+          None -> "No name"
+        }
+          <> " to message "
+          <> snowflake.to_string(reaction.message_id),
+      )
+    }
+
+    event_handler.MessageReactionRemove(reaction) -> {
+      logging.log(
+        logging.Info,
+        "Reaction removed: "
+          <> snowflake.to_string(reaction.user_id)
+          <> " removed reaction "
+          <> case reaction.emoji.name {
+          Some(name) -> name
+          None -> "No name"
+        }
+          <> " from message "
+          <> snowflake.to_string(reaction.message_id),
+      )
+    }
+
     _ -> Nil
-  }
-}
-
-fn normal_handler(
-  bot: bot.Bot,
-  state: process.Subject(String),
-  name: process.Name(String),
-  msg: discord_gleam.HandlerMessage(String),
-) {
-  case msg {
-    discord_gleam.Packet(packet) -> {
-      case packet {
-        event_handler.ReadyPacket(ready) -> {
-          logging.log(
-            logging.Info,
-            "Logged in as "
-              <> ready.user.username
-              <> "#"
-              <> ready.user.discriminator,
-          )
-
-          list.each(ready.guilds, fn(guild) {
-            let assert guild.UnavailableGuild(id, ..) = guild
-
-            logging.log(
-              logging.Info,
-              "Unavailable guild: " <> snowflake.to_string(id),
-            )
-
-            discord_gleam.request_guild_members(
-              bot: bot,
-              guild_id: id,
-              option: request_guild_members.Query("", None),
-              presences: Some(True),
-              nonce: Some("test_request"),
-            )
-          })
-
-          discord_gleam.continue(state)
-        }
-
-        event_handler.MessagePacket(message) -> {
-          logging.log(logging.Info, "Got message: " <> message.content)
-
-          case message.content {
-            "!ping" -> {
-              let _ =
-                discord_gleam.send_message(
-                  bot,
-                  message.channel_id,
-                  message.new("Pong!"),
-                )
-
-              discord_gleam.continue(state)
-            }
-
-            "!send " <> message -> {
-              process.send(state, message)
-
-              discord_gleam.continue(state)
-            }
-
-            "!send_to_name " <> message -> {
-              process.send(process.named_subject(name), message)
-
-              discord_gleam.continue(state)
-            }
-
-            "!stop" -> {
-              discord_gleam.stop()
-            }
-
-            "!stop_abnormal" -> {
-              discord_gleam.stop_abnormal("testing what will happen")
-            }
-            _ -> discord_gleam.continue(state)
-          }
-        }
-        _ -> discord_gleam.continue(state)
-      }
-    }
-
-    discord_gleam.User(msg) -> {
-      logging.log(logging.Info, "Got user message from subject: " <> msg)
-      discord_gleam.continue(state)
-    }
   }
 }

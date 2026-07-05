@@ -47,8 +47,9 @@ pub fn json_decoder() -> decode.Decoder(GuildMember) {
     None,
     decode.optional(decode.string),
   )
-  use deaf <- decode.field("deaf", decode.bool)
-  use mute <- decode.field("mute", decode.bool)
+  use deaf <- decode.optional_field("deaf", False, decode.bool)
+  use mute <- decode.optional_field("mute", False, decode.bool)
+
   use flags <- decode.field("flags", decode.int)
   use pending <- decode.optional_field(
     "pending",

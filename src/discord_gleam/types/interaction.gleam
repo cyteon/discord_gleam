@@ -1,8 +1,10 @@
+import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/http/interactions
 import discord_gleam/internal/error
 import discord_gleam/types/component
 import discord_gleam/types/embed
 import discord_gleam/types/message
+import discord_gleam/types/message_send_response
 import discord_gleam/ws/packets/interaction_create
 import gleam/json
 import gleam/list
@@ -157,7 +159,7 @@ pub fn custom_response(
   interactions.send_response(interaction, to_string(response))
 }
 
-/// Used to defer a response to a interaction, will show as the bot is thinking to the user.
+/// Used to defer a response to an interaction, will show as the bot is thinking to the user.
 pub fn defer_response(
   interaction: interaction_create.InteractionCreatePacketData,
   ephemeral ephemeral: Bool,
@@ -180,10 +182,42 @@ pub fn defer_response(
   interactions.send_response(interaction, to_string(response))
 }
 
-/// Used to edit the original response to a interaction, for example after deferring the response.
+/// Used to edit the original response to an interaction, for example after deferring the response.
 pub fn edit_response(
   interaction: interaction_create.InteractionCreatePacketData,
   message message: message.Message,
 ) -> Result(Nil, error.DiscordError) {
   interactions.edit_original(interaction, message.to_string(message))
+}
+
+/// Used to delete the original response to an interaction.
+pub fn delete_response(
+  interaction: interaction_create.InteractionCreatePacketData,
+) -> Result(Nil, error.DiscordError) {
+  interactions.delete_original(interaction)
+}
+
+/// Used to send a separate followup message to an interaction.
+pub fn send_followup(
+  interaction: interaction_create.InteractionCreatePacketData,
+  message message: message.Message,
+) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+  interactions.send_followup(interaction, message)
+}
+
+/// Used to edit a followup to an interaction.
+pub fn edit_followup(
+  interaction: interaction_create.InteractionCreatePacketData,
+  message_id: Snowflake(snowflake.Message),
+  message message: message.Message,
+) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+  interactions.edit_followup(interaction, message_id, message)
+}
+
+/// Used to delete a followup to an interaction.
+pub fn delete_followup(
+  interaction: interaction_create.InteractionCreatePacketData,
+  message_id: Snowflake(snowflake.Message),
+) -> Result(Nil, error.DiscordError) {
+  interactions.delete_followup(interaction, message_id)
 }

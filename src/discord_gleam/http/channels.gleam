@@ -207,3 +207,49 @@ pub fn edit_message(
     }
   }
 }
+
+pub fn get_message(
+  token: String,
+  channel_id: Snowflake(snowflake.Channel),
+  message_id: Snowflake(snowflake.Message),
+) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+  let request =
+    request.new_auth(
+      http.Get,
+      "/channels/"
+        <> snowflake.to_string(channel_id)
+        <> "/messages/"
+        <> snowflake.to_string(message_id),
+      token,
+    )
+
+  case httpc.send(request) {
+    Ok(resp) -> {
+      case resp.status {
+        200 -> {
+          logging.log(logging.Debug, "Got message")
+
+          message_send_response.from_json_string(resp.body)
+        }
+
+        429 -> {
+          logging.log(logging.Error, "Failed to get message: rate limited")
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
+        _ -> {
+          logging.log(logging.Error, "Failed to get message")
+
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
+        }
+      }
+    }
+
+    Error(err) -> {
+      logging.log(logging.Error, "Failed to get message")
+
+      Error(error.HttpError(err))
+    }
+  }
+}
