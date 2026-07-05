@@ -149,14 +149,14 @@ pub fn delete_original(
     }
 
     Error(err) -> {
-      logging.log(logging.Error, "Error when deleting Interaction Response")
+      logging.log(logging.Error, "Error when deleting interaction response")
 
       Error(error.HttpError(err))
     }
   }
 }
 
-/// Send a seperate followup message to an interaction.
+/// Send a separate followup message to an interaction.
 pub fn send_followup(
   interaction: interaction_create.InteractionCreatePacketData,
   message: message.Message,

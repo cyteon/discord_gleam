@@ -13,8 +13,8 @@ pub type GuildMember {
     // ISO8601 timestamp?
     joined_at: String,
     premium_since: Option(String),
-    deaf: Option(Bool),
-    mute: Option(Bool),
+    deaf: Bool,
+    mute: Bool,
     flags: Int,
     pending: Option(Bool),
     permissions: Option(String),
@@ -47,8 +47,8 @@ pub fn json_decoder() -> decode.Decoder(GuildMember) {
     None,
     decode.optional(decode.string),
   )
-  use deaf <- decode.optional_field("deaf", None, decode.optional(decode.bool))
-  use mute <- decode.optional_field("mute", None, decode.optional(decode.bool))
+  use deaf <- decode.optional_field("deaf", False, decode.bool)
+  use mute <- decode.optional_field("mute", False, decode.bool)
 
   use flags <- decode.field("flags", decode.int)
   use pending <- decode.optional_field(

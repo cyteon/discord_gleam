@@ -327,6 +327,7 @@ pub fn kick_member(
 ///
 ///   discord_gleam.ban_member(bot, "GUILD_ID", "USER_ID", "REASON")
 /// }
+/// ```
 ///
 /// For a full example, see the `examples/ban.gleam` file.
 pub fn ban_member(
@@ -351,6 +352,7 @@ pub fn ban_member(
 ///
 ///   discord_gleam.unban_member(bot, "GUILD_ID", "USER_ID", "REASON")
 /// }
+/// ```
 pub fn unban_member(
   bot: bot.Bot,
   guild_id: Snowflake(snowflake.Guild),
@@ -481,4 +483,12 @@ pub fn update_presence(
   presence: update_presence.Presence,
 ) -> Nil {
   update_presence.update_presence(bot, presence)
+}
+
+pub fn get_message(
+  bot: bot.Bot,
+  channel_id: Snowflake(snowflake.Channel),
+  message_id: Snowflake(snowflake.Message),
+) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+  channels.get_message(bot.token, channel_id, message_id)
 }

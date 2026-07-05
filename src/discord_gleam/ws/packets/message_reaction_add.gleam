@@ -70,6 +70,12 @@ pub fn from_json_string(
         decode.optional(decode.list(decode.string)),
       )
 
+      use type_ <- decode.optional_field(
+        "type",
+        None,
+        decode.optional(decode.int),
+      )
+
       decode.success(MessageReactionAddPacketData(
         user_id:,
         channel_id:,
@@ -80,7 +86,7 @@ pub fn from_json_string(
         message_author_id:,
         burst:,
         burst_colors:,
-        type_: None,
+        type_:,
       ))
     })
 

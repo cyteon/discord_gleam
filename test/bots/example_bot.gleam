@@ -683,6 +683,43 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
           }
         }
 
+        "!find " <> args, Some(_) -> {
+          let args = string.split(args, " ")
+          let message_id = case list.first(args) {
+            Ok(id) -> snowflake.from_string(id)
+            Error(_) -> snowflake.from_string("0")
+          }
+
+          let resp =
+            discord_gleam.get_message(bot, message.channel_id, message_id)
+
+          case resp {
+            Ok(msg) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Found message: " <> msg.content),
+                )
+
+              Nil
+            }
+
+            Error(_) -> {
+              let _ =
+                discord_gleam.send_message(
+                  bot,
+                  message.channel_id,
+                  message.new("Failed to find message!"),
+                )
+
+              Nil
+            }
+          }
+
+          Nil
+        }
+
         _, _ -> Nil
       }
     }

@@ -48,6 +48,12 @@ pub fn from_json_string(
 
       use burst <- decode.field("burst", decode.bool)
 
+      use type_ <- decode.optional_field(
+        "type",
+        None,
+        decode.optional(decode.int),
+      )
+
       decode.success(MessageReactionRemovePacketData(
         user_id:,
         channel_id:,
@@ -55,7 +61,7 @@ pub fn from_json_string(
         guild_id:,
         emoji:,
         burst:,
-        type_: None,
+        type_:,
       ))
     })
 

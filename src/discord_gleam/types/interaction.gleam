@@ -159,7 +159,7 @@ pub fn custom_response(
   interactions.send_response(interaction, to_string(response))
 }
 
-/// Used to defer a response to a interaction, will show as the bot is thinking to the user.
+/// Used to defer a response to an interaction, will show as the bot is thinking to the user.
 pub fn defer_response(
   interaction: interaction_create.InteractionCreatePacketData,
   ephemeral ephemeral: Bool,
@@ -182,7 +182,7 @@ pub fn defer_response(
   interactions.send_response(interaction, to_string(response))
 }
 
-/// Used to edit the original response to a interaction, for example after deferring the response.
+/// Used to edit the original response to an interaction, for example after deferring the response.
 pub fn edit_response(
   interaction: interaction_create.InteractionCreatePacketData,
   message message: message.Message,
@@ -190,14 +190,14 @@ pub fn edit_response(
   interactions.edit_original(interaction, message.to_string(message))
 }
 
-/// Used to delete the original response to a interaction.
+/// Used to delete the original response to an interaction.
 pub fn delete_response(
   interaction: interaction_create.InteractionCreatePacketData,
 ) -> Result(Nil, error.DiscordError) {
   interactions.delete_original(interaction)
 }
 
-/// Used to send a seperate followup message to an interaction.
+/// Used to send a separate followup message to an interaction.
 pub fn send_followup(
   interaction: interaction_create.InteractionCreatePacketData,
   message message: message.Message,

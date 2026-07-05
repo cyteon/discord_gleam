@@ -1,5 +1,6 @@
 import booklet
 import discord_gleam/ws/packets/guild_delete
+import discord_gleam/ws/packets/guild_update
 import discord_gleam/ws/packets/message_reaction_add
 import discord_gleam/ws/packets/message_reaction_remove
 import gleam/dict
@@ -488,7 +489,7 @@ fn decode_packet(msg: String) -> Packet {
           }
 
         "GUILD_UPDATE" ->
-          case guild_create.from_json_string(msg) {
+          case guild_update.from_json_string(msg) {
             Ok(packet) -> GuildUpdatePacket(packet.d)
 
             Error(err) -> {
