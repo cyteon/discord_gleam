@@ -9,10 +9,6 @@ pub type CommandOption {
     description: String,
     type_: CommandOptionType,
     required: Bool,
-    /// Restricts this option to a fixed set of choices, rendered by Discord
-    /// as a dropdown instead of free text. Pairs are `#(name, value)`. Pass
-    /// an empty list for a free-text option (the field is omitted from the
-    /// serialized command entirely, matching Discord's own default).
     choices: List(#(String, String)),
   )
 }

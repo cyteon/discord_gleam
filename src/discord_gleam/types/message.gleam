@@ -8,8 +8,6 @@ pub type Message {
     content: String,
     embeds: List(embed.Embed),
     components: List(component.Component),
-    /// When true, sets the Discord message flag that makes a response or
-    /// followup visible only to the interaction's caller.
     ephemeral: Bool,
   )
 }
@@ -30,8 +28,6 @@ pub fn add_component(msg: Message, component: component.Component) -> Message {
   Message(..msg, components: list.append(msg.components, [component]))
 }
 
-/// Mark this message as ephemeral (only visible to the interaction's caller).
-/// Only has an effect when sent as an interaction response/followup.
 pub fn set_ephemeral(msg: Message, ephemeral: Bool) -> Message {
   Message(..msg, ephemeral: ephemeral)
 }
