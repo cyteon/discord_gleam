@@ -390,6 +390,17 @@ pub fn wipe_guild_commands(
   applications.wipe_guild_commands(bot.token, bot.client_id, guild_id)
 }
 
+pub fn bulk_overwrite_global_commands(
+  bot: bot.Bot,
+  commands: List(slash_command.SlashCommand),
+) -> Result(Nil, error.DiscordError) {
+  applications.bulk_overwrite_global_commands(
+    bot.token,
+    bot.client_id,
+    commands,
+  )
+}
+
 /// Registers a global slash command. \
 /// Restarting your client might be required to see the changes.
 pub fn register_global_commands(
