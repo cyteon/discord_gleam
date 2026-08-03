@@ -47,7 +47,7 @@ pub fn type_to_int(type_: CommandOptionType) -> Int {
   }
 }
 
-pub fn command_to_string(raw: SlashCommand) -> String {
+pub fn command_to_json(raw: SlashCommand) -> json.Json {
   let options = list.map(raw.options, options_to_string)
 
   json.object([
@@ -56,7 +56,16 @@ pub fn command_to_string(raw: SlashCommand) -> String {
     #("description", json.string(raw.description)),
     #("options", json.array(options, of: fn(x) { x })),
   ])
-  |> json.to_string
+}
+
+pub fn command_to_string(raw: SlashCommand) -> String {
+  command_to_json(raw) |> json.to_string
+}
+
+/// Serializes a full command list as a JSON array, for the bulk overwrite
+/// endpoint (a single PUT registering/replacing every command at once).
+pub fn commands_to_string(commands: List(SlashCommand)) -> String {
+  json.array(commands, of: command_to_json) |> json.to_string
 }
 
 pub fn options_to_string(option: CommandOption) -> json.Json {

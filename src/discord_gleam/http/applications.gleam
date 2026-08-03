@@ -104,6 +104,60 @@ pub fn wipe_guild_commands(
   }
 }
 
+/// Overwrites all global slash commands in a single request. This is
+/// Discord's recommended way to sync a whole command set: unlike registering
+/// commands one by one, it can't partially fail from a single command
+/// hitting a rate limit, and it removes any command not in the list.
+pub fn bulk_overwrite_global_commands(
+  token: String,
+  client_id: Snowflake(snowflake.Application),
+  commands: List(slash_command.SlashCommand),
+) -> Result(Nil, error.DiscordError) {
+  let request =
+    request.new_auth_with_body(
+      http.Put,
+      "/applications/" <> snowflake.to_string(client_id) <> "/commands",
+      token,
+      slash_command.commands_to_string(commands),
+    )
+
+  case httpc.send(request) {
+    Ok(resp) -> {
+      case resp.status {
+        200 -> {
+          logging.log(logging.Debug, "Bulk overwrote global commands")
+
+          Ok(Nil)
+        }
+
+        429 -> {
+          logging.log(
+            logging.Error,
+            "Failed to bulk overwrite global commands: rate limited",
+          )
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
+        _ -> {
+          logging.log(
+            logging.Error,
+            "Failed to bulk overwrite global commands",
+          )
+
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
+        }
+      }
+    }
+
+    Error(err) -> {
+      logging.log(logging.Error, "Failed to bulk overwrite global commands")
+
+      Error(error.HttpError(err))
+    }
+  }
+}
+
 /// Register a new global slash command
 pub fn register_global_command(
   token: String,
