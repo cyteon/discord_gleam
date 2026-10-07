@@ -94,7 +94,7 @@ fn options_decoder() -> decode.Decoder(InteractionOption) {
       decode.int |> decode.map(fn(v) { IntValue(v) }),
       decode.bool |> decode.map(fn(v) { BoolValue(v) }),
       decode.float |> decode.map(fn(v) { FloatValue(v) }),
-    ])
+    ]),
   )
 
   use options <- decode.optional_field(
