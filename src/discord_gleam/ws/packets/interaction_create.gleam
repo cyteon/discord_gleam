@@ -6,7 +6,7 @@ import discord_gleam/types/user
 import discord_gleam/ws/packets/message
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option.{type Option, None}
+import gleam/option.{type Option, None, Some}
 
 pub type InteractionData {
   ApplicationCommand(
@@ -87,13 +87,14 @@ pub type OptionValue {
 fn options_decoder() -> decode.Decoder(InteractionOption) {
   use name <- decode.field("name", decode.string)
   use type_ <- decode.field("type", decode.int)
-  use value <- decode.field(
+  use value <- decode.optional_field(
     "value",
-    decode.one_of(decode.string |> decode.map(StringValue), or: [
-      decode.int |> decode.map(IntValue),
-      decode.bool |> decode.map(BoolValue),
-      decode.float |> decode.map(FloatValue),
-    ]),
+    StringValue(""),
+    decode.one_of(decode.string |> decode.map(fn(v) { StringValue(v) }), or: [
+      decode.int |> decode.map(fn(v) { IntValue(v) }),
+      decode.bool |> decode.map(fn(v) { BoolValue(v) }),
+      decode.float |> decode.map(fn(v) { FloatValue(v) }),
+    ])
   )
 
   use options <- decode.optional_field(
