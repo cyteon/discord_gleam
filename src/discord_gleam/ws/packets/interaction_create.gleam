@@ -6,7 +6,7 @@ import discord_gleam/types/user
 import discord_gleam/ws/packets/message
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option.{type Option, None, Some}
+import gleam/option.{type Option, None}
 
 pub type InteractionData {
   ApplicationCommand(
