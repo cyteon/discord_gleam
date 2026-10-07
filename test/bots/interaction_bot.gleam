@@ -46,12 +46,14 @@ pub fn main() {
           description: "Test option",
           type_: slash_command.StringOption,
           required: False,
+          choices: [],
         ),
         slash_command.CommandOption(
           name: "int",
           description: "Test option",
           type_: slash_command.IntOption,
           required: False,
+          choices: [],
         ),
       ],
     )
@@ -66,12 +68,14 @@ pub fn main() {
           description: "Test option",
           type_: slash_command.BoolOption,
           required: False,
+          choices: [],
         ),
         slash_command.CommandOption(
           name: "float",
           description: "Test option",
           type_: slash_command.FloatOption,
           required: False,
+          choices: [],
         ),
       ],
     )

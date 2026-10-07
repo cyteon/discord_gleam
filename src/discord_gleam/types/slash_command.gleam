@@ -9,6 +9,7 @@ pub type CommandOption {
     description: String,
     type_: CommandOptionType,
     required: Bool,
+    choices: List(#(String, String)),
   )
 }
 
@@ -59,10 +60,28 @@ pub fn command_to_string(raw: SlashCommand) -> String {
 }
 
 pub fn options_to_string(option: CommandOption) -> json.Json {
-  json.object([
+  let base = [
     #("name", json.string(option.name)),
     #("description", json.string(option.description)),
     #("type", json.int(type_to_int(option.type_))),
     #("required", json.bool(option.required)),
-  ])
+  ]
+
+  case option.choices {
+    [] -> json.object(base)
+    choices ->
+      json.object(
+        list.append(base, [
+          #(
+            "choices",
+            json.array(choices, of: fn(choice) {
+              json.object([
+                #("name", json.string(choice.0)),
+                #("value", json.string(choice.1)),
+              ])
+            }),
+          ),
+        ]),
+      )
+  }
 }
