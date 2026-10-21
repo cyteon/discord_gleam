@@ -2,13 +2,11 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/http/interactions
 import discord_gleam/internal/error
 import discord_gleam/types/component
-import discord_gleam/types/embed
 import discord_gleam/types/message
 import discord_gleam/types/message_send_response
 import discord_gleam/ws/packets/interaction_create
 import gleam/json
 import gleam/list
-import gleam/option.{type Option, None, Some}
 
 pub type InteractionCallbackType {
   Pong
@@ -21,16 +19,7 @@ pub type InteractionCallbackType {
 }
 
 pub type InteractionCallbackData {
-  MessageCallbackData(
-    tts: Option(Bool),
-    content: Option(String),
-    embeds: Option(List(embed.Embed)),
-    allowed_mentions: Option(List(String)),
-    flags: Option(Int),
-    // todo: components: list of components
-    // todo: attachments: list of attachments
-    // todo: poll: poll request object
-  )
+  MessageCallbackData(message.MessageBuilder)
   // todo: autocomplete
   ModalCallbackData(
     custom_id: String,
@@ -60,47 +49,8 @@ pub fn callback_type_to_int(type_: InteractionCallbackType) -> Int {
 
 pub fn to_string(response: InteractionResponse) -> String {
   let data = case response.data {
-    MessageCallbackData(tts, content, embeds, allowed_mentions, flags) -> {
-      {
-        let embeds_json = case embeds {
-          Some(embeds) -> {
-            let embeds_json_list =
-              list.map(embeds, fn(embed) { embed.to_json(embed) })
-
-            json.array(embeds_json_list, of: fn(x) { x })
-          }
-
-          None -> json.null()
-        }
-
-        json.object([
-          #("tts", case tts {
-            Some(tts) -> json.bool(tts)
-            None -> json.null()
-          }),
-
-          #("content", case content {
-            Some(content) -> json.string(content)
-            None -> json.null()
-          }),
-
-          #("embeds", embeds_json),
-
-          #("allowed_mentions", case allowed_mentions {
-            Some(allowed_mentions) ->
-              json.array(
-                list.map(allowed_mentions, fn(x) { json.string(x) }),
-                of: fn(x) { x },
-              )
-            None -> json.null()
-          }),
-
-          #("flags", case flags {
-            Some(flags) -> json.int(flags)
-            None -> json.null()
-          }),
-        ])
-      }
+    MessageCallbackData(message) -> {
+      message.to_json(message)
     }
 
     ModalCallbackData(custom_id, title, components) -> {
@@ -132,19 +82,15 @@ pub fn send_message(
   message message: message.MessageBuilder,
   ephemeral ephemeral: Bool,
 ) -> Result(Nil, error.DiscordError) {
+  let message = case ephemeral {
+    True -> message.ephemeral(message)
+    False -> message
+  }
+
   let response =
     InteractionResponse(
       type_: ChannelMessageWithSource,
-      data: MessageCallbackData(
-        tts: None,
-        content: Some(message.content),
-        embeds: Some(message.embeds),
-        allowed_mentions: None,
-        flags: case ephemeral {
-          True -> Some(64)
-          False -> None
-        },
-      ),
+      data: MessageCallbackData(message),
     )
 
   interactions.send_response(interaction, to_string(response))
@@ -164,19 +110,15 @@ pub fn defer_response(
   interaction: interaction_create.InteractionCreatePacketData,
   ephemeral ephemeral: Bool,
 ) -> Result(Nil, error.DiscordError) {
+  let message = case ephemeral {
+    True -> message.empty() |> message.ephemeral
+    False -> message.empty()
+  }
+
   let response =
     InteractionResponse(
       type_: DeferredChannelMessageWithSource,
-      data: MessageCallbackData(
-        tts: None,
-        content: None,
-        embeds: None,
-        allowed_mentions: None,
-        flags: case ephemeral {
-          True -> Some(64)
-          False -> None
-        },
-      ),
+      data: MessageCallbackData(message),
     )
 
   interactions.send_response(interaction, to_string(response))

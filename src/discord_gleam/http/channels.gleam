@@ -3,7 +3,6 @@ import discord_gleam/http/request
 import discord_gleam/internal/error
 import discord_gleam/types/message
 import discord_gleam/types/message_send_response
-import discord_gleam/types/reply
 import gleam/http
 import gleam/httpc
 import logging
@@ -51,55 +50,6 @@ pub fn send_message(
 
     Error(err) -> {
       logging.log(logging.Error, "Failed to send message")
-
-      Error(error.HttpError(err))
-    }
-  }
-}
-
-/// Reply to a message
-pub fn reply(
-  token: String,
-  channel_id: Snowflake(snowflake.Channel),
-  message: reply.Reply,
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
-  let data = reply.to_string(message)
-
-  logging.log(logging.Debug, "Replying: " <> data)
-
-  let request =
-    request.new_auth_with_body(
-      http.Post,
-      "/channels/" <> snowflake.to_string(channel_id) <> "/messages",
-      token,
-      data,
-    )
-
-  case httpc.send(request) {
-    Ok(resp) -> {
-      case resp.status {
-        200 -> {
-          logging.log(logging.Debug, "Reply sent")
-
-          message_send_response.from_json_string(resp.body)
-        }
-
-        429 -> {
-          logging.log(logging.Error, "Failed to send reply: rate limited")
-
-          Error(request.extract_ratelimit_error(resp))
-        }
-
-        _ -> {
-          logging.log(logging.Error, "Failed to send reply")
-
-          Error(error.ApiError(status_code: resp.status, body: resp.body))
-        }
-      }
-    }
-
-    Error(err) -> {
-      logging.log(logging.Error, "Failed to send reply")
 
       Error(error.HttpError(err))
     }

@@ -534,11 +534,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 
             "!reply" -> {
               let _ =
-                discord_gleam.reply(
+                discord_gleam.send_message(
                   bot,
                   message.channel_id,
-                  message.id,
-                  message.new("reply"),
+                  message.new("reply") |> message.reply_to(message.id),
                 )
 
               Nil
@@ -546,11 +545,10 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
 
             "hello" -> {
               let _ =
-                discord_gleam.reply(
+                discord_gleam.send_message(
                   bot,
                   message.channel_id,
-                  message.id,
-                  message.new("hello"),
+                  message.new("hello") |> message.reply_to(message.id),
                 )
 
               Nil

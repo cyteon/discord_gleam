@@ -6,7 +6,31 @@
 The old type used for sending messages, message.Message, has been renamed to message.MessageBuilder. \
 This should not affect you if you used the functions like message.new() etc.
 
-### 2. Options added to CommandOption
+### 2. Replying is now done via the message builder
+
+Replying to a message is now done by running `message.reply_to(MessageBuilder, message_id)`. \
+In addition, the type `reply.Reply` and the function `channels.reply` have been removed.
+
+Note: MessageBuilder is opaque
+
+```gleam
+// v3
+discord_gleam.reply(
+  bot,
+  channel_id,
+  message_id,
+  message.new("reply"),
+)
+
+// v4
+discord_gleam.send_message(
+  bot,
+  channel_id,
+  message.new("reply") |> message.reply_to(message_id)
+)
+```
+
+### 3. Options added to CommandOption
 
 CommandOption now has an options field for nested options, pass [] if you dont need it
 
