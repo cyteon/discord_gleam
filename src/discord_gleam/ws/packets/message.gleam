@@ -198,10 +198,10 @@ pub fn data_json_decoder() -> decode.Decoder(MessagePacketData) {
     // todo: stickers
     position:,
     // todo: role_subscription_data
-  // todo: resolved
-  // todo: poll
-  // todo: call
-  // todo: shared_client_theme
+    // todo: resolved
+    // todo: poll
+    // todo: call
+    // todo: shared_client_theme
   ))
 }
 

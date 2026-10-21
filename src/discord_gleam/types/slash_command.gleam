@@ -9,6 +9,7 @@ pub type CommandOption {
     description: String,
     type_: CommandOptionType,
     required: Bool,
+    options: List(CommandOption),
   )
 }
 
@@ -59,10 +60,18 @@ pub fn command_to_string(raw: SlashCommand) -> String {
 }
 
 pub fn options_to_string(option: CommandOption) -> json.Json {
-  json.object([
+  let base = [
     #("name", json.string(option.name)),
     #("description", json.string(option.description)),
     #("type", json.int(type_to_int(option.type_))),
     #("required", json.bool(option.required)),
-  ])
+  ]
+
+  let fields = case option.options {
+    [] -> base
+    nested ->
+      list.prepend(base, #("options", json.array(nested, of: options_to_string)))
+  }
+
+  json.object(fields)
 }
