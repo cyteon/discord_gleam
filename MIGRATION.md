@@ -53,6 +53,10 @@ slash_command.CommandOption(
 )
 ```
 
+### 4. InteractionOption.value is now Option(OptionValue)
+
+InteractionOption.value is now an Option(OptionValue) instead of just OptionValue (it used to default to StringValue(""))
+
 # Migration Guide (v2 -> v3)
 
 ### 1. New bot constructor

@@ -764,16 +764,23 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ = case options {
                 Some(options) -> {
                   let value = case list.first(options) {
-                    Ok(option) ->
+                    Ok(option) -> {
                       case option.value {
-                        interaction_create.StringValue(value) -> value
-                        interaction_create.IntValue(value) ->
-                          int.to_string(value)
-                        interaction_create.BoolValue(value) ->
-                          bool.to_string(value)
-                        interaction_create.FloatValue(value) ->
-                          float.to_string(value)
+                        Some(value) -> {
+                          case value {
+                            interaction_create.StringValue(value) -> value
+                            interaction_create.IntValue(value) ->
+                              int.to_string(value)
+                            interaction_create.BoolValue(value) ->
+                              bool.to_string(value)
+                            interaction_create.FloatValue(value) ->
+                              float.to_string(value)
+                          }
+                        }
+
+                        None -> "No value"
                       }
+                    }
 
                     Error(_) -> "No value"
                   }
@@ -803,16 +810,23 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
               let _ = case options {
                 Some(options) -> {
                   let value = case list.last(options) {
-                    Ok(option) ->
+                    Ok(option) -> {
                       case option.value {
-                        interaction_create.StringValue(value) -> value
-                        interaction_create.IntValue(value) ->
-                          int.to_string(value)
-                        interaction_create.BoolValue(value) ->
-                          bool.to_string(value)
-                        interaction_create.FloatValue(value) ->
-                          float.to_string(value)
+                        Some(value) -> {
+                          case value {
+                            interaction_create.StringValue(value) -> value
+                            interaction_create.IntValue(value) ->
+                              int.to_string(value)
+                            interaction_create.BoolValue(value) ->
+                              bool.to_string(value)
+                            interaction_create.FloatValue(value) ->
+                              float.to_string(value)
+                          }
+                        }
+
+                        None -> "No value"
                       }
+                    }
 
                     Error(_) -> "No value"
                   }
