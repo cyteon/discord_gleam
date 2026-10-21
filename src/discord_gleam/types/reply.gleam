@@ -7,7 +7,7 @@ import gleam/list
 
 /// Our reply type, which is used to send replies to messages.
 pub type Reply {
-  Reply(message_id: Snowflake(snowflake.Message), reply: message.Message)
+  Reply(message_id: Snowflake(snowflake.Message), reply: message.MessageBuilder)
 }
 
 /// Convert a reply to a JSON string. \

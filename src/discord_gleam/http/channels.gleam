@@ -12,7 +12,7 @@ import logging
 pub fn send_message(
   token: String,
   channel_id: Snowflake(snowflake.Channel),
-  message: message.Message,
+  message: message.MessageBuilder,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let data = message.to_string(message)
 
@@ -160,7 +160,7 @@ pub fn edit_message(
   token: String,
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
-  message: message.Message,
+  message: message.MessageBuilder,
 ) -> Result(Nil, error.DiscordError) {
   let data = message.to_string(message)
 

@@ -239,7 +239,7 @@ fn to_internal_next(
 pub fn send_message(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
-  message: message.Message,
+  message: message.MessageBuilder,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   channels.send_message(bot.token, channel_id, message)
 }
@@ -261,7 +261,7 @@ pub fn create_dm_channel(
 pub fn send_direct_message(
   bot: bot.Bot,
   user_id: Snowflake(snowflake.User),
-  message: message.Message,
+  message: message.MessageBuilder,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   users.send_direct_message(bot.token, user_id, message)
 }
@@ -283,7 +283,7 @@ pub fn reply(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
-  message: message.Message,
+  message: message.MessageBuilder,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let msg = reply.Reply(message_id: message_id, reply: message)
 
@@ -396,7 +396,7 @@ pub fn edit_message(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
-  message: message.Message,
+  message: message.MessageBuilder,
 ) -> Result(Nil, error.DiscordError) {
   channels.edit_message(bot.token, channel_id, message_id, message)
 }

@@ -159,7 +159,7 @@ pub fn delete_original(
 /// Send a separate followup message to an interaction.
 pub fn send_followup(
   interaction: interaction_create.InteractionCreatePacketData,
-  message: message.Message,
+  message: message.MessageBuilder,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let request =
     request.new_with_body(
@@ -224,7 +224,7 @@ pub fn send_followup(
 pub fn edit_followup(
   interaction: interaction_create.InteractionCreatePacketData,
   message_id: Snowflake(snowflake.Message),
-  message: message.Message,
+  message: message.MessageBuilder,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let request =
     request.new_with_body(

@@ -106,7 +106,7 @@ pub fn create_dm_channel(
 pub fn send_direct_message(
   token: String,
   user_id: Snowflake(snowflake.User),
-  message: message.Message,
+  message: message.MessageBuilder,
 ) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
   let data: String = message.to_string(message)
   logging.log(logging.Debug, "Sending DM: " <> data)

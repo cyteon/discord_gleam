@@ -1,7 +1,12 @@
 # Migration Guide (v3 -> v4)
 > Old v2 -> v3 migration guide can be found below this
 
-### 1. Options added to CommandOption
+### 1. Message type renamed
+
+The old type used for sending messages, message.Message, has been renamed to message.MessageBuilder. \
+This should not affect you if you used the functions like message.new() etc.
+
+### 2. Options added to CommandOption
 
 CommandOption now has an options field for nested options, pass [] if you dont need it
 

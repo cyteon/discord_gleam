@@ -3,8 +3,8 @@ import discord_gleam/types/embed
 import gleam/json
 import gleam/list
 
-pub type Message {
-  Message(
+pub type MessageBuilder {
+  MessageBuilder(
     content: String,
     embeds: List(embed.Embed),
     components: List(component.Component),
@@ -13,21 +13,24 @@ pub type Message {
 
 /// Create a new message with the given content, no embeds and components are there by default \
 /// To add a embed or component use the add_embed and add_component functions
-pub fn new(content: String) -> Message {
-  Message(content: content, embeds: [], components: [])
+pub fn new(content: String) -> MessageBuilder {
+  MessageBuilder(content: content, embeds: [], components: [])
 }
 
 /// Add a embed to a message
-pub fn add_embed(msg: Message, embed: embed.Embed) -> Message {
-  Message(..msg, embeds: list.append(msg.embeds, [embed]))
+pub fn add_embed(msg: MessageBuilder, embed: embed.Embed) -> MessageBuilder {
+  MessageBuilder(..msg, embeds: list.append(msg.embeds, [embed]))
 }
 
 /// Add a component to a message
-pub fn add_component(msg: Message, component: component.Component) -> Message {
-  Message(..msg, components: list.append(msg.components, [component]))
+pub fn add_component(
+  msg: MessageBuilder,
+  component: component.Component,
+) -> MessageBuilder {
+  MessageBuilder(..msg, components: list.append(msg.components, [component]))
 }
 
-pub fn to_string(msg: Message) -> String {
+pub fn to_string(msg: MessageBuilder) -> String {
   let embeds_json = list.map(msg.embeds, embed.to_json)
   let components_json = list.map(msg.components, component.to_json)
 
