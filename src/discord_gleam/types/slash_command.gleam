@@ -47,8 +47,8 @@ pub fn type_to_int(type_: CommandOptionType) -> Int {
   }
 }
 
-pub fn command_to_string(raw: SlashCommand) -> String {
-  let options = list.map(raw.options, options_to_string)
+pub fn to_string(raw: SlashCommand) -> String {
+  let options = list.map(raw.options, option_to_json)
 
   json.object([
     #("name", json.string(raw.name)),
@@ -59,7 +59,7 @@ pub fn command_to_string(raw: SlashCommand) -> String {
   |> json.to_string
 }
 
-pub fn options_to_string(option: CommandOption) -> json.Json {
+pub fn option_to_json(option: CommandOption) -> json.Json {
   let base = [
     #("name", json.string(option.name)),
     #("description", json.string(option.description)),
@@ -70,7 +70,7 @@ pub fn options_to_string(option: CommandOption) -> json.Json {
   let fields = case option.options {
     [] -> base
     nested ->
-      list.prepend(base, #("options", json.array(nested, of: options_to_string)))
+      list.prepend(base, #("options", json.array(nested, of: option_to_json)))
   }
 
   json.object(fields)

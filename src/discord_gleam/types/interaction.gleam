@@ -65,7 +65,7 @@ pub fn to_string(response: InteractionResponse) -> String {
         let embeds_json = case embeds {
           Some(embeds) -> {
             let embeds_json_list =
-              list.map(embeds, fn(embed) { embed.embed_to_json(embed) })
+              list.map(embeds, fn(embed) { embed.to_json(embed) })
 
             json.array(embeds_json_list, of: fn(x) { x })
           }

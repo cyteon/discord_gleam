@@ -1,3 +1,29 @@
+# Migration Guide (v3 -> v4)
+> Old v2 -> v3 migration guide can be found below this
+
+### 1. Options added to CommandOption
+
+CommandOption now has an options field for nested options, pass [] if you dont need it
+
+```gleam
+// v3
+slash_command.CommandOption(
+  name: "string",
+  description: "Test option",
+  type_: slash_command.StringOption,
+  required: False,
+)
+
+// v4
+slash_command.CommandOption(
+  name: "string",
+  description: "Test option",
+  type_: slash_command.StringOption,
+  required: False,
+  options: [],
+)
+```
+
 # Migration Guide (v2 -> v3)
 
 ### 1. New bot constructor

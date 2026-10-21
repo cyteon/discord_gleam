@@ -100,7 +100,7 @@ pub fn add_field(
   Embed(..embed, fields: list.append(embed.fields, [new_field]))
 }
 
-pub fn embed_to_json(embed: Embed) -> json.Json {
+pub fn to_json(embed: Embed) -> json.Json {
   let base_fields = [
     #("title", json.string(embed.title)),
     #("description", json.string(embed.description)),

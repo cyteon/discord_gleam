@@ -1,6 +1,6 @@
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/component
-import discord_gleam/types/embed.{embed_to_json as message_embed_to_json}
+import discord_gleam/types/embed
 import discord_gleam/types/message
 import gleam/json
 import gleam/list
@@ -13,7 +13,7 @@ pub type Reply {
 /// Convert a reply to a JSON string. \
 /// Todo: deduplicate some of it cause content, embeds and components part is same as message.to_string.
 pub fn to_string(msg: Reply) -> String {
-  let embeds_json = list.map(msg.reply.embeds, message_embed_to_json)
+  let embeds_json = list.map(msg.reply.embeds, embed.to_json)
   let components_json = list.map(msg.reply.components, component.to_json)
 
   json.object([

@@ -115,7 +115,7 @@ pub fn register_global_command(
       http.Post,
       "/applications/" <> snowflake.to_string(client_id) <> "/commands",
       token,
-      slash_command.command_to_string(command),
+      slash_command.to_string(command),
     )
 
   case httpc.send(request) {
@@ -180,7 +180,7 @@ pub fn register_guild_command(
         <> snowflake.to_string(guild_id)
         <> "/commands",
       token,
-      slash_command.command_to_string(command),
+      slash_command.to_string(command),
     )
 
   case httpc.send(request) {

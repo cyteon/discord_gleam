@@ -38,7 +38,7 @@ pub fn embed_to_json_test() {
     )
     |> embed.add_field("field name", value: "field value", inline: True)
 
-  let json = embed.embed_to_json(embed)
+  let json = embed.to_json(embed)
 
   assert json
     == json.object([
