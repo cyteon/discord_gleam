@@ -81,7 +81,7 @@ fn simple_handler(_, packet: event_handler.Packet) {
                   case list.first(options) {
                     Ok(option) -> {
                       let value = case option.value {
-                        interaction_create.StringValue(value) -> value
+                        Some(interaction_create.StringValue(value)) -> value
                         _ -> "unexpected value type"
                       }
 
