@@ -1,7 +1,7 @@
+import discord_gleam/types/message
 import booklet
 import discord_gleam/discord/intents
 import discord_gleam/discord/snowflake.{type Snowflake}
-import discord_gleam/ws/packets/message
 import gleam/dict
 import gleam/erlang/process
 
@@ -26,7 +26,7 @@ pub type BotMessage {
 pub type Cache {
   Cache(
     messages: booklet.Booklet(
-      dict.Dict(Snowflake(snowflake.Message), message.MessagePacketData),
+      dict.Dict(Snowflake(snowflake.Message), message.Message),
     ),
   )
 }

@@ -1,3 +1,4 @@
+import discord_gleam/types/message
 import booklet
 import discord_gleam/ws/packets/guild_delete
 import discord_gleam/ws/packets/guild_update
@@ -33,7 +34,7 @@ import discord_gleam/ws/packets/guild_role_create
 import discord_gleam/ws/packets/guild_role_delete
 import discord_gleam/ws/packets/guild_role_update
 import discord_gleam/ws/packets/interaction_create
-import discord_gleam/ws/packets/message
+import discord_gleam/ws/packets/message as message_packet
 import discord_gleam/ws/packets/message_delete
 import discord_gleam/ws/packets/message_delete_bulk
 import discord_gleam/ws/packets/message_update
@@ -124,9 +125,9 @@ pub type Packet {
   /// `MESSAGE_DELETE` event
   MessageDeletePacket(message_delete.MessageDeletePacketData)
   /// `MESSAGE_CREATE` event
-  MessagePacket(message.MessagePacketData)
+  MessagePacket(message.Message)
   /// `MESSAGE_UPDATE` event
-  MessageUpdatePacket(message.MessagePacketData)
+  MessageUpdatePacket(message.Message)
   /// `MESSAGE_DELETE_BULK` event
   MessageDeleteBulkPacket(message_delete_bulk.MessageDeleteBulkPacketData)
 
@@ -177,7 +178,7 @@ pub type Packet {
   UnknownPacket(generic.GenericPacket)
 }
 
-fn cache_message(bot: bot.Bot, msg: message.MessagePacketData) -> Nil {
+fn cache_message(bot: bot.Bot, msg: message.Message) -> Nil {
   booklet.update(bot.cache.messages, fn(cache) {
     let cache = dict.insert(cache, msg.id, msg)
 
@@ -306,7 +307,7 @@ fn decode_packet(msg: String) -> Packet {
           }
 
         "MESSAGE_CREATE" ->
-          case message.from_json_string(msg) {
+          case message_packet.from_json_string(msg) {
             Ok(packet) -> MessagePacket(packet.d)
             Error(err) -> {
               logging.log(

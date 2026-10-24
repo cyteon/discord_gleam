@@ -1,10 +1,10 @@
-import discord_gleam/ws/packets/message
+import discord_gleam/types/message
 import gleam/dynamic/decode
 import gleam/json
 
 /// Packet sent by Discord when a message is updated
 pub type MessageUpdatePacket {
-  MessageUpdatePacket(t: String, s: Int, op: Int, d: message.MessagePacketData)
+  MessageUpdatePacket(t: String, s: Int, op: Int, d: message.Message)
 }
 
 pub fn from_json_string(
@@ -14,7 +14,7 @@ pub fn from_json_string(
     use t <- decode.field("t", decode.string)
     use s <- decode.field("s", decode.int)
     use op <- decode.field("op", decode.int)
-    use d <- decode.field("d", message.data_json_decoder())
+    use d <- decode.field("d", message.json_decoder())
 
     decode.success(MessageUpdatePacket(t:, s:, op:, d:))
   }

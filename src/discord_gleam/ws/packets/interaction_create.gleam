@@ -1,9 +1,9 @@
+import discord_gleam/types/message
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/channel
 import discord_gleam/types/component_response
 import discord_gleam/types/guild_member
 import discord_gleam/types/user
-import discord_gleam/ws/packets/message
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None, Some}
@@ -62,7 +62,7 @@ pub type InteractionCreatePacketData {
     member: Option(guild_member.GuildMember),
     user: Option(user.User),
     token: String,
-    message: Option(message.MessagePacketData),
+    message: Option(message.Message),
     app_permissions: String,
     locale: Option(String),
   )
@@ -224,7 +224,7 @@ pub fn from_json_string(
       use message <- decode.optional_field(
         "message",
         None,
-        decode.optional(message.data_json_decoder()),
+        decode.optional(message.json_decoder()),
       )
 
       use app_permissions <- decode.field("app_permissions", decode.string)
