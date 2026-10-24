@@ -2,7 +2,6 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/http/request
 import discord_gleam/internal/error
 import discord_gleam/types/message
-import discord_gleam/types/message_send_response
 import gleam/http
 import gleam/httpc
 import logging
@@ -12,7 +11,7 @@ pub fn send_message(
   token: String,
   channel_id: Snowflake(snowflake.Channel),
   message: message.MessageBuilder,
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   let data = message.to_string(message)
 
   logging.log(logging.Debug, "Sending message: " <> data)
@@ -31,7 +30,7 @@ pub fn send_message(
         200 -> {
           logging.log(logging.Debug, "Message sent")
 
-          message_send_response.from_json_string(resp.body)
+          message.from_json_string(resp.body)
         }
 
         429 -> {
@@ -111,7 +110,7 @@ pub fn edit_message(
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
   message: message.MessageBuilder,
-) -> Result(Nil, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   let data = message.to_string(message)
 
   logging.log(logging.Debug, "Editing message: " <> data)
@@ -133,7 +132,7 @@ pub fn edit_message(
         200 -> {
           logging.log(logging.Debug, "Message edited")
 
-          Ok(Nil)
+          message.from_json_string(resp.body)
         }
 
         429 -> {
@@ -162,7 +161,7 @@ pub fn get_message(
   token: String,
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   let request =
     request.new_auth(
       http.Get,
@@ -179,7 +178,7 @@ pub fn get_message(
         200 -> {
           logging.log(logging.Debug, "Got message")
 
-          message_send_response.from_json_string(resp.body)
+          message.from_json_string(resp.body)
         }
 
         429 -> {

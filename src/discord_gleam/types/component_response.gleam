@@ -1,7 +1,7 @@
-import discord_gleam/types/message
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/channel
 import discord_gleam/types/guild_member
+import discord_gleam/types/message
 import discord_gleam/types/role
 import discord_gleam/types/user
 import gleam/dict
@@ -17,9 +17,7 @@ pub type ResolvedData {
     ),
     roles: Option(dict.Dict(Snowflake(snowflake.Role), role.Role)),
     channels: Option(dict.Dict(Snowflake(snowflake.Channel), channel.Channel)),
-    messages: Option(
-      dict.Dict(Snowflake(snowflake.Message), message.Message),
-    ),
+    messages: Option(dict.Dict(Snowflake(snowflake.Message), message.Message)),
     // todo: attachments
   )
 }
@@ -122,10 +120,7 @@ pub fn resolved_data_decoder() -> decode.Decoder(ResolvedData) {
   use messages <- decode.optional_field(
     "messages",
     None,
-    decode.optional(decode.dict(
-      snowflake.decoder(),
-      message.json_decoder(),
-    )),
+    decode.optional(decode.dict(snowflake.decoder(), message.json_decoder())),
   )
 
   decode.success(ResolvedData(users, members, roles, channels, messages))

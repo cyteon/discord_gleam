@@ -13,7 +13,6 @@ import discord_gleam/http/users
 import discord_gleam/internal/error
 import discord_gleam/types/channel
 import discord_gleam/types/message
-import discord_gleam/types/message_send_response
 import discord_gleam/types/slash_command
 import discord_gleam/ws/commands/request_guild_members
 import discord_gleam/ws/commands/update_presence
@@ -239,7 +238,7 @@ pub fn send_message(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
   message: message.MessageBuilder,
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   channels.send_message(bot.token, channel_id, message)
 }
 
@@ -261,7 +260,7 @@ pub fn send_direct_message(
   bot: bot.Bot,
   user_id: Snowflake(snowflake.User),
   message: message.MessageBuilder,
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   users.send_direct_message(bot.token, user_id, message)
 }
 
@@ -372,7 +371,7 @@ pub fn edit_message(
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
   message: message.MessageBuilder,
-) -> Result(Nil, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   channels.edit_message(bot.token, channel_id, message_id, message)
 }
 
@@ -464,6 +463,6 @@ pub fn get_message(
   bot: bot.Bot,
   channel_id: Snowflake(snowflake.Channel),
   message_id: Snowflake(snowflake.Message),
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   channels.get_message(bot.token, channel_id, message_id)
 }

@@ -1,5 +1,5 @@
-import discord_gleam/types/message
 import booklet
+import discord_gleam/types/message
 import discord_gleam/ws/packets/guild_delete
 import discord_gleam/ws/packets/guild_update
 import discord_gleam/ws/packets/message_reaction_add

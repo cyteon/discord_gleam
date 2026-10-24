@@ -1,13 +1,15 @@
-import gleam/dynamic/decode
-import discord_gleam/types/channel
-import discord_gleam/types/user
 import discord_gleam/discord/snowflake.{type Snowflake}
+import discord_gleam/internal/error
+import discord_gleam/types/channel
 import discord_gleam/types/component
 import discord_gleam/types/embed
+import discord_gleam/types/user
+import gleam/dynamic/decode
 import gleam/int
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/result
 
 /// Type used for building outbound messages to send.
 pub opaque type MessageBuilder {
@@ -158,8 +160,9 @@ pub type Message {
 
 pub fn from_json_string(
   encoded: String,
-) -> Result(Message, json.DecodeError) {
+) -> Result(Message, error.DiscordError) {
   json.parse(from: encoded, using: json_decoder())
+  |> result.map_error(error.JsonDecodeError)
 }
 
 pub fn json_decoder() -> decode.Decoder(Message) {

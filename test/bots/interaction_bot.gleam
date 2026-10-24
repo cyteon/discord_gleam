@@ -221,6 +221,8 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                       message.new("test2: " <> value),
                       ephemeral: False,
                     )
+
+                  Nil
                 }
 
                 None -> {
@@ -234,6 +236,8 @@ fn simple_handler(bot: bot.Bot, packet: event_handler.Packet) {
                       interaction,
                       message.new("test2: no options"),
                     )
+
+                  Nil
                 }
               }
 

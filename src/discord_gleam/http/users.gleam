@@ -4,7 +4,6 @@ import discord_gleam/http/request
 import discord_gleam/internal/error
 import discord_gleam/types/channel
 import discord_gleam/types/message
-import discord_gleam/types/message_send_response
 import discord_gleam/types/user
 import gleam/http
 import gleam/httpc
@@ -107,7 +106,7 @@ pub fn send_direct_message(
   token: String,
   user_id: Snowflake(snowflake.User),
   message: message.MessageBuilder,
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   let data: String = message.to_string(message)
   logging.log(logging.Debug, "Sending DM: " <> data)
 

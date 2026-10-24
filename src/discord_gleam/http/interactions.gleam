@@ -2,13 +2,12 @@ import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/http/request
 import discord_gleam/internal/error
 import discord_gleam/types/message
-import discord_gleam/types/message_send_response
 import discord_gleam/ws/packets/interaction_create
 import gleam/http
 import gleam/httpc
 import logging
 
-/// Send a basic text reply to an interaction
+/// Send a interaction response
 pub fn send_response(
   interaction: interaction_create.InteractionCreatePacketData,
   data: String,
@@ -62,7 +61,7 @@ pub fn send_response(
 pub fn edit_original(
   interaction: interaction_create.InteractionCreatePacketData,
   data: String,
-) -> Result(Nil, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   let request =
     request.new_with_body(
       http.Patch,
@@ -80,7 +79,7 @@ pub fn edit_original(
         200 -> {
           logging.log(logging.Debug, "Edited interaction response")
 
-          Ok(Nil)
+          message.from_json_string(resp.body)
         }
 
         429 -> {
@@ -160,7 +159,7 @@ pub fn delete_original(
 pub fn send_followup(
   interaction: interaction_create.InteractionCreatePacketData,
   message: message.MessageBuilder,
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   let request =
     request.new_with_body(
       http.Post,
@@ -177,7 +176,7 @@ pub fn send_followup(
         200 -> {
           logging.log(logging.Debug, "Sent followup message")
 
-          let response = message_send_response.from_json_string(resp.body)
+          let response = message.from_json_string(resp.body)
 
           case response {
             Ok(response) -> {
@@ -225,7 +224,7 @@ pub fn edit_followup(
   interaction: interaction_create.InteractionCreatePacketData,
   message_id: Snowflake(snowflake.Message),
   message: message.MessageBuilder,
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   let request =
     request.new_with_body(
       http.Patch,
@@ -244,7 +243,7 @@ pub fn edit_followup(
         200 -> {
           logging.log(logging.Debug, "Edited followup message")
 
-          let response = message_send_response.from_json_string(resp.body)
+          let response = message.from_json_string(resp.body)
 
           case response {
             Ok(response) -> {

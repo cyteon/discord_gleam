@@ -1,8 +1,8 @@
-import discord_gleam/types/message
 import discord_gleam/discord/snowflake.{type Snowflake}
 import discord_gleam/types/channel
 import discord_gleam/types/component_response
 import discord_gleam/types/guild_member
+import discord_gleam/types/message
 import discord_gleam/types/user
 import gleam/dynamic/decode
 import gleam/json

@@ -3,7 +3,6 @@ import discord_gleam/http/interactions
 import discord_gleam/internal/error
 import discord_gleam/types/component
 import discord_gleam/types/message
-import discord_gleam/types/message_send_response
 import discord_gleam/ws/packets/interaction_create
 import gleam/json
 import gleam/list
@@ -128,7 +127,7 @@ pub fn defer_response(
 pub fn edit_response(
   interaction: interaction_create.InteractionCreatePacketData,
   message message: message.MessageBuilder,
-) -> Result(Nil, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   interactions.edit_original(interaction, message.to_string(message))
 }
 
@@ -143,7 +142,7 @@ pub fn delete_response(
 pub fn send_followup(
   interaction: interaction_create.InteractionCreatePacketData,
   message message: message.MessageBuilder,
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   interactions.send_followup(interaction, message)
 }
 
@@ -152,7 +151,7 @@ pub fn edit_followup(
   interaction: interaction_create.InteractionCreatePacketData,
   message_id: Snowflake(snowflake.Message),
   message message: message.MessageBuilder,
-) -> Result(message_send_response.MessageSendResponse, error.DiscordError) {
+) -> Result(message.Message, error.DiscordError) {
   interactions.edit_followup(interaction, message_id, message)
 }
 

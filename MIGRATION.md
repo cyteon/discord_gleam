@@ -57,6 +57,11 @@ slash_command.CommandOption(
 
 InteractionOption.value is now an Option(OptionValue) instead of just OptionValue (it used to default to StringValue(""))
 
+### 5. Changes to message types
+1. ws/packets/message.MessagePacketData is now types/message.Message
+2. MessageSendResponse has been removed, and all functions that returned it now return message.Message
+3. edit_message and interaction.edit_response have been changed to return message.Message instead of Nil
+
 # Migration Guide (v2 -> v3)
 
 ### 1. New bot constructor
