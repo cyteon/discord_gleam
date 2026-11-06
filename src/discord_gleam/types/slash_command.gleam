@@ -9,7 +9,17 @@ pub type CommandOption {
     description: String,
     type_: CommandOptionType,
     required: Bool,
+    choices: List(CommandOptionChoice),
   )
+}
+
+/// A predefined choice for a string, int or float option. \
+/// The value variant must match the option type, e.g. `IntChoice` for an `IntOption`. \
+/// See https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-choice-structure
+pub type CommandOptionChoice {
+  StringChoice(name: String, value: String)
+  IntChoice(name: String, value: Int)
+  FloatChoice(name: String, value: Float)
 }
 
 pub type CommandOptionType {
@@ -46,7 +56,7 @@ pub fn type_to_int(type_: CommandOptionType) -> Int {
   }
 }
 
-pub fn command_to_string(raw: SlashCommand) -> String {
+pub fn command_to_json(raw: SlashCommand) -> json.Json {
   let options = list.map(raw.options, options_to_string)
 
   json.object([
@@ -55,14 +65,43 @@ pub fn command_to_string(raw: SlashCommand) -> String {
     #("description", json.string(raw.description)),
     #("options", json.array(options, of: fn(x) { x })),
   ])
-  |> json.to_string
+}
+
+pub fn command_to_string(raw: SlashCommand) -> String {
+  command_to_json(raw) |> json.to_string
+}
+
+/// Serializes a full command list as a JSON array, for the bulk overwrite
+/// endpoint (a single PUT registering/replacing every command at once).
+pub fn commands_to_string(commands: List(SlashCommand)) -> String {
+  json.array(commands, of: command_to_json) |> json.to_string
 }
 
 pub fn options_to_string(option: CommandOption) -> json.Json {
-  json.object([
+  let base = [
     #("name", json.string(option.name)),
     #("description", json.string(option.description)),
     #("type", json.int(type_to_int(option.type_))),
     #("required", json.bool(option.required)),
-  ])
+  ]
+
+  case option.choices {
+    [] -> json.object(base)
+    choices ->
+      json.object(
+        list.append(base, [
+          #("choices", json.array(choices, of: choice_to_json)),
+        ]),
+      )
+  }
+}
+
+fn choice_to_json(choice: CommandOptionChoice) -> json.Json {
+  let value = case choice {
+    StringChoice(value:, ..) -> json.string(value)
+    IntChoice(value:, ..) -> json.int(value)
+    FloatChoice(value:, ..) -> json.float(value)
+  }
+
+  json.object([#("name", json.string(choice.name)), #("value", value)])
 }

@@ -384,45 +384,41 @@ fn handle_text_message(
         7 -> {
           logging.log(logging.Debug, "Received a reconnect request")
 
+          // `on_close` is the single place that sends `Restart` for this
+          // close code; see the op 9 branch below for why.
           case stratus.close_custom(conn, 4009, <<>>) {
             Ok(_) -> logging.log(logging.Debug, "Closed websocket")
             Error(_) -> logging.log(logging.Error, "Failed to close websocket")
           }
-
-          let host = booklet.get(state_ets).resume_gateway_url
-          let session_id = booklet.get(state_ets).session_id
-
-          process.send(
-            state.event_loop_subject,
-            Restart(host:, session_id:, reconnect: True),
-          )
         }
 
         9 -> {
           logging.log(logging.Debug, "Invalid session, reconnecting")
-
-          case stratus.close_custom(conn, 4009, <<>>) {
-            Ok(_) -> logging.log(logging.Debug, "Closed websocket")
-            Error(_) -> logging.log(logging.Error, "Failed to close websocket")
-          }
-
-          let host = booklet.get(state_ets).resume_gateway_url
-          let session_id = booklet.get(state_ets).session_id
 
           let decoder = {
             use d <- decode.field("d", decode.bool)
             decode.success(d)
           }
 
-          let decoded = case json.parse(from: msg, using: decoder) {
+          let resumable = case json.parse(from: msg, using: decoder) {
             Ok(d) -> d
             Error(_) -> False
           }
 
-          process.send(
-            state.event_loop_subject,
-            Restart(host:, session_id:, reconnect: decoded),
-          )
+          // 4009 vs 4021 tells `on_close` (the single place that sends
+          // `Restart`) whether to resume the old session or start a fresh
+          // one. Sending `Restart` from here too, as before, would cause
+          // both this handler and `on_close` to restart, doubling every
+          // reconnect into an exponential connection storm.
+          let close_code = case resumable {
+            True -> 4009
+            False -> 4021
+          }
+
+          case stratus.close_custom(conn, close_code, <<>>) {
+            Ok(_) -> logging.log(logging.Debug, "Closed websocket")
+            Error(_) -> logging.log(logging.Error, "Failed to close websocket")
+          }
         }
 
         _ -> Nil
@@ -605,6 +601,20 @@ fn on_close(
           logging.log(
             logging.Error,
             "Disallowed intents used, did you remember to enable any privileged intents you used in the Discord Developer Portal (https://discord.dev)? Not reconnecting",
+          )
+        }
+
+        4021 -> {
+          logging.log(
+            logging.Error,
+            "Invalid session, not resumable, starting a new session",
+          )
+
+          let host = booklet.get(state_ets).resume_gateway_url
+
+          process.send(
+            state.event_loop_subject,
+            Restart(host:, session_id: "", reconnect: False),
           )
         }
 

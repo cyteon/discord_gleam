@@ -29,6 +29,7 @@ pub fn main() {
           description: "string yummy",
           type_: slash_command.StringOption,
           required: False,
+          choices: [],
         ),
       ],
     )
