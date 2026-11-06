@@ -9,8 +9,17 @@ pub type CommandOption {
     description: String,
     type_: CommandOptionType,
     required: Bool,
-    choices: List(#(String, String)),
+    choices: List(CommandOptionChoice),
   )
+}
+
+/// A predefined choice for a string, int or float option. \
+/// The value variant must match the option type, e.g. `IntChoice` for an `IntOption`. \
+/// See https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-choice-structure
+pub type CommandOptionChoice {
+  StringChoice(name: String, value: String)
+  IntChoice(name: String, value: Int)
+  FloatChoice(name: String, value: Float)
 }
 
 pub type CommandOptionType {
@@ -81,16 +90,18 @@ pub fn options_to_string(option: CommandOption) -> json.Json {
     choices ->
       json.object(
         list.append(base, [
-          #(
-            "choices",
-            json.array(choices, of: fn(choice) {
-              json.object([
-                #("name", json.string(choice.0)),
-                #("value", json.string(choice.1)),
-              ])
-            }),
-          ),
+          #("choices", json.array(choices, of: choice_to_json)),
         ]),
       )
   }
+}
+
+fn choice_to_json(choice: CommandOptionChoice) -> json.Json {
+  let value = case choice {
+    StringChoice(value:, ..) -> json.string(value)
+    IntChoice(value:, ..) -> json.int(value)
+    FloatChoice(value:, ..) -> json.float(value)
+  }
+
+  json.object([#("name", json.string(choice.name)), #("value", value)])
 }
