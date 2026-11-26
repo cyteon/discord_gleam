@@ -62,6 +62,44 @@ InteractionOption.value is now an Option(OptionValue) instead of just OptionValu
 2. MessageSendResponse has been removed, and all functions that returned it now return message.Message
 3. edit_message and interaction.edit_response have been changed to return message.Message instead of Nil
 
+### 6. Choices added to CommandOption
+
+CommandOption now has a choices field, pass [] if you dont need it. \
+The choice type must match the option type: StringChoice for StringOption, IntChoice for IntOption and FloatChoice for FloatOption
+
+```gleam
+// v3
+slash_command.CommandOption(
+  name: "string",
+  description: "Test option",
+  type_: slash_command.StringOption,
+  required: False,
+)
+
+// v4
+slash_command.CommandOption(
+  name: "string",
+  description: "Test option",
+  type_: slash_command.StringOption,
+  required: False,
+  options: [],
+  choices: [],
+)
+
+// v4, with choices
+slash_command.CommandOption(
+  name: "size",
+  description: "Pick a size",
+  type_: slash_command.IntOption,
+  required: True,
+  options: [],
+  choices: [
+    slash_command.IntChoice(name: "Small", value: 1),
+    slash_command.IntChoice(name: "Large", value: 2),
+  ],
+)
+```
+
 # Migration Guide (v2 -> v3)
 
 ### 1. New bot constructor
