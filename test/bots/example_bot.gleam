@@ -53,6 +53,7 @@ pub fn main() {
           type_: slash_command.StringOption,
           required: False,
           options: [],
+          choices: [],
         ),
         slash_command.CommandOption(
           name: "int",
@@ -60,6 +61,7 @@ pub fn main() {
           type_: slash_command.IntOption,
           required: False,
           options: [],
+          choices: [],
         ),
       ],
     )
@@ -75,6 +77,7 @@ pub fn main() {
           type_: slash_command.BoolOption,
           required: False,
           options: [],
+          choices: [],
         ),
         slash_command.CommandOption(
           name: "float",
@@ -82,6 +85,7 @@ pub fn main() {
           type_: slash_command.FloatOption,
           required: False,
           options: [],
+          choices: [],
         ),
       ],
     )

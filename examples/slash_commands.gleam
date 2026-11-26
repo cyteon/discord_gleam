@@ -30,6 +30,7 @@ pub fn main() {
           type_: slash_command.StringOption,
           required: False,
           options: [],
+          choices: [],
         ),
       ],
     )

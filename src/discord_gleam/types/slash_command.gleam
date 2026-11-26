@@ -10,7 +10,14 @@ pub type CommandOption {
     type_: CommandOptionType,
     required: Bool,
     options: List(CommandOption),
+    choices: List(CommandOptionChoice),
   )
+}
+
+pub type CommandOptionChoice {
+  StringChoice(name: String, value: String)
+  IntChoice(name: String, value: Int)
+  FloatChoice(name: String, value: Float)
 }
 
 pub type CommandOptionType {
@@ -73,5 +80,21 @@ pub fn option_to_json(option: CommandOption) -> json.Json {
       list.prepend(base, #("options", json.array(nested, of: option_to_json)))
   }
 
+  let fields = case option.choices {
+    [] -> fields
+    choices ->
+      list.prepend(fields, #("choices", json.array(choices, of: choice_to_json)))
+  }
+
   json.object(fields)
+}
+
+fn choice_to_json(choice: CommandOptionChoice) -> json.Json {
+  let value = case choice {
+    StringChoice(value:, ..) -> json.string(value)
+    IntChoice(value:, ..) -> json.int(value)
+    FloatChoice(value:, ..) -> json.float(value)
+  }
+
+  json.object([#("name", json.string(choice.name)), #("value", value)])
 }
