@@ -384,102 +384,122 @@ fn handle_text_message(
         7 -> {
           logging.log(logging.Debug, "Received a reconnect request")
 
-          case stratus.close_custom(conn, 4009, <<>>) {
-            Ok(_) -> logging.log(logging.Debug, "Closed websocket")
-            Error(_) -> logging.log(logging.Error, "Failed to close websocket")
-          }
-
-          let host = booklet.get(state_ets).resume_gateway_url
-          let session_id = booklet.get(state_ets).session_id
-
-          process.send(
-            state.event_loop_subject,
-            Restart(host:, session_id:, reconnect: True),
-          )
+          restart_connection(conn, state, state_ets, resume: True)
         }
 
         9 -> {
           logging.log(logging.Debug, "Invalid session, reconnecting")
-
-          case stratus.close_custom(conn, 4009, <<>>) {
-            Ok(_) -> logging.log(logging.Debug, "Closed websocket")
-            Error(_) -> logging.log(logging.Error, "Failed to close websocket")
-          }
-
-          let host = booklet.get(state_ets).resume_gateway_url
-          let session_id = booklet.get(state_ets).session_id
 
           let decoder = {
             use d <- decode.field("d", decode.bool)
             decode.success(d)
           }
 
-          let decoded = case json.parse(from: msg, using: decoder) {
+          let resumable = case json.parse(from: msg, using: decoder) {
             Ok(d) -> d
             Error(_) -> False
           }
 
-          process.send(
-            state.event_loop_subject,
-            Restart(host:, session_id:, reconnect: decoded),
-          )
+          restart_connection(conn, state, state_ets, resume: resumable)
         }
 
-        _ -> Nil
-      }
+        _ -> {
+          let new_state =
+            State(
+              has_received_hello: True,
+              event_loop_subject: state.event_loop_subject,
+              user_state: state.user_state,
+              bot: state.bot,
+              mode: state.mode,
+              heartbeat: state.heartbeat,
+            )
 
-      let new_state =
-        State(
-          has_received_hello: True,
-          event_loop_subject: state.event_loop_subject,
-          user_state: state.user_state,
-          bot: state.bot,
-          mode: state.mode,
-          heartbeat: state.heartbeat,
-        )
+          let next =
+            event_handler.handle_event(
+              bot,
+              state.user_state,
+              event_handler.InternalPacket(msg),
+              mode,
+              state_ets,
+            )
 
-      let next =
-        event_handler.handle_event(
-          bot,
-          state.user_state,
-          event_handler.InternalPacket(msg),
-          mode,
-          state_ets,
-        )
+          case next {
+            event_handler.Continue(user_state, opt) -> {
+              let new_state = State(..new_state, user_state:)
+              let next = stratus.continue(new_state)
 
-      case next {
-        event_handler.Continue(user_state, opt) -> {
-          let new_state = State(..new_state, user_state:)
-          let next = stratus.continue(new_state)
+              case opt {
+                Some(user_selector) ->
+                  stratus.with_selector(
+                    next,
+                    process.map_selector(user_selector, User),
+                  )
 
-          case opt {
-            Some(user_selector) ->
-              stratus.with_selector(
-                next,
-                process.map_selector(user_selector, User),
+                None -> next
+              }
+            }
+
+            event_handler.Stop -> {
+              logging.log(
+                logging.Debug,
+                "Stopping discord websocket connection",
+              )
+              stratus.stop()
+            }
+
+            event_handler.StopAbnormal(reason) -> {
+              logging.log(
+                logging.Error,
+                "Stopping discord websocket connection with abnormal reason: "
+                  <> reason,
               )
 
-            None -> next
+              stratus.stop_abnormal(reason)
+            }
           }
-        }
-
-        event_handler.Stop -> {
-          logging.log(logging.Debug, "Stopping discord websocket connection")
-          stratus.stop()
-        }
-
-        event_handler.StopAbnormal(reason) -> {
-          logging.log(
-            logging.Error,
-            "Stopping discord websocket connection with abnormal reason: "
-              <> reason,
-          )
-
-          stratus.stop_abnormal(reason)
         }
       }
     }
   }
+}
+
+fn restart_connection(
+  conn: stratus.Connection,
+  state: WebsocketState(user_state, user_message),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
+  resume resume: Bool,
+) {
+  let _ = option.map(state.heartbeat, repeatedly.stop)
+
+  case stratus.close_custom(conn, 4009, <<>>) {
+    Ok(_) -> logging.log(logging.Debug, "Closed websocket")
+    Error(_) -> logging.log(logging.Error, "Failed to close websocket")
+  }
+
+  case resume {
+    True -> Nil
+    False -> booklet.set(state_ets, gateway_state.new())
+  }
+
+  request_restart(state, state_ets)
+
+  stratus.stop()
+}
+
+fn request_restart(
+  state: WebsocketState(user_state, user_message),
+  state_ets: booklet.Booklet(gateway_state.GatewayState),
+) -> Nil {
+  let gateway = booklet.get(state_ets)
+
+  process.send(
+    state.event_loop_subject,
+    Restart(
+      host: gateway.resume_gateway_url,
+      session_id: gateway.session_id,
+      reconnect: gateway.session_id != "",
+    ),
+  )
 }
 
 fn on_close(
@@ -496,13 +516,7 @@ fn on_close(
         4000 -> {
           logging.log(logging.Error, "Unknown error, reconnecting")
 
-          let host = booklet.get(state_ets).resume_gateway_url
-          let session_id = booklet.get(state_ets).session_id
-
-          process.send(
-            state.event_loop_subject,
-            Restart(host:, session_id:, reconnect: True),
-          )
+          request_restart(state, state_ets)
         }
 
         4001 -> {
@@ -512,13 +526,7 @@ fn on_close(
         4002 -> {
           logging.log(logging.Error, "Decode error, reconnecting")
 
-          let host = booklet.get(state_ets).resume_gateway_url
-          let session_id = booklet.get(state_ets).session_id
-
-          process.send(
-            state.event_loop_subject,
-            Restart(host:, session_id:, reconnect: True),
-          )
+          request_restart(state, state_ets)
         }
 
         4003 -> {
@@ -560,13 +568,7 @@ fn on_close(
         4009 -> {
           logging.log(logging.Error, "Session timed out, reconnecting")
 
-          let host = booklet.get(state_ets).resume_gateway_url
-          let session_id = booklet.get(state_ets).session_id
-
-          process.send(
-            state.event_loop_subject,
-            Restart(host:, session_id:, reconnect: True),
-          )
+          request_restart(state, state_ets)
         }
 
         4010 -> {
@@ -615,15 +617,9 @@ fn on_close(
     }
 
     _ -> {
-      let host = booklet.get(state_ets).resume_gateway_url
-      let session_id = booklet.get(state_ets).session_id
-
       logging.log(logging.Debug, "Reconnecting to the gateway")
 
-      process.send(
-        state.event_loop_subject,
-        Restart(host:, session_id:, reconnect: True),
-      )
+      request_restart(state, state_ets)
     }
   }
 }
