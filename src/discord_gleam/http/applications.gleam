@@ -104,6 +104,53 @@ pub fn wipe_guild_commands(
   }
 }
 
+pub fn bulk_overwrite_global_commands(
+  token: String,
+  client_id: Snowflake(snowflake.Application),
+  commands: List(slash_command.SlashCommand),
+) -> Result(Nil, error.DiscordError) {
+  let request =
+    request.new_auth_with_body(
+      http.Put,
+      "/applications/" <> snowflake.to_string(client_id) <> "/commands",
+      token,
+      slash_command.list_to_string(commands),
+    )
+
+  case httpc.send(request) {
+    Ok(resp) -> {
+      case resp.status {
+        200 -> {
+          logging.log(logging.Debug, "Bulk overwrote global commands")
+
+          Ok(Nil)
+        }
+
+        429 -> {
+          logging.log(
+            logging.Error,
+            "Failed to bulk overwrite global commands: rate limited",
+          )
+
+          Error(request.extract_ratelimit_error(resp))
+        }
+
+        _ -> {
+          logging.log(logging.Error, "Failed to bulk overwrite global commands")
+
+          Error(error.ApiError(status_code: resp.status, body: resp.body))
+        }
+      }
+    }
+
+    Error(err) -> {
+      logging.log(logging.Error, "Failed to bulk overwrite global commands")
+
+      Error(error.HttpError(err))
+    }
+  }
+}
+
 /// Register a new global slash command
 pub fn register_global_command(
   token: String,

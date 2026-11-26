@@ -47,7 +47,7 @@ pub fn type_to_int(type_: CommandOptionType) -> Int {
   }
 }
 
-pub fn to_string(raw: SlashCommand) -> String {
+pub fn to_json(raw: SlashCommand) -> json.Json {
   let options = list.map(raw.options, option_to_json)
 
   json.object([
@@ -56,7 +56,14 @@ pub fn to_string(raw: SlashCommand) -> String {
     #("description", json.string(raw.description)),
     #("options", json.array(options, of: fn(x) { x })),
   ])
-  |> json.to_string
+}
+
+pub fn to_string(raw: SlashCommand) -> String {
+  to_json(raw) |> json.to_string
+}
+
+pub fn list_to_string(commands: List(SlashCommand)) -> String {
+  json.array(commands, of: to_json) |> json.to_string
 }
 
 pub fn option_to_json(option: CommandOption) -> json.Json {
